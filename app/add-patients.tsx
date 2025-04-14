@@ -141,7 +141,7 @@ const AddPatient = () => {
       };
       const token = getToken();
       const response = await axios.post(
-        `${API_URL}/auth/register`,
+        `${API_URL}/auth/patients`,
         patientData,
         {
           headers: {

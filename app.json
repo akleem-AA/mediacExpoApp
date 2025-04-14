@@ -16,7 +16,8 @@
         "foregroundImage": "./assets/images/icon.png",
         "backgroundColor": "#ffffff"
       },
-      "package": "com.anuj321.mediac"
+      "package": "com.anuj321.mediac",
+      "googleServicesFile": "./google-services.json"
     },
     "web": {
       "bundler": "metro",

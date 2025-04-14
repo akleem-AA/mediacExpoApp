@@ -24,10 +24,10 @@ import { getToken } from "@/services/auth";
 // Define the Medicine type for better type safety
 interface Medicine {
   id: number;
-  medicine_name: string;
-  medicine_dose: number;
-  medicine_dose_unit: string;
-  medicine_frequency: string;
+  medicineName: string;
+  medicineDose: number;
+  medicineDoseUnit: string;
+  medicineFrequency: string;
   timing: string;
   medicine_notes?: string;
   startDate: string;
@@ -131,6 +131,8 @@ export default function MedicineScreen() {
     }
   };
 
+  console.log("medicines", medicines);
+
   // Apply filters and sorting
   const applyFilters = (data: Medicine[], query: string) => {
     let filtered = [...data];
@@ -139,8 +141,8 @@ export default function MedicineScreen() {
     if (query) {
       filtered = filtered.filter(
         (m) =>
-          m.medicine_name.toLowerCase().includes(query.toLowerCase()) ||
-          m.medicine_frequency.toLowerCase().includes(query.toLowerCase())
+          m.medicineName.toLowerCase().includes(query.toLowerCase()) ||
+          m.medicineFrequency.toLowerCase().includes(query.toLowerCase())
       );
     }
 
@@ -149,14 +151,14 @@ export default function MedicineScreen() {
       let comparison = 0;
 
       switch (sortBy) {
-        case "medicine_name":
-          comparison = a.medicine_name.localeCompare(b.medicine_name);
+        case "medicineName":
+          comparison = a.medicineName.localeCompare(b.medicineName);
           break;
-        case "medicine_dose":
-          comparison = a.medicine_dose - b.medicine_dose;
+        case "medicineDose":
+          comparison = a.medicineDose - b.medicineDose;
           break;
-        case "medicine_frequency":
-          comparison = a.medicine_frequency.localeCompare(b.medicine_frequency);
+        case "medicineFrequency":
+          comparison = a.medicineFrequency.localeCompare(b.medicineFrequency);
           break;
         case "startDate":
           comparison =
@@ -214,7 +216,7 @@ export default function MedicineScreen() {
     if (!selectedMedicine) return;
 
     // Validate required fields
-    if (!editedMedicine.medicine_name || !editedMedicine.medicine_dose) {
+    if (!editedMedicine.medicineName || !editedMedicine.medicineDose) {
       Alert.alert("Error", "Name and Dose are required fields");
       return;
     }
@@ -235,7 +237,7 @@ export default function MedicineScreen() {
   // Handle add medicine
   const handleAddMedicine = () => {
     // Validate required fields
-    if (!newMedicine.medicine_name || !newMedicine.medicine_dose) {
+    if (!newMedicine.medicineName || !newMedicine.medicineDose) {
       Alert.alert("Error", "Name and Dose are required fields");
       return;
     }
@@ -252,10 +254,10 @@ export default function MedicineScreen() {
     applyFilters(updatedMedicines, searchQuery);
     setAddModalVisible(false);
     setNewMedicine({
-      medicine_name: "",
-      medicine_dose: 0,
-      medicine_dose_unit: "mg",
-      medicine_frequency: "Once daily",
+      medicineName: "",
+      medicineDose: 0,
+      medicineDoseUnit: "mg",
+      medicineFrequency: "Once daily",
       timing: "Morning",
       startDate: new Date().toISOString().split("T")[0],
     });
@@ -412,10 +414,10 @@ export default function MedicineScreen() {
             >
               <View style={styles.medicineInfo}>
                 <View style={styles.medicineHeader}>
-                  <Text style={styles.medicineName}>{item.medicine_name}</Text>
+                  <Text style={styles.medicineName}>{item.medicineName}</Text>
                   <View style={styles.doseBadge}>
                     <Text style={styles.doseText}>
-                      {item.medicine_dose} {item.medicine_dose_unit}
+                      {item.medicineDose} {item.medicineDoseUnit}
                     </Text>
                   </View>
                 </View>
@@ -424,7 +426,7 @@ export default function MedicineScreen() {
                   <View style={styles.detailItem}>
                     <FontAwesome5 name="clock" size={12} color="#bbb" />
                     <Text style={styles.medicineInfoText}>
-                      {item.medicine_frequency}
+                      {item.medicineFrequency}
                     </Text>
                   </View>
 
@@ -513,7 +515,7 @@ export default function MedicineScreen() {
                     <View style={styles.detailCol}>
                       <Text style={styles.detailLabel}>Name</Text>
                       <Text style={styles.detailValue}>
-                        {selectedMedicine.medicine_name}
+                        {selectedMedicine.medicineName}
                       </Text>
                     </View>
                   </View>
@@ -522,15 +524,15 @@ export default function MedicineScreen() {
                     <View style={styles.detailCol}>
                       <Text style={styles.detailLabel}>Dose</Text>
                       <Text style={styles.detailValue}>
-                        {selectedMedicine.medicine_dose}{" "}
-                        {selectedMedicine.medicine_dose_unit}
+                        {selectedMedicine.medicineDose}{" "}
+                        {selectedMedicine.medicineDoseUnit}
                       </Text>
                     </View>
 
                     <View style={styles.detailCol}>
                       <Text style={styles.detailLabel}>Frequency</Text>
                       <Text style={styles.detailValue}>
-                        {selectedMedicine.medicine_frequency}
+                        {selectedMedicine.medicineFrequency}
                       </Text>
                     </View>
                   </View>
@@ -640,9 +642,9 @@ export default function MedicineScreen() {
               <Text style={styles.inputLabel}>Name *</Text>
               <TextInput
                 style={styles.input}
-                value={editedMedicine.medicine_name}
+                value={editedMedicine.medicineName}
                 onChangeText={(text) =>
-                  setEditedMedicine({ ...editedMedicine, medicine_name: text })
+                  setEditedMedicine({ ...editedMedicine, medicineName: text })
                 }
                 placeholder="Enter medication name"
                 placeholderTextColor="#888"
@@ -653,11 +655,11 @@ export default function MedicineScreen() {
                   <Text style={styles.inputLabel}>Dose *</Text>
                   <TextInput
                     style={styles.input}
-                    value={editedMedicine.medicine_dose?.toString()}
+                    value={editedMedicine.medicineDose?.toString()}
                     onChangeText={(text) =>
                       setEditedMedicine({
                         ...editedMedicine,
-                        medicine_dose: Number.parseInt(text) || 0,
+                        medicineDose: Number.parseInt(text) || 0,
                       })
                     }
                     placeholder="Enter dose"
@@ -670,11 +672,11 @@ export default function MedicineScreen() {
                   <Text style={styles.inputLabel}>Unit</Text>
                   <View style={styles.pickerContainer}>
                     <Picker
-                      selectedValue={editedMedicine.medicine_dose_unit}
+                      selectedValue={editedMedicine.medicineDoseUnit}
                       onValueChange={(value) =>
                         setEditedMedicine({
                           ...editedMedicine,
-                          medicine_dose_unit: value,
+                          medicineDoseUnit: value,
                         })
                       }
                       style={styles.picker}
@@ -691,11 +693,11 @@ export default function MedicineScreen() {
               <Text style={styles.inputLabel}>Frequency</Text>
               <View style={styles.pickerContainer}>
                 <Picker
-                  selectedValue={editedMedicine.medicine_frequency}
+                  selectedValue={editedMedicine.medicineFrequency}
                   onValueChange={(value) =>
                     setEditedMedicine({
                       ...editedMedicine,
-                      medicine_frequency: value,
+                      medicineFrequency: value,
                     })
                   }
                   style={styles.picker}
@@ -819,9 +821,9 @@ export default function MedicineScreen() {
               <Text style={styles.inputLabel}>Name *</Text>
               <TextInput
                 style={styles.input}
-                value={newMedicine.medicine_name?.toString()}
+                value={newMedicine.medicineName?.toString()}
                 onChangeText={(text) =>
-                  setNewMedicine({ ...newMedicine, medicine_name: text })
+                  setNewMedicine({ ...newMedicine, medicineName: text })
                 }
                 placeholder="Enter medication name"
                 placeholderTextColor="#888"
@@ -832,11 +834,11 @@ export default function MedicineScreen() {
                   <Text style={styles.inputLabel}>Dose *</Text>
                   <TextInput
                     style={styles.input}
-                    value={newMedicine.medicine_dose?.toString()}
+                    value={newMedicine.medicineDose?.toString()}
                     onChangeText={(text) =>
                       setNewMedicine({
                         ...newMedicine,
-                        medicine_dose: Number.parseInt(text) || 0,
+                        medicineDose: Number.parseInt(text) || 0,
                       })
                     }
                     placeholder="Enter dose"
@@ -849,11 +851,11 @@ export default function MedicineScreen() {
                   <Text style={styles.inputLabel}>Unit</Text>
                   <View style={styles.pickerContainer}>
                     <Picker
-                      selectedValue={newMedicine.medicine_dose_unit}
+                      selectedValue={newMedicine.medicineDoseUnit}
                       onValueChange={(value) =>
                         setNewMedicine({
                           ...newMedicine,
-                          medicine_dose_unit: value,
+                          medicineDoseUnit: value,
                         })
                       }
                       style={styles.picker}

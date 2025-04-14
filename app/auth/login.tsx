@@ -15,6 +15,8 @@ import {
 import { useRouter } from "expo-router";
 import Footer from "../../components/Footer";
 import { loginUser } from "@/services/auth";
+import { registerForPushNotificationsAsync } from "@/utils/notifications";
+import { decodeToken } from "@/utils/jwtHelper";
 
 export default function LoginScreen() {
   const [email, setEmail] = useState("");
@@ -34,6 +36,10 @@ export default function LoginScreen() {
       const response = await loginUser(email, password);
       setIsLoading(false);
       if (response.token) {
+        const user = decodeToken(response.token);
+        if (user) {
+          await registerForPushNotificationsAsync(user);
+        }
         console.log("Token:", response.token);
         router.push("/(tabs)");
       }
