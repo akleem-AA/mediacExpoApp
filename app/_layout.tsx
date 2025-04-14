@@ -32,8 +32,10 @@ export default function RootLayout() {
 
   useEffect(() => {
     (async () => {
+      console.log("user", user);
       if (user) {
         const token = await registerForPushNotificationsAsync();
+        console.log("expo token", token);
       }
 
       // if (token) {
