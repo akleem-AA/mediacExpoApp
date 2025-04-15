@@ -101,9 +101,9 @@ export default function LoginScreen() {
               />
             </View>
 
-            <TouchableOpacity style={styles.forgotPasswordButton}>
+            {/* <TouchableOpacity style={styles.forgotPasswordButton}>
               <Text style={styles.forgotPasswordText}>Forgot Password?</Text>
-            </TouchableOpacity>
+            </TouchableOpacity> */}
 
             {message ? <Text style={styles.messageText}>{message}</Text> : null}
 
@@ -176,20 +176,20 @@ const styles = StyleSheet.create({
   scrollContainer: {
     flexGrow: 1,
     paddingHorizontal: 24,
-    paddingTop: 20,
+    paddingTop: 10,
     paddingBottom: 30,
   },
   headerSection: {
     alignItems: "center",
-    marginBottom: 30,
+    marginBottom: 20,
   },
   logo: {
     width: 100,
-    height: 100,
+    height: 90,
     marginBottom: 5,
   },
   title: {
-    fontSize: 28,
+    fontSize: 22,
     fontWeight: "bold",
     color: "#fff",
     marginBottom: 8,
@@ -237,12 +237,12 @@ const styles = StyleSheet.create({
     textAlign: "center",
   },
   loginButton: {
-    height: 56,
+    height: 50,
     backgroundColor: "#E9446A",
     borderRadius: 12,
     justifyContent: "center",
     alignItems: "center",
-    marginBottom: 16,
+    marginBottom: 5,
   },
   loginButtonText: {
     fontSize: 18,
@@ -264,7 +264,7 @@ const styles = StyleSheet.create({
     fontWeight: "600",
   },
   healthSection: {
-    marginTop: 10,
+    marginTop: 0,
   },
   healthSectionTitle: {
     fontSize: 20,
