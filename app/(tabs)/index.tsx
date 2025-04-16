@@ -11,8 +11,12 @@ import {
 import { Ionicons } from "@expo/vector-icons";
 import { router } from "expo-router";
 import packageJson from "../../package.json";
+import { useDecodedToken } from "@/hooks/useDecodedToken";
 
 export default function Dashboard() {
+  const user = useDecodedToken();
+  console.log("User:", user);
+
   const statusBarHeight =
     Platform.OS === "android" ? StatusBar.currentHeight || 0 : 0;
 
@@ -40,7 +44,9 @@ export default function Dashboard() {
         {/* Header */}
         <View style={styles.header}>
           <View>
-            <Text style={styles.greeting}>{greeting}</Text>
+            <Text style={styles.greeting}>
+              {greeting} {user?.user || "User"}
+            </Text>
             <Text style={styles.date}>{formattedDate}</Text>
           </View>
           <TouchableOpacity
@@ -225,7 +231,7 @@ const styles = StyleSheet.create({
     padding: 4,
   },
   titleContainer: {
-    marginTop: 10,
+    marginTop: 0,
     marginBottom: 24,
   },
   appTitle: {
