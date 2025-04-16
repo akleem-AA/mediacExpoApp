@@ -15,7 +15,6 @@ import { useDecodedToken } from "@/hooks/useDecodedToken";
 
 export default function Dashboard() {
   const user = useDecodedToken();
-  console.log("User:", user);
 
   const statusBarHeight =
     Platform.OS === "android" ? StatusBar.currentHeight || 0 : 0;
