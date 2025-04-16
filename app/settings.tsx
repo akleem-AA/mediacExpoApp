@@ -40,7 +40,7 @@ export default function ProfileScreen() {
           </View>
           <View style={styles.userInfo}>
             <ThemedText style={styles.userName}>
-              {user?.name || "User Name"}
+              {user?.user || "User Name"}
             </ThemedText>
             <ThemedText style={styles.userEmail}>
               {user?.email || "user@example.com"}
