@@ -1,4 +1,4 @@
-import { Tabs } from "expo-router";
+import { Tabs, useSegments } from "expo-router";
 import React from "react";
 import { Platform } from "react-native";
 
@@ -13,21 +13,26 @@ export default function TabLayout() {
   const colorScheme = useColorScheme();
   const user = useDecodedToken();
 
+  // useSegments gives us the route segments as an array
+  const segments = useSegments();
+
+  // Check if we're in the metrics section
+  const isMetricsRoute = segments.includes("metrics");
+
   return (
     <Tabs
-      screenOptions={{
+      screenOptions={({ route }) => ({
         tabBarActiveTintColor: Colors[colorScheme ?? "light"].tint,
         headerShown: false,
         tabBarButton: HapticTab,
         tabBarBackground: TabBarBackground,
-        tabBarStyle: Platform.select({
-          ios: {
-            // Use a transparent background on iOS to show the blur effect
-            position: "absolute",
-          },
-          default: {},
-        }),
-      }}
+        // Hide the tab bar when in metrics routes
+        tabBarStyle: isMetricsRoute
+          ? { display: "none" }
+          : Platform.OS === "ios"
+          ? { position: "absolute" }
+          : undefined,
+      })}
     >
       <Tabs.Screen
         name="index"
@@ -93,6 +98,32 @@ export default function TabLayout() {
           tabBarIcon: ({ color }) => (
             <IconSymbol size={24} name="info-outline.fill" color={color} />
           ),
+        }}
+      />
+
+      {/* Register the metrics route */}
+      <Tabs.Screen
+        name="metrics/blood-pressure"
+        options={{
+          href: null,
+        }}
+      />
+      <Tabs.Screen
+        name="metrics/sugar-level"
+        options={{
+          href: null,
+        }}
+      />
+      <Tabs.Screen
+        name="metrics/height"
+        options={{
+          href: null,
+        }}
+      />
+      <Tabs.Screen
+        name="metrics/weight"
+        options={{
+          href: null,
         }}
       />
     </Tabs>

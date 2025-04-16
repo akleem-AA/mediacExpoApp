@@ -61,86 +61,132 @@ export default function Dashboard() {
           contentContainerStyle={styles.scrollContent}
         >
           {/* App Title */}
-          <View style={styles.titleContainer}>
+          {/* <View style={styles.titleContainer}>
             <Text style={styles.appTitle}>{appName} Dashboard</Text>
             <Text style={styles.subtitle}>Your health metrics at a glance</Text>
-          </View>
+          </View> */}
 
-          {/* Summary Cards */}
-          <View style={styles.summaryContainer}>
-            <SummaryCard
-              icon="people"
-              label="Total Patients"
-              count={10}
-              trend="up"
-              color="#4A55A2"
-            />
-            <SummaryCard
-              icon="calendar"
-              label="Appointments"
-              count={0}
-              trend="neutral"
-              color="#FF5A5F"
-            />
-          </View>
+          {/* ADMIN VIEW - For healthcare providers */}
+          {user?.role === 1 && (
+            <>
+              {/* Summary Cards */}
+              <View style={styles.summaryContainer}>
+                <SummaryCard
+                  icon="people"
+                  label="Total Patients"
+                  count={10}
+                  trend="up"
+                  color="#4A55A2"
+                />
+                <SummaryCard
+                  icon="calendar"
+                  label="Appointments"
+                  count={0}
+                  trend="neutral"
+                  color="#FF5A5F"
+                />
+              </View>
 
-          {/* Section Title */}
-          <Text style={styles.sectionTitle}>Quick Access</Text>
+              {/* Section Title */}
+              <Text style={styles.sectionTitle}>Quick Access</Text>
 
-          {/* Dashboard Grid */}
-          <View style={styles.dashboardGrid}>
-            <DashboardCard
-              icon="people-outline"
-              label="Patients"
-              count={10}
-              color="#4A55A2"
-              onPress={() => console.log("Patients pressed")}
-            />
-            <DashboardCard
-              icon="barbell-outline"
-              label="Exercises"
-              count={20}
-              color="#00A86B"
-              onPress={() => console.log("Exercises pressed")}
-            />
-            <DashboardCard
-              icon="medkit-outline"
-              label="Medicines"
-              count={2}
-              color="#FF5A5F"
-              onPress={() => console.log("Medicines pressed")}
-            />
-            <DashboardCard
-              icon="calendar-outline"
-              label="Appointments"
-              count={0}
-              color="#FFC107"
-              onPress={() => console.log("Appointments pressed")}
-            />
-          </View>
+              {/* Dashboard Grid */}
+              <View style={styles.dashboardGrid}>
+                <DashboardCard
+                  icon="people-outline"
+                  label="Patients"
+                  count={10}
+                  color="#4A55A2"
+                  onPress={() => console.log("Patients pressed")}
+                />
+                <DashboardCard
+                  icon="barbell-outline"
+                  label="Exercises"
+                  count={20}
+                  color="#00A86B"
+                  onPress={() => console.log("Exercises pressed")}
+                />
+                <DashboardCard
+                  icon="medkit-outline"
+                  label="Medicines"
+                  count={2}
+                  color="#FF5A5F"
+                  onPress={() => console.log("Medicines pressed")}
+                />
+                <DashboardCard
+                  icon="calendar-outline"
+                  label="Appointments"
+                  count={0}
+                  color="#FFC107"
+                  onPress={() => console.log("Appointments pressed")}
+                />
+              </View>
+            </>
+          )}
 
-          {/* Recent Activity Section */}
-          <Text style={styles.sectionTitle}>Recent Activity</Text>
-          <View style={styles.activityContainer}>
-            <ActivityItem
-              icon="person-add-outline"
-              title="New Patient Added"
-              description="John Doe was added to your patient list"
-              time="2h ago"
-            />
-            <ActivityItem
-              icon="fitness-outline"
-              title="Exercise Updated"
-              description="Shoulder rotation exercise was modified"
-              time="Yesterday"
-            />
-            <ActivityItem
-              icon="calendar-outline"
-              title="Appointment Scheduled"
-              description="Follow-up with Sarah Johnson"
-              time="2 days ago"
-            />
-          </View>
+          {/* PATIENT VIEW - For regular users */}
+          {user?.role === 0 && (
+            <>
+              {/* Health Metrics Grid */}
+              <View style={styles.dashboardGrid}>
+                <HealthMetricCard
+                  icon="fitness-outline"
+                  label="Blood Pressure"
+                  color="#4A55A2"
+                  onPress={() => router.push("/metrics/blood-pressure")}
+                />
+                <HealthMetricCard
+                  icon="water-outline"
+                  label="Sugar Level"
+                  color="#FF5A5F"
+                  onPress={() => router.push("/metrics/sugar-level")}
+                />
+                <HealthMetricCard
+                  icon="resize-outline"
+                  label="Height"
+                  color="#00A86B"
+                  onPress={() => router.push("/metrics/height")}
+                />
+                <HealthMetricCard
+                  icon="scale-outline"
+                  label="Weight"
+                  color="#FFC107"
+                  onPress={() => router.push("/metrics/weight")}
+                />
+              </View>
+
+              {/* Latest Readings Section */}
+              <Text style={styles.sectionTitle}>Latest Readings</Text>
+              <View style={styles.latestReadingsContainer}>
+                <LatestReading
+                  icon="fitness-outline"
+                  title="Blood Pressure"
+                  value="120/80"
+                  unit="mmHg"
+                  time="Today, 8:30 AM"
+                  color="#4A55A2"
+                />
+                <LatestReading
+                  icon="water-outline"
+                  title="Sugar Level"
+                  value="95"
+                  unit="mg/dL"
+                  time="Yesterday, 7:15 PM"
+                  color="#FF5A5F"
+                />
+                <LatestReading
+                  icon="scale-outline"
+                  title="Weight"
+                  value="68"
+                  unit="kg"
+                  time="3 days ago"
+                  color="#FFC107"
+                />
+              </View>
+            </>
+          )}
+
+          {/* Recent Activity section has been removed for both user roles */}
         </ScrollView>
       </View>
     </SafeAreaView>
@@ -183,7 +229,44 @@ const DashboardCard = ({ icon, label, count, color, onPress }) => (
   </TouchableOpacity>
 );
 
-// Activity Item Component
+// Health Metric Card Component for patient view
+const HealthMetricCard = ({ icon, label, color, onPress }) => (
+  <TouchableOpacity style={styles.healthCard} onPress={onPress}>
+    <View
+      style={[
+        styles.healthCardIconContainer,
+        { backgroundColor: `${color}15` },
+      ]}
+    >
+      <Ionicons name={icon} size={32} color={color} />
+    </View>
+    <Text style={styles.healthCardLabel}>{label}</Text>
+    <View style={styles.addButtonContainer}>
+      <Ionicons name="add-circle" size={24} color={color} />
+    </View>
+  </TouchableOpacity>
+);
+
+// Latest Reading Component for patient view
+const LatestReading = ({ icon, title, value, unit, time, color }) => (
+  <View style={styles.latestReadingItem}>
+    <View
+      style={[styles.readingIconContainer, { backgroundColor: `${color}15` }]}
+    >
+      <Ionicons name={icon} size={20} color={color} />
+    </View>
+    <View style={styles.readingContent}>
+      <Text style={styles.readingTitle}>{title}</Text>
+      <View style={styles.readingValueContainer}>
+        <Text style={styles.readingValue}>{value}</Text>
+        <Text style={styles.readingUnit}>{unit}</Text>
+      </View>
+      <Text style={styles.readingTime}>{time}</Text>
+    </View>
+  </View>
+);
+
+// Activity Item Component - Keeping this in case it's used elsewhere
 const ActivityItem = ({ icon, title, description, time }) => (
   <View style={styles.activityItem}>
     <View style={styles.activityIconContainer}>
@@ -330,6 +413,97 @@ const styles = StyleSheet.create({
     color: "#666",
     marginTop: 4,
   },
+  // Health Metric Card styles for patient view
+  healthCard: {
+    width: "48%",
+    backgroundColor: "white",
+    padding: 16,
+    borderRadius: 12,
+    alignItems: "center",
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.05,
+    shadowRadius: 3.84,
+    elevation: 2,
+    marginBottom: 16,
+    position: "relative",
+  },
+  healthCardIconContainer: {
+    width: 70,
+    height: 70,
+    borderRadius: 35,
+    justifyContent: "center",
+    alignItems: "center",
+    marginBottom: 12,
+  },
+  healthCardLabel: {
+    fontSize: 15,
+    fontWeight: "500",
+    color: "#333",
+    textAlign: "center",
+  },
+  addButtonContainer: {
+    position: "absolute",
+    bottom: 10,
+    right: 10,
+  },
+  // Latest readings styles
+  latestReadingsContainer: {
+    backgroundColor: "white",
+    borderRadius: 12,
+    padding: 8,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.05,
+    shadowRadius: 3.84,
+    elevation: 2,
+    marginBottom: 24,
+  },
+  latestReadingItem: {
+    flexDirection: "row",
+    alignItems: "center",
+    paddingVertical: 12,
+    paddingHorizontal: 8,
+    borderBottomWidth: 1,
+    borderBottomColor: "#f0f0f0",
+  },
+  readingIconContainer: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    justifyContent: "center",
+    alignItems: "center",
+    marginRight: 12,
+  },
+  readingContent: {
+    flex: 1,
+  },
+  readingTitle: {
+    fontSize: 15,
+    fontWeight: "500",
+    color: "#333",
+  },
+  readingValueContainer: {
+    flexDirection: "row",
+    alignItems: "baseline",
+    marginTop: 2,
+  },
+  readingValue: {
+    fontSize: 18,
+    fontWeight: "bold",
+    color: "#333",
+  },
+  readingUnit: {
+    fontSize: 12,
+    color: "#666",
+    marginLeft: 4,
+  },
+  readingTime: {
+    fontSize: 12,
+    color: "#999",
+    marginTop: 2,
+  },
+  // Keeping activity styles in case they're used elsewhere
   activityContainer: {
     backgroundColor: "white",
     borderRadius: 12,
