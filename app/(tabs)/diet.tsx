@@ -24,7 +24,6 @@ export default function App() {
             <FontAwesome5 name="apple-alt" size={32} color="white" />
           </View>
           <Text style={styles.title}>Diet Recommendations</Text>
-          <Text style={styles.subtitle}>Your guide to healthy eating</Text>
         </View>
 
         <View style={styles.generalTipsContainer}>
@@ -44,26 +43,29 @@ export default function App() {
             />
             <TipItem
               number="2"
-              text="Always eat home cooked meal"
-              icon="home-variant"
-            />
-            <TipItem number="3" text="Drink plenty of water" icon="water" />
-            <TipItem number="4" text="Manage sleep and stress" icon="sleep" />
-            <TipItem number="5" text="Be consistent" icon="calendar-check" />
-            <TipItem
-              number="6"
-              text="Maintain a healthy body weight (BMI = 18.5-24.9 Kg/m²)"
+              text="Maintain a healthy body weight (BMI = 18.5-24.9 Kg/m2)"
               icon="scale-balance"
             />
             <TipItem
-              text="Reduce sodium intake to 1500-2300 mg for BP control"
-              icon="bowl-mix-outline"
+              number="3"
+              text="Always eat home cooked meal"
+              icon="home-variant"
             />
             <TipItem
+              number="4"
+              text="Reduce sodium intake to 1500-2300 mg for BP control"
+              icon="sleep"
+            />
+            <TipItem
+              number="5"
               text="Avoid saturated fats and trans fats"
               icon="food-off"
             />
-            <TipItem text="Avoid Alcohol and Smoking" icon="smoking-off" />
+            <TipItem
+              number="6"
+              text="Avoid Alcohol and Smoking"
+              icon="smoking-off"
+            />
           </View>
         </View>
 
@@ -74,7 +76,7 @@ export default function App() {
           </View>
 
           <FoodCategory
-            title="Fruits & Vegetables"
+            title="Take Fruits and Vegetables Daily"
             icon="fruit-cherries"
             color="#56ab2f"
             items={[
@@ -90,7 +92,7 @@ export default function App() {
           />
 
           <FoodCategory
-            title="Whole Grains"
+            title="Take Atleast 3 Servings of Whole Grains Daily"
             icon="grain"
             color="#F09819"
             items={[
@@ -110,7 +112,7 @@ export default function App() {
           />
 
           <FoodCategory
-            title="Protein Sources"
+            title="Take Lean Protein Sources (Veg)"
             icon="food-steak"
             color="#FF512F"
             items={[
@@ -118,9 +120,6 @@ export default function App() {
               "Dals, Rajma",
               "Soy Chunks",
               "Legumes (Lentils, Chickpeas, Lobia)",
-              "Egg white",
-              "Chicken breasts",
-              "Fish (Rohu, Surmai)",
             ]}
             icons={[
               { lib: "FontAwesome5", name: "cheese" },
@@ -134,7 +133,23 @@ export default function App() {
           />
 
           <FoodCategory
-            title="Healthy Fats"
+            title="Take Lean Protein Sources (Non-Veg)"
+            icon="food-steak"
+            color="#FF512F"
+            items={["Egg white", "Chicken breasts", "Fish (Rohu, Surmai)"]}
+            icons={[
+              { lib: "FontAwesome5", name: "cheese" },
+              { lib: "MaterialCommunityIcons", name: "food-variant" },
+              { lib: "MaterialCommunityIcons", name: "soy-sauce" },
+              { lib: "MaterialCommunityIcons", name: "food-takeout-box" },
+              { lib: "FontAwesome5", name: "egg" },
+              { lib: "MaterialCommunityIcons", name: "food-drumstick" },
+              { lib: "FontAwesome5", name: "fish" },
+            ]}
+          />
+
+          <FoodCategory
+            title="Take Healthy Fats"
             icon="oil"
             color="#8E2DE2"
             items={[
@@ -160,7 +175,7 @@ export default function App() {
           />
 
           <FoodCategory
-            title="Dairy"
+            title="Take Low Fat Dairy Products"
             icon="cup"
             color="#2193b0"
             items={[
@@ -191,7 +206,7 @@ export default function App() {
           </View>
 
           <FoodCategory
-            title="Unhealthy Fats"
+            title="Avoid Saturated and Trans Fats"
             icon="food-off"
             color="#e53935"
             items={[
@@ -210,7 +225,7 @@ export default function App() {
           />
 
           <FoodCategory
-            title="Unhealthy Dairy"
+            title="Avoid full fat Dairy Products"
             icon="cheese"
             color="#e53935"
             items={[
@@ -231,7 +246,7 @@ export default function App() {
           />
 
           <FoodCategory
-            title="Refined Carbs"
+            title="Avoid Refined carbohydrates"
             icon="bread-slice"
             color="#e53935"
             items={["White Bread", "Pasta", "White Rice", "Maida"]}
@@ -244,7 +259,7 @@ export default function App() {
           />
 
           <FoodCategory
-            title="Sugary Items"
+            title="Avoid added Sugars"
             icon="candy"
             color="#e53935"
             items={[
@@ -263,7 +278,7 @@ export default function App() {
           />
 
           <FoodCategory
-            title="Processed Foods"
+            title="Avoid"
             icon="hamburger"
             color="#e53935"
             items={[
@@ -285,7 +300,7 @@ export default function App() {
         <TouchableOpacity style={styles.actionButton}>
           <View style={styles.actionButtonInner}>
             <Text style={styles.actionButtonText}>
-              Start Healthy Diet Today
+              Download this in pdf format
             </Text>
             <Ionicons name="arrow-forward" size={20} color="white" />
           </View>
@@ -415,17 +430,12 @@ const styles = StyleSheet.create({
     backgroundColor: "rgba(255,255,255,0.2)",
     padding: 16,
     borderRadius: 50,
-    marginBottom: 16,
+    marginBottom: 0,
   },
   title: {
-    fontSize: 32,
+    fontSize: 26,
     fontWeight: "bold",
     color: "white",
-    marginTop: 8,
-  },
-  subtitle: {
-    fontSize: 16,
-    color: "rgba(255,255,255,0.8)",
     marginTop: 8,
   },
   generalTipsContainer: {
@@ -446,7 +456,7 @@ const styles = StyleSheet.create({
     marginBottom: 20,
   },
   sectionTitle: {
-    fontSize: 22,
+    fontSize: 20,
     fontWeight: "bold",
     color: "#6a11cb",
     marginLeft: 10,
