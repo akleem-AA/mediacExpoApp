@@ -562,7 +562,7 @@ const AddPatient = () => {
                         key={med}
                         label={med}
                         value={med}
-                        color="#fff"
+                        color="#000"
                       />
                     ))}
                   </Picker>

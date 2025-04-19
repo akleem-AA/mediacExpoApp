@@ -34,59 +34,6 @@ interface Medicine {
   endDate?: string;
 }
 
-// Sample medicine data
-// const sampleMedicines: Medicine[] = [
-//   {
-//     id: 1,
-//     name: "Aspirin",
-//     dose: 100,
-//     unit: "mg",
-//     frequency: "Once daily",
-//     timing: "After breakfast",
-//     notes: "Take with food to avoid stomach upset",
-//     startDate: "2023-01-15",
-//   },
-//   {
-//     id: 2,
-//     name: "Lisinopril",
-//     dose: 10,
-//     unit: "mg",
-//     frequency: "Once daily",
-//     timing: "Morning",
-//     startDate: "2023-02-10",
-//   },
-//   {
-//     id: 3,
-//     name: "Metformin",
-//     dose: 500,
-//     unit: "mg",
-//     frequency: "Twice daily",
-//     timing: "With meals",
-//     startDate: "2023-01-05",
-//     endDate: "2023-07-05",
-//   },
-//   {
-//     id: 4,
-//     name: "Atorvastatin",
-//     dose: 20,
-//     unit: "mg",
-//     frequency: "Once daily",
-//     timing: "Bedtime",
-//     notes: "Take in the evening",
-//     startDate: "2023-03-20",
-//   },
-//   {
-//     id: 5,
-//     name: "Levothyroxine",
-//     dose: 75,
-//     unit: "mcg",
-//     frequency: "Once daily",
-//     timing: "Morning",
-//     notes: "Take on empty stomach, 30 minutes before breakfast",
-//     startDate: "2023-02-01",
-//   },
-// ];
-
 // Dose unit options
 const doseUnits = ["mg", "mcg", "g", "ml", "IU", "mEq"];
 
@@ -430,15 +377,15 @@ export default function MedicineScreen() {
                     </Text>
                   </View>
 
-                  <View style={styles.detailItem}>
+                  {/* <View style={styles.detailItem}>
                     <FontAwesome5 name="calendar-alt" size={12} color="#bbb" />
                     <Text style={styles.medicineInfoText}>
                       Since {new Date(item.startDate).toLocaleDateString()}
                       {item.endDate &&
                         ` to ${new Date(item.endDate).toLocaleDateString()}`}
                     </Text>
-                  </View>
-
+                  </View> */}
+                  {/* 
                   <View style={styles.detailItem}>
                     <FontAwesome5
                       name="hourglass-half"
@@ -446,13 +393,13 @@ export default function MedicineScreen() {
                       color="#bbb"
                     />
                     <Text style={styles.medicineInfoText}>{item.timing}</Text>
-                  </View>
+                  </View> */}
 
-                  {item.medicine_notes && (
+                  {item.medicineNotes && (
                     <View style={styles.detailItem}>
                       <FontAwesome5 name="sticky-note" size={12} color="#bbb" />
                       <Text style={styles.medicineInfoText} numberOfLines={1}>
-                        {item.medicine_notes}
+                        {item.medicineNotes}
                       </Text>
                     </View>
                   )}
@@ -896,59 +843,6 @@ export default function MedicineScreen() {
                   <Picker.Item label="As needed" value="As needed" />
                 </Picker>
               </View>
-
-              <Text style={styles.inputLabel}>Timing</Text>
-              <View style={styles.pickerContainer}>
-                <Picker
-                  selectedValue={newMedicine.timing}
-                  onValueChange={(value) =>
-                    setNewMedicine({ ...newMedicine, timing: value })
-                  }
-                  style={styles.picker}
-                  dropdownIconColor="#fff"
-                >
-                  <Picker.Item label="Morning" value="Morning" />
-                  <Picker.Item label="Afternoon" value="Afternoon" />
-                  <Picker.Item label="Evening" value="Evening" />
-                  <Picker.Item label="Bedtime" value="Bedtime" />
-                  <Picker.Item
-                    label="Before breakfast"
-                    value="Before breakfast"
-                  />
-                  <Picker.Item
-                    label="After breakfast"
-                    value="After breakfast"
-                  />
-                  <Picker.Item label="Before lunch" value="Before lunch" />
-                  <Picker.Item label="After lunch" value="After lunch" />
-                  <Picker.Item label="Before dinner" value="Before dinner" />
-                  <Picker.Item label="After dinner" value="After dinner" />
-                  <Picker.Item label="With meals" value="With meals" />
-                  <Picker.Item label="Between meals" value="Between meals" />
-                </Picker>
-              </View>
-
-              <Text style={styles.inputLabel}>Start Date</Text>
-              <TextInput
-                style={styles.input}
-                value={newMedicine.startDate}
-                onChangeText={(text) =>
-                  setNewMedicine({ ...newMedicine, startDate: text })
-                }
-                placeholder="YYYY-MM-DD"
-                placeholderTextColor="#888"
-              />
-
-              <Text style={styles.inputLabel}>End Date (Optional)</Text>
-              <TextInput
-                style={styles.input}
-                value={newMedicine.endDate}
-                onChangeText={(text) =>
-                  setNewMedicine({ ...newMedicine, endDate: text })
-                }
-                placeholder="YYYY-MM-DD"
-                placeholderTextColor="#888"
-              />
 
               <Text style={styles.inputLabel}>Notes (Optional)</Text>
               <TextInput
