@@ -1,4 +1,6 @@
-import React, { useState } from "react";
+"use client";
+
+import { useState } from "react";
 import {
   View,
   Text,
@@ -24,6 +26,7 @@ interface Medicine {
   name: string;
   frequency: number;
   times: Date[];
+  days: string[]; // Add this line to track selected days
 }
 
 interface FormData {
@@ -63,6 +66,17 @@ const AddPatient = () => {
   const [medicines, setMedicines] = useState<Medicine[]>([]);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
+  // Days of the week with two-letter abbreviations
+  const daysOfWeek = [
+    { code: "Mo", label: "Monday" },
+    { code: "Tu", label: "Tuesday" },
+    { code: "We", label: "Wednesday" },
+    { code: "Th", label: "Thursday" },
+    { code: "Fr", label: "Friday" },
+    { code: "Sa", label: "Saturday" },
+    { code: "Su", label: "Sunday" },
+  ];
+
   const availableMedicines = [
     "Paracetamol",
     "Ibuprofen",
@@ -80,7 +94,12 @@ const AddPatient = () => {
     if (medicines.length < 5) {
       setMedicines([
         ...medicines,
-        { name: availableMedicines[0], frequency: 1, times: [new Date()] },
+        {
+          name: availableMedicines[0],
+          frequency: 1,
+          times: [new Date()],
+          days: [], // Initialize with empty array for no days selected
+        },
       ]);
     } else {
       Alert.alert("Limit Reached", "Maximum 5 medicines can be added");
@@ -119,6 +138,21 @@ const AddPatient = () => {
     setMedicines(updatedMedicines);
   };
 
+  const toggleMedicineDay = (medIndex: number, day: string) => {
+    const updatedMedicines = [...medicines];
+    const currentDays = updatedMedicines[medIndex].days || [];
+
+    if (currentDays.includes(day)) {
+      // Remove day if already selected
+      updatedMedicines[medIndex].days = currentDays.filter((d) => d !== day);
+    } else {
+      // Add day if not selected
+      updatedMedicines[medIndex].days = [...currentDays, day];
+    }
+
+    setMedicines(updatedMedicines);
+  };
+
   const onSubmit = async (data: FormData) => {
     try {
       setIsSubmitting(true);
@@ -130,11 +164,12 @@ const AddPatient = () => {
       const formattedMedicines = medicines.map((med) => ({
         ...med,
         times: med.times.map((time) => time.toTimeString().slice(0, 5)),
+        days: med.days || [], // Include days in the submitted data
       }));
 
       const patientData = {
         ...data,
-        age: parseInt(data.age),
+        age: Number.parseInt(data.age),
         exercise_time: formattedExerciseTime,
         medicines: formattedMedicines,
         role: 0, // Assuming 0 is for patients
@@ -272,7 +307,7 @@ const AddPatient = () => {
                 message: "Age must be a number",
               },
               validate: (value) =>
-                (parseInt(value) > 0 && parseInt(value) < 120) ||
+                (Number.parseInt(value) > 0 && Number.parseInt(value) < 120) ||
                 "Age must be between 1 and 120",
             }}
             render={({ field: { onChange, value } }) => (
@@ -600,6 +635,71 @@ const AddPatient = () => {
                     </View>
                   ))}
                 </View>
+
+                <Text style={styles.medicineLabel}>Days of Week</Text>
+                <View style={styles.daysWrapper}>
+                  <View style={styles.daysContainer}>
+                    {daysOfWeek.map((day) => (
+                      <TouchableOpacity
+                        key={day.code}
+                        style={[
+                          styles.dayCircle,
+                          medicine.days &&
+                            medicine.days.includes(day.code) &&
+                            styles.daySelected,
+                        ]}
+                        onPress={() => toggleMedicineDay(medIndex, day.code)}
+                        activeOpacity={0.7}
+                      >
+                        <Text
+                          style={[
+                            styles.dayText,
+                            medicine.days &&
+                              medicine.days.includes(day.code) &&
+                              styles.dayTextSelected,
+                          ]}
+                        >
+                          {day.code}
+                        </Text>
+                      </TouchableOpacity>
+                    ))}
+                  </View>
+                  <View style={styles.daySelectionHelp}>
+                    <TouchableOpacity
+                      style={styles.daySelectionButton}
+                      onPress={() => {
+                        const weekdays = daysOfWeek
+                          .slice(0, 5)
+                          .map((d) => d.code);
+                        updateMedicine(medIndex, "days", weekdays);
+                      }}
+                    >
+                      <Text style={styles.daySelectionButtonText}>
+                        Weekdays
+                      </Text>
+                    </TouchableOpacity>
+                    <TouchableOpacity
+                      style={styles.daySelectionButton}
+                      onPress={() => {
+                        const weekend = daysOfWeek.slice(5).map((d) => d.code);
+                        updateMedicine(medIndex, "days", weekend);
+                      }}
+                    >
+                      <Text style={styles.daySelectionButtonText}>Weekend</Text>
+                    </TouchableOpacity>
+                    <TouchableOpacity
+                      style={styles.daySelectionButton}
+                      onPress={() => {
+                        const allDays = daysOfWeek.map((d) => d.code);
+                        updateMedicine(medIndex, "days", allDays);
+                      }}
+                    >
+                      <Text style={styles.daySelectionButtonText}>
+                        All Days
+                      </Text>
+                    </TouchableOpacity>
+                  </View>
+                </View>
               </View>
             ))
           )}
@@ -834,7 +934,7 @@ const styles = StyleSheet.create({
     fontWeight: "bold",
   },
   timesContainer: {
-    marginBottom: 8,
+    marginBottom: 16,
   },
   timeItem: {
     marginBottom: 12,
@@ -868,6 +968,59 @@ const styles = StyleSheet.create({
     color: "#fff",
     fontSize: 16,
     fontWeight: "bold",
+  },
+  daysWrapper: {
+    marginBottom: 16,
+  },
+  daysContainer: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    marginBottom: 12,
+  },
+  dayCircle: {
+    width: 35,
+    height: 40,
+    borderRadius: 20,
+    borderWidth: 1,
+    borderColor: "#888",
+    justifyContent: "center",
+    alignItems: "center",
+    marginHorizontal: 2,
+    elevation: 1,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.2,
+    shadowRadius: 1,
+  },
+  daySelected: {
+    backgroundColor: "#E9446A",
+    borderColor: "#E9446A",
+  },
+  dayText: {
+    color: "#fff",
+    fontSize: 14,
+    fontWeight: "500",
+  },
+  dayTextSelected: {
+    fontWeight: "bold",
+  },
+  daySelectionHelp: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    marginTop: 8,
+  },
+  daySelectionButton: {
+    backgroundColor: "#2A2A3C",
+    paddingVertical: 6,
+    paddingHorizontal: 10,
+    borderRadius: 6,
+    borderWidth: 1,
+    borderColor: "#555",
+  },
+  daySelectionButtonText: {
+    color: "#bbb",
+    fontSize: 12,
+    fontWeight: "500",
   },
 });
 
