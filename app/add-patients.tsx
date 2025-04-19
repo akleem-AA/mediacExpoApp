@@ -21,6 +21,7 @@ import { router } from "expo-router";
 import { Picker } from "@react-native-picker/picker";
 import { Ionicons, FontAwesome5, MaterialIcons } from "@expo/vector-icons";
 import { getToken } from "@/services/auth";
+import { decodeToken } from "@/utils/jwtHelper";
 
 interface Medicine {
   name: string;
@@ -37,6 +38,7 @@ interface FormData {
   uhidNumber: string;
   age: string;
   gender: string;
+  exerciseTime: string;
 }
 
 const AddPatient = () => {
@@ -55,6 +57,7 @@ const AddPatient = () => {
       uhidNumber: "",
       age: "",
       gender: "Male",
+      exerciseTime: "00:00",
     },
   });
 
@@ -170,20 +173,16 @@ const AddPatient = () => {
       const patientData = {
         ...data,
         age: Number.parseInt(data.age),
-        exercise_time: formattedExerciseTime,
+        exerciseTime: formattedExerciseTime,
         medicines: formattedMedicines,
         role: 0, // Assuming 0 is for patients
       };
-      const token = getToken();
-      const response = await axios.post(
-        `${API_URL}/auth/patients`,
-        patientData,
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        }
-      );
+      const token = await getToken();
+      const response = await axios.post(`${API_URL}/patients`, patientData, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
 
       Alert.alert("Success", "Patient added successfully", [
         { text: "OK", onPress: () => router.push("/(tabs)/patients") },

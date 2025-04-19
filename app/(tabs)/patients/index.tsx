@@ -26,12 +26,12 @@ import { getToken } from "@/services/auth";
 interface Patient {
   id: number;
   name: string;
-  uhid_number: string;
+  uhidNumber: string;
   email: string;
   gender: string;
   age: number;
-  phone_number: string;
-  exercise_time: string;
+  phoneNumber: string;
+  exerciseTime: string;
   password?: string;
   role: number;
 }
@@ -82,7 +82,7 @@ export default function PatientScreen() {
       filtered = filtered.filter(
         (p) =>
           p.name.toLowerCase().includes(query.toLowerCase()) ||
-          p.uhid_number.toLowerCase().includes(query.toLowerCase()) ||
+          p.uhidNumber.toLowerCase().includes(query.toLowerCase()) ||
           p.email.toLowerCase().includes(query.toLowerCase())
       );
     }
@@ -96,7 +96,7 @@ export default function PatientScreen() {
           comparison = a.name.localeCompare(b.name);
           break;
         case "uhid":
-          comparison = a.uhid_number.localeCompare(b.uhid_number);
+          comparison = a.uhidNumber.localeCompare(b.uhidNumber);
           break;
         case "gender":
           comparison = a.gender.localeCompare(b.gender);
@@ -168,7 +168,7 @@ export default function PatientScreen() {
     if (
       !editedPatient.name ||
       !editedPatient.email ||
-      !editedPatient.uhid_number
+      !editedPatient.uhidNumber
     ) {
       Alert.alert("Error", "Name, Email and UHID are required fields");
       return;
@@ -372,7 +372,7 @@ export default function PatientScreen() {
                   <View style={styles.detailItem}>
                     <FontAwesome5 name="id-card" size={12} color="#bbb" />
                     <Text style={styles.patientInfoText}>
-                      UHID: {item.uhid_number}
+                      UHID: {item.uhidNumber}
                     </Text>
                   </View>
 
@@ -396,7 +396,7 @@ export default function PatientScreen() {
                     <View style={styles.detailItem}>
                       <FontAwesome5 name="phone" size={12} color="#bbb" />
                       <Text style={styles.patientInfoText}>
-                        {item.phone_number}
+                        {item.phoneNumber}
                       </Text>
                     </View>
                   </View>
@@ -404,7 +404,7 @@ export default function PatientScreen() {
                   <View style={styles.detailItem}>
                     <FontAwesome5 name="running" size={12} color="#bbb" />
                     <Text style={styles.patientInfoText}>
-                      Exercise: {item.exercise_time}
+                      Exercise: {item.exerciseTime}
                     </Text>
                   </View>
                 </View>
@@ -473,7 +473,7 @@ export default function PatientScreen() {
                     <View style={styles.detailCol}>
                       <Text style={styles.detailLabel}>UHID</Text>
                       <Text style={styles.detailValue}>
-                        {selectedPatient.uhid_number}
+                        {selectedPatient.uhidNumber}
                       </Text>
                     </View>
                   </View>
@@ -513,7 +513,7 @@ export default function PatientScreen() {
                     <View style={styles.detailCol}>
                       <Text style={styles.detailLabel}>Phone</Text>
                       <Text style={styles.detailValue}>
-                        {selectedPatient.phone_number}
+                        {selectedPatient.phoneNumber}
                       </Text>
                     </View>
                   </View>
@@ -528,7 +528,7 @@ export default function PatientScreen() {
                     <View style={styles.detailCol}>
                       <Text style={styles.detailLabel}>Exercise Time</Text>
                       <Text style={styles.detailValue}>
-                        {selectedPatient.exercise_time}
+                        {selectedPatient.exerciseTime}
                       </Text>
                     </View>
                   </View>
@@ -598,9 +598,9 @@ export default function PatientScreen() {
               <Text style={styles.inputLabel}>UHID Number *</Text>
               <TextInput
                 style={styles.input}
-                value={editedPatient.uhid_number}
+                value={editedPatient.uhidNumber}
                 onChangeText={(text) =>
-                  setEditedPatient({ ...editedPatient, uhid_number: text })
+                  setEditedPatient({ ...editedPatient, uhidNumber: text })
                 }
                 placeholder="Enter UHID"
                 placeholderTextColor="#888"
@@ -651,9 +651,9 @@ export default function PatientScreen() {
               <Text style={styles.inputLabel}>Phone Number</Text>
               <TextInput
                 style={styles.input}
-                value={editedPatient.phone_number}
+                value={editedPatient.phoneNumber}
                 onChangeText={(text) =>
-                  setEditedPatient({ ...editedPatient, phone_number: text })
+                  setEditedPatient({ ...editedPatient, phoneNumber: text })
                 }
                 placeholder="Enter phone number"
                 placeholderTextColor="#888"
@@ -663,9 +663,9 @@ export default function PatientScreen() {
               <Text style={styles.inputLabel}>Exercise Time</Text>
               <TextInput
                 style={styles.input}
-                value={editedPatient.exercise_time}
+                value={editedPatient.exerciseTime}
                 onChangeText={(text) =>
-                  setEditedPatient({ ...editedPatient, exercise_time: text })
+                  setEditedPatient({ ...editedPatient, exerciseTime: text })
                 }
                 placeholder="Enter exercise time (e.g. 30 mins)"
                 placeholderTextColor="#888"
@@ -807,6 +807,7 @@ const styles = StyleSheet.create({
   patientInfoText: {
     fontSize: 14,
     color: "#bbb",
+    marginRight: 8,
   },
   actionIcons: {
     flexDirection: "column",
