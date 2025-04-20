@@ -21,10 +21,9 @@ import { router } from "expo-router";
 import { Picker } from "@react-native-picker/picker";
 import { Ionicons, FontAwesome5, MaterialIcons } from "@expo/vector-icons";
 import { getToken } from "@/services/auth";
-import { decodeToken } from "@/utils/jwtHelper";
 
 interface Medicine {
-  name: string;
+  name: string | any;
   frequency: number;
   times: Date[];
   days: string[]; // Add this line to track selected days
@@ -39,6 +38,11 @@ interface FormData {
   age: string;
   gender: string;
   exerciseTime: string;
+  medicineId: string;
+  medicineTime1: string;
+  medicineTime2: string;
+  medicineTime3: string;
+  medicineTime4: string;
 }
 
 const AddPatient = () => {
@@ -58,6 +62,11 @@ const AddPatient = () => {
       age: "",
       gender: "Male",
       exerciseTime: "00:00",
+      medicineId: "",
+      medicineTime1: "",
+      medicineTime2: "",
+      medicineTime3: "",
+      medicineTime4: "",
     },
   });
 
@@ -80,19 +89,8 @@ const AddPatient = () => {
     { code: "Su", label: "Sunday" },
   ];
 
-  // const availableMedicines = [
-  //   "Paracetamol",
-  //   "Ibuprofen",
-  //   "Amoxicillin",
-  //   "Cetrizine",
-  //   "Aspirin",
-  //   "Loratadine",
-  //   "Omeprazole",
-  //   "Metformin",
-  // ];
-
   // Fetch medicines data
-  const [availableMedicines, setAvailableMedicines] = useState<string[]>([]);
+  const [availableMedicines, setAvailableMedicines] = useState<any[]>([]);
 
   const fetchAvailableMedicines = async () => {
     try {
@@ -151,6 +149,12 @@ const AddPatient = () => {
         (_, i) => currentTimes[i] || new Date()
       );
     }
+
+    // Update form values when medicine name (id) is changed
+    if (field === "name" && typeof value === "object" && value.id) {
+      setValue("medicineId", value.id);
+    }
+
     setMedicines(updatedMedicines);
   };
 
@@ -164,6 +168,11 @@ const AddPatient = () => {
     const updatedMedicines = [...medicines];
     updatedMedicines[medIndex].times[timeIndex] = selectedTime;
     setMedicines(updatedMedicines);
+
+    // Update the corresponding medicineTime field
+    const timeString = selectedTime.toTimeString().slice(0, 5);
+    const timeFieldName = `medicineTime${timeIndex + 1}` as keyof FormData;
+    setValue(timeFieldName, timeString);
   };
 
   const toggleMedicineDay = (medIndex: number, day: string) => {
@@ -182,6 +191,7 @@ const AddPatient = () => {
   };
 
   const onSubmit = async (data: FormData) => {
+    console.log("Form Data:", data);
     try {
       setIsSubmitting(true);
 
@@ -225,6 +235,25 @@ const AddPatient = () => {
       <Text style={styles.errorText}>{errors[fieldName]?.message}</Text>
     ) : null;
   };
+
+  useEffect(() => {
+    // Update form values when medicines change
+    if (medicines.length > 0) {
+      const firstMedicine = medicines[0];
+
+      // Set medicineId if available
+      if (typeof firstMedicine.name === "object" && firstMedicine.name.id) {
+        setValue("medicineId", firstMedicine.name.id);
+      }
+
+      // Set medicine times
+      firstMedicine.times.forEach((time, index) => {
+        const timeString = time.toTimeString().slice(0, 5);
+        const fieldName = `medicineTime${index + 1}` as keyof FormData;
+        setValue(fieldName, timeString);
+      });
+    }
+  }, [medicines, setValue]);
 
   return (
     <KeyboardAvoidingView
@@ -576,9 +605,12 @@ const AddPatient = () => {
                 <View style={styles.pickerContainer}>
                   <Picker
                     selectedValue={medicine.name}
-                    onValueChange={(value) =>
-                      updateMedicine(medIndex, "name", value)
-                    }
+                    onValueChange={(value) => {
+                      updateMedicine(medIndex, "name", value);
+                      if (typeof value === "object" && value.id) {
+                        setValue("medicineId", value.id);
+                      }
+                    }}
                     style={styles.picker}
                     dropdownIconColor="#fff"
                   >
@@ -586,7 +618,7 @@ const AddPatient = () => {
                       <Picker.Item
                         key={med.medicineName}
                         label={`${med.medicineName} (${med.medicineDose} ${med.medicineDoseUnit})`}
-                        value={`${med.medicineName} (${med.medicineDose})`}
+                        value={med}
                         color="#000"
                       />
                     ))}
