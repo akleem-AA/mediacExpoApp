@@ -1,4 +1,4 @@
-import { Tabs, useSegments } from "expo-router";
+import { Redirect, Tabs, useSegments } from "expo-router";
 import React from "react";
 import { Platform } from "react-native";
 
@@ -7,18 +7,20 @@ import { IconSymbol } from "@/components/ui/IconSymbol";
 import TabBarBackground from "@/components/ui/TabBarBackground";
 import { Colors } from "@/constants/Colors";
 import { useColorScheme } from "@/hooks/useColorScheme";
-import { useDecodedToken } from "@/hooks/useDecodedToken";
+import { useAuth } from "@/context/AuthProvider";
 
 export default function TabLayout() {
   const colorScheme = useColorScheme();
-  const user = useDecodedToken();
+  const { user } = useAuth();
+  
+  if (user === undefined) return null; // loading state
+  if (!user) return <Redirect href="/auth/login" />;
 
   // useSegments gives us the route segments as an array
   const segments = useSegments();
 
   // Check if we're in the metrics section
   const isMetricsRoute = segments.includes("metrics");
-
   return (
     <Tabs
       screenOptions={({ route }) => ({
