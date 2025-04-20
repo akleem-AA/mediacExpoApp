@@ -10,16 +10,14 @@ import {
 import { Ionicons } from "@expo/vector-icons";
 import { router } from "expo-router";
 import { ThemedText } from "@/components/ThemedText";
-import { useDecodedToken } from "@/hooks/useDecodedToken";
-import { logoutUser } from "@/services/auth";
+import { useAuth } from "@/context/AuthProvider";
 
 export default function ProfileScreen() {
-  const user = useDecodedToken();
+  const { user, onLogout } = useAuth();
 
   const handleLogout = async () => {
     try {
-      await logoutUser();
-      router.push("/auth/login");
+      await onLogout()      
     } catch (error) {
       console.error("Logout failed:", error);
     }

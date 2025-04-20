@@ -12,18 +12,15 @@ import {
   Platform,
   SafeAreaView,
 } from "react-native";
-import { useRouter } from "expo-router";
 import Footer from "../../components/Footer";
-import { loginUser } from "@/services/auth";
-import { registerForPushNotificationsAsync } from "@/utils/notifications";
-import { decodeToken } from "@/utils/jwtHelper";
+import { useAuth } from "@/context/AuthProvider";
 
 export default function LoginScreen() {
+  const { onLogin } = useAuth();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [message, setMessage] = useState("");
   const [isLoading, setIsLoading] = useState(false);
-  const router = useRouter();
 
   const handleLogin = async () => {
     if (!email || !password) {
@@ -33,21 +30,24 @@ export default function LoginScreen() {
 
     try {
       setIsLoading(true);
-      const response = await loginUser(email, password);
+      await onLogin(email, password);
       setIsLoading(false);
-      if (response.token) {
-        const user = decodeToken(response.token);
-        if (user) {
-          await registerForPushNotificationsAsync(user);
-        }
-        console.log("Token:", response.token);
-        router.push("/(tabs)");
-      }
+
+      // const response = await loginUser(email, password);
+      // setIsLoading(false);
+      // if (response.token) {
+      //   const user = decodeToken(response.token);
+      //   if (user) {
+      //     await registerForPushNotificationsAsync(user);
+      //   }
+      //   console.log("Token:", response.token);
+      //   router.push("/(tabs)");
+      // }
       setMessage(`Login successful!`);
     } catch (error) {
       console.log(error);
       setIsLoading(false);
-      setMessage(error.error || "Login failed");
+      setMessage(error?.error || "Login failed");
     }
   };
 
