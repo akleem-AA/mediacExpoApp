@@ -31,20 +31,9 @@ export default function LoginScreen() {
     try {
       setIsLoading(true);
       await onLogin(email, password);
-      setIsLoading(false);
-
-      // const response = await loginUser(email, password);
-      // setIsLoading(false);
-      // if (response.token) {
-      //   const user = decodeToken(response.token);
-      //   if (user) {
-      //     await registerForPushNotificationsAsync(user);
-      //   }
-      //   console.log("Token:", response.token);
-      //   router.push("/(tabs)");
-      // }
+      setIsLoading(false);      
       setMessage(`Login successful!`);
-    } catch (error) {
+    } catch (error: any) {
       console.log(error);
       setIsLoading(false);
       setMessage(error?.error || "Login failed");

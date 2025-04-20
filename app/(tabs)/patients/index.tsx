@@ -15,7 +15,6 @@ import {
   RefreshControl,
 } from "react-native";
 import { Ionicons, MaterialIcons, FontAwesome5 } from "@expo/vector-icons";
-import DateTimePicker from "@react-native-community/datetimepicker";
 import { router } from "expo-router";
 import { API_URL } from "@/constants/Api";
 import axios from "axios";

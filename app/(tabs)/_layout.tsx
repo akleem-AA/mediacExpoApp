@@ -11,13 +11,13 @@ import { useAuth } from "@/context/AuthProvider";
 
 export default function TabLayout() {
   const colorScheme = useColorScheme();
+  // useSegments gives us the route segments as an array
+  const segments = useSegments();
   const { user } = useAuth();
   
   if (user === undefined) return null; // loading state
   if (!user) return <Redirect href="/auth/login" />;
 
-  // useSegments gives us the route segments as an array
-  const segments = useSegments();
 
   // Check if we're in the metrics section
   const isMetricsRoute = segments.includes("metrics");

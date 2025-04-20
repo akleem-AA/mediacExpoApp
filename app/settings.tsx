@@ -17,7 +17,8 @@ export default function ProfileScreen() {
 
   const handleLogout = async () => {
     try {
-      await onLogout()      
+      await onLogout()
+      router.push("/auth/login");
     } catch (error) {
       console.error("Logout failed:", error);
     }
