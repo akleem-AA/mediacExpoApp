@@ -43,6 +43,13 @@ interface FormData {
   medicineTime2: string;
   medicineTime3: string;
   medicineTime4: string;
+  monday: number;
+  tuesday: number;
+  wednesday: number;
+  thursday: number;
+  friday: number;
+  saturday: number;
+  sunday: number;
 }
 
 const AddPatient = () => {
@@ -67,10 +74,19 @@ const AddPatient = () => {
       medicineTime2: "",
       medicineTime3: "",
       medicineTime4: "",
+      monday: 0,
+      tuesday: 0,
+      wednesday: 0,
+      thursday: 0,
+      friday: 0,
+      saturday: 0,
+      sunday: 0,
     },
   });
 
   const selectedGender = watch("gender", "Male");
+  const [medicineId, setMedicineId] = useState("");
+
   const [exerciseTime, setExerciseTime] = useState(new Date());
   const [showTimePicker, setShowTimePicker] = useState<
     boolean | { medIndex: number; timeIndex: number }
@@ -78,15 +94,15 @@ const AddPatient = () => {
   const [medicines, setMedicines] = useState<Medicine[]>([]);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  // Days of the week with two-letter abbreviations
+  // Days of the week with two-letter abbreviations and their corresponding form field names
   const daysOfWeek = [
-    { code: "Mo", label: "Monday" },
-    { code: "Tu", label: "Tuesday" },
-    { code: "We", label: "Wednesday" },
-    { code: "Th", label: "Thursday" },
-    { code: "Fr", label: "Friday" },
-    { code: "Sa", label: "Saturday" },
-    { code: "Su", label: "Sunday" },
+    { code: "Mo", label: "Monday", field: "monday" },
+    { code: "Tu", label: "Tuesday", field: "tuesday" },
+    { code: "We", label: "Wednesday", field: "wednesday" },
+    { code: "Th", label: "Thursday", field: "thursday" },
+    { code: "Fr", label: "Friday", field: "friday" },
+    { code: "Sa", label: "Saturday", field: "saturday" },
+    { code: "Su", label: "Sunday", field: "sunday" },
   ];
 
   // Fetch medicines data
@@ -136,6 +152,13 @@ const AddPatient = () => {
     const updatedMedicines = [...medicines];
     updatedMedicines.splice(index, 1);
     setMedicines(updatedMedicines);
+
+    // Reset day values if no medicines are left
+    if (updatedMedicines.length === 0) {
+      daysOfWeek.forEach((day) => {
+        setValue(day.field as keyof FormData, 0);
+      });
+    }
   };
 
   const updateMedicine = (index: number, field: keyof Medicine, value: any) => {
@@ -179,15 +202,31 @@ const AddPatient = () => {
     const updatedMedicines = [...medicines];
     const currentDays = updatedMedicines[medIndex].days || [];
 
+    // Find the day object that matches the code
+    const dayObj = daysOfWeek.find((d) => d.code === day);
+    if (!dayObj) return;
+
     if (currentDays.includes(day)) {
       // Remove day if already selected
       updatedMedicines[medIndex].days = currentDays.filter((d) => d !== day);
+      setValue(dayObj.field as keyof FormData, 0);
     } else {
       // Add day if not selected
       updatedMedicines[medIndex].days = [...currentDays, day];
+      setValue(dayObj.field as keyof FormData, 1);
     }
 
     setMedicines(updatedMedicines);
+  };
+
+  // Helper function to update all day values based on selected days
+  const updateDayValues = (selectedDays: string[]) => {
+    daysOfWeek.forEach((day) => {
+      setValue(
+        day.field as keyof FormData,
+        selectedDays.includes(day.code) ? 1 : 0
+      );
+    });
   };
 
   const onSubmit = async (data: FormData) => {
@@ -252,6 +291,9 @@ const AddPatient = () => {
         const fieldName = `medicineTime${index + 1}` as keyof FormData;
         setValue(fieldName, timeString);
       });
+
+      // Update day values based on selected days
+      updateDayValues(firstMedicine.days);
     }
   }, [medicines, setValue]);
 
@@ -728,6 +770,13 @@ const AddPatient = () => {
                           .slice(0, 5)
                           .map((d) => d.code);
                         updateMedicine(medIndex, "days", weekdays);
+                        // Update form values for weekdays
+                        daysOfWeek.forEach((day, index) => {
+                          setValue(
+                            day.field as keyof FormData,
+                            index < 5 ? 1 : 0
+                          );
+                        });
                       }}
                     >
                       <Text style={styles.daySelectionButtonText}>
@@ -739,6 +788,13 @@ const AddPatient = () => {
                       onPress={() => {
                         const weekend = daysOfWeek.slice(5).map((d) => d.code);
                         updateMedicine(medIndex, "days", weekend);
+                        // Update form values for weekend
+                        daysOfWeek.forEach((day, index) => {
+                          setValue(
+                            day.field as keyof FormData,
+                            index >= 5 ? 1 : 0
+                          );
+                        });
                       }}
                     >
                       <Text style={styles.daySelectionButtonText}>Weekend</Text>
@@ -748,6 +804,10 @@ const AddPatient = () => {
                       onPress={() => {
                         const allDays = daysOfWeek.map((d) => d.code);
                         updateMedicine(medIndex, "days", allDays);
+                        // Set all days to 1
+                        daysOfWeek.forEach((day) => {
+                          setValue(day.field as keyof FormData, 1);
+                        });
                       }}
                     >
                       <Text style={styles.daySelectionButtonText}>
