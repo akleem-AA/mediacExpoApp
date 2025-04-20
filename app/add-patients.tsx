@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import {
   View,
   Text,
@@ -80,16 +80,41 @@ const AddPatient = () => {
     { code: "Su", label: "Sunday" },
   ];
 
-  const availableMedicines = [
-    "Paracetamol",
-    "Ibuprofen",
-    "Amoxicillin",
-    "Cetrizine",
-    "Aspirin",
-    "Loratadine",
-    "Omeprazole",
-    "Metformin",
-  ];
+  // const availableMedicines = [
+  //   "Paracetamol",
+  //   "Ibuprofen",
+  //   "Amoxicillin",
+  //   "Cetrizine",
+  //   "Aspirin",
+  //   "Loratadine",
+  //   "Omeprazole",
+  //   "Metformin",
+  // ];
+
+  // Fetch medicines data
+  const [availableMedicines, setAvailableMedicines] = useState<string[]>([]);
+
+  const fetchAvailableMedicines = async () => {
+    try {
+      const token = await getToken();
+      const response = await axios.get(`${API_URL}/medicines`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+      if (response.data) {
+        // Assuming response.data.medicineName is an array of strings
+        setAvailableMedicines(response.data);
+      }
+    } catch (error) {
+      console.error("Error fetching Medicines:", error);
+      Alert.alert("Error", "Failed to load Medicines. Please try again.");
+    }
+  };
+
+  useEffect(() => {
+    fetchAvailableMedicines();
+  }, []);
 
   const frequencies = [1, 2, 3, 4];
 
@@ -559,9 +584,9 @@ const AddPatient = () => {
                   >
                     {availableMedicines.map((med) => (
                       <Picker.Item
-                        key={med}
-                        label={med}
-                        value={med}
+                        key={med.medicineName}
+                        label={`${med.medicineName} (${med.medicineDose} ${med.medicineDoseUnit})`}
+                        value={`${med.medicineName} (${med.medicineDose})`}
                         color="#000"
                       />
                     ))}
