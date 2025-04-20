@@ -1,5 +1,3 @@
-"use client";
-
 import { useState, useEffect } from "react";
 import {
   View,
@@ -14,22 +12,24 @@ import {
   Platform,
 } from "react-native";
 import DateTimePicker from "@react-native-community/datetimepicker";
-import { useForm, Controller } from "react-hook-form";
+import { useForm, Controller, set } from "react-hook-form";
 import axios from "axios";
 import { API_URL } from "@/constants/Api";
 import { router } from "expo-router";
 import { Picker } from "@react-native-picker/picker";
 import { Ionicons, FontAwesome5, MaterialIcons } from "@expo/vector-icons";
 import { getToken } from "@/services/auth";
+import httpApiHandler from "@/utils/httpApiHandler";
 
 interface Medicine {
-  name: string | any;
+  medicineId: string;
   frequency: number;
-  times: Date[];
-  days: string[]; // Add this line to track selected days
+  medicineTimes: Date[];
+  medicineDays: number[]; // Add this line to track selected days
 }
 
 interface FormData {
+  role: number;
   name: string;
   email: string;
   password: string;
@@ -38,11 +38,7 @@ interface FormData {
   age: string;
   gender: string;
   exerciseTime: string;
-  medicineId: string;
-  medicineTime1: string;
-  medicineTime2: string;
-  medicineTime3: string;
-  medicineTime4: string;
+  medicines: Medicine[]
 }
 
 const AddPatient = () => {
@@ -54,6 +50,7 @@ const AddPatient = () => {
     formState: { errors },
   } = useForm<FormData>({
     defaultValues: {
+      role: 0,
       name: "",
       email: "",
       password: "",
@@ -62,31 +59,28 @@ const AddPatient = () => {
       age: "",
       gender: "Male",
       exerciseTime: "00:00",
-      medicineId: "",
-      medicineTime1: "",
-      medicineTime2: "",
-      medicineTime3: "",
-      medicineTime4: "",
+      medicines: []
     },
   });
 
   const selectedGender = watch("gender", "Male");
+
   const [exerciseTime, setExerciseTime] = useState(new Date());
   const [showTimePicker, setShowTimePicker] = useState<
     boolean | { medIndex: number; timeIndex: number }
   >(false);
-  const [medicines, setMedicines] = useState<Medicine[]>([]);
+  // const [medicines, setMedicines] = useState<Medicine[]>([]);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  // Days of the week with two-letter abbreviations
+  // Days of the week with two-letter abbreviations and their corresponding form field names
   const daysOfWeek = [
-    { code: "Mo", label: "Monday" },
-    { code: "Tu", label: "Tuesday" },
-    { code: "We", label: "Wednesday" },
-    { code: "Th", label: "Thursday" },
-    { code: "Fr", label: "Friday" },
-    { code: "Sa", label: "Saturday" },
-    { code: "Su", label: "Sunday" },
+    { code: 1, label: "Monday", field: "monday", shortName: "Mon" },
+    { code: 2, label: "Tuesday", field: "tuesday", shortName: "Tue" },
+    { code: 3, label: "Wednesday", field: "wednesday", shortName: "Wed" },
+    { code: 4, label: "Thursday", field: "thursday", shortName: "Thus" },
+    { code: 5, label: "Friday", field: "friday", shortName: "Fri" },
+    { code: 6, label: "Saturday", field: "saturday", shortName: "Sat" },
+    { code: 0, label: "Sunday", field: "sunday", shortName: "Sun" },
   ];
 
   // Fetch medicines data
@@ -117,45 +111,58 @@ const AddPatient = () => {
   const frequencies = [1, 2, 3, 4];
 
   const addMedicine = () => {
-    if (medicines.length < 5) {
-      setMedicines([
-        ...medicines,
+    if (watch("medicines").length < 5) {
+      setValue("medicines", [
+        ...watch("medicines"),
         {
-          name: availableMedicines[0],
+          medicineId: availableMedicines[0].id,
+          name: availableMedicines[0].name,
           frequency: 1,
-          times: [new Date()],
-          days: [], // Initialize with empty array for no days selected
-        },
-      ]);
+          medicineTimes: [new Date()],
+          medicineDays: [], // Initialize with empty array for no days selected        
+        }
+      ] as Medicine[]);
     } else {
       Alert.alert("Limit Reached", "Maximum 5 medicines can be added");
     }
   };
 
   const removeMedicine = (index: number) => {
-    const updatedMedicines = [...medicines];
+    const updatedMedicines = [...watch("medicines")];
     updatedMedicines.splice(index, 1);
-    setMedicines(updatedMedicines);
+    setValue("medicines", updatedMedicines);
+
+    // Reset day values if no medicines are left
+    // if (updatedMedicines.length === 0) {
+    //   daysOfWeek.forEach((day) => {
+    //     setValue(day.field as keyof FormData, 0);
+    //   });
+    // }
   };
 
   const updateMedicine = (index: number, field: keyof Medicine, value: any) => {
-    const updatedMedicines = [...medicines];
-    updatedMedicines[index][field] = value;
+    const updatedMedicines = [...watch("medicines")];
+
     if (field === "frequency") {
       // Preserve existing times if possible
-      const currentTimes = updatedMedicines[index].times;
-      updatedMedicines[index].times = Array.from(
+      const currentTimes = updatedMedicines[index].medicineTimes;
+      updatedMedicines[index].medicineTimes = Array.from(
         { length: value },
         (_, i) => currentTimes[i] || new Date()
       );
+      updatedMedicines[index].frequency = value;
     }
 
     // Update form values when medicine name (id) is changed
-    if (field === "name" && typeof value === "object" && value.id) {
-      setValue("medicineId", value.id);
+    if (field === "medicineId") {
+      updatedMedicines[index].medicineId = value
     }
 
-    setMedicines(updatedMedicines);
+    if (field === "medicineDays") {
+      updatedMedicines[index].medicineDays = value;
+    }
+
+    setValue("medicines", updatedMedicines);
   };
 
   const updateMedicineTime = (
@@ -165,9 +172,9 @@ const AddPatient = () => {
   ) => {
     if (!selectedTime) return;
 
-    const updatedMedicines = [...medicines];
-    updatedMedicines[medIndex].times[timeIndex] = selectedTime;
-    setMedicines(updatedMedicines);
+    const updatedMedicines = [...watch("medicines")];
+    updatedMedicines[medIndex].medicineTimes[timeIndex] = selectedTime;
+    setValue("medicines", updatedMedicines);
 
     // Update the corresponding medicineTime field
     const timeString = selectedTime.toTimeString().slice(0, 5);
@@ -175,20 +182,35 @@ const AddPatient = () => {
     setValue(timeFieldName, timeString);
   };
 
-  const toggleMedicineDay = (medIndex: number, day: string) => {
-    const updatedMedicines = [...medicines];
-    const currentDays = updatedMedicines[medIndex].days || [];
+  const toggleMedicineDay = (medIndex: number, day: number) => {
+    const updatedMedicines = [...watch("medicines")];
+    const currentDays = updatedMedicines[medIndex].medicineDays || [];
+
+    // Find the day object that matches the code
+    const dayObj = daysOfWeek.find((d) => d.code === day);
+    if (!dayObj) return;
 
     if (currentDays.includes(day)) {
       // Remove day if already selected
-      updatedMedicines[medIndex].days = currentDays.filter((d) => d !== day);
+      updatedMedicines[medIndex].medicineDays = currentDays.filter((d) => d !== day);
     } else {
       // Add day if not selected
-      updatedMedicines[medIndex].days = [...currentDays, day];
+      updatedMedicines[medIndex].medicineDays = [...currentDays, day];
+      // setValue(dayObj.field as keyof FormData, 1);
     }
 
-    setMedicines(updatedMedicines);
+    setValue("medicines", updatedMedicines);
   };
+
+  // Helper function to update all day values based on selected days
+  // const updateDayValues = (selectedDays: string[]) => {
+  //   daysOfWeek.forEach((day) => {
+  //     setValue(
+  //       day.field as keyof FormData,
+  //       selectedDays.includes(day.code) ? 1 : 0
+  //     );
+  //   });
+  // };
 
   const onSubmit = async (data: FormData) => {
     console.log("Form Data:", data);
@@ -199,25 +221,21 @@ const AddPatient = () => {
       const formattedExerciseTime = exerciseTime.toTimeString().slice(0, 5);
 
       // Format medicine times
-      const formattedMedicines = medicines.map((med) => ({
+      const formattedMedicines = watch("medicines").map((med) => ({
         ...med,
-        times: med.times.map((time) => time.toTimeString().slice(0, 5)),
-        days: med.days || [], // Include days in the submitted data
+        medicineTimes: med.medicineTimes.map((time) => time.toTimeString().slice(0, 5)),
+        medicineDays: med.medicineDays, // Include days in the submitted data
       }));
 
-      const patientData = {
+      const patientData: FormData = {
         ...data,
-        age: Number.parseInt(data.age),
+        age: Number.parseInt(data.age) as any,
         exerciseTime: formattedExerciseTime,
-        medicines: formattedMedicines,
+        medicines: formattedMedicines as any,
         role: 0, // Assuming 0 is for patients
       };
-      const token = await getToken();
-      const response = await axios.post(`${API_URL}/patients`, patientData, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      });
+      console.log(JSON.stringify(patientData, null, 2))
+      await httpApiHandler.post(`/patients`, patientData);
 
       Alert.alert("Success", "Patient added successfully", [
         { text: "OK", onPress: () => router.push("/(tabs)/patients") },
@@ -236,24 +254,29 @@ const AddPatient = () => {
     ) : null;
   };
 
-  useEffect(() => {
-    // Update form values when medicines change
-    if (medicines.length > 0) {
-      const firstMedicine = medicines[0];
+  // useEffect(() => {
+  //   // Update form values when medicines change
+  //   if (medicines.length > 0) {
+  //     const firstMedicine = medicines[0];
 
-      // Set medicineId if available
-      if (typeof firstMedicine.name === "object" && firstMedicine.name.id) {
-        setValue("medicineId", firstMedicine.name.id);
-      }
+  //     // Set medicineId if available
+  //     if (typeof firstMedicine.name === "object" && firstMedicine.name.id) {
+  //       setValue("medicineId", firstMedicine.name.id);
+  //     }
 
-      // Set medicine times
-      firstMedicine.times.forEach((time, index) => {
-        const timeString = time.toTimeString().slice(0, 5);
-        const fieldName = `medicineTime${index + 1}` as keyof FormData;
-        setValue(fieldName, timeString);
-      });
-    }
-  }, [medicines, setValue]);
+  //     // Set medicine times
+  //     firstMedicine.times.forEach((time, index) => {
+  //       const timeString = time.toTimeString().slice(0, 5);
+  //       const fieldName = `medicineTime${index + 1}` as keyof FormData;
+  //       setValue(fieldName, timeString);
+  //     });
+
+  //     // Update day values based on selected days
+  //     updateDayValues(firstMedicine.days);
+  //   }
+  // }, [medicines, setValue]);
+
+  const medicines = watch("medicines")
 
   return (
     <KeyboardAvoidingView
@@ -587,7 +610,7 @@ const AddPatient = () => {
               </Text>
             </View>
           ) : (
-            medicines.map((medicine, medIndex) => (
+            watch("medicines").map((medicine, medIndex) => (
               <View key={medIndex} style={styles.medicineCard}>
                 <View style={styles.medicineHeader}>
                   <Text style={styles.medicineTitle}>
@@ -604,12 +627,9 @@ const AddPatient = () => {
                 <Text style={styles.medicineLabel}>Medicine Name</Text>
                 <View style={styles.pickerContainer}>
                   <Picker
-                    selectedValue={medicine.name}
+                    selectedValue={medicine.medicineId}
                     onValueChange={(value) => {
-                      updateMedicine(medIndex, "name", value);
-                      if (typeof value === "object" && value.id) {
-                        setValue("medicineId", value.id);
-                      }
+                      updateMedicine(medIndex, "medicineId", value);
                     }}
                     style={styles.picker}
                     dropdownIconColor="#fff"
@@ -618,7 +638,7 @@ const AddPatient = () => {
                       <Picker.Item
                         key={med.medicineName}
                         label={`${med.medicineName} (${med.medicineDose} ${med.medicineDoseUnit})`}
-                        value={med}
+                        value={med.id}
                         color="#000"
                       />
                     ))}
@@ -644,7 +664,7 @@ const AddPatient = () => {
                         style={[
                           styles.frequencyText,
                           medicine.frequency === freq &&
-                            styles.frequencyTextSelected,
+                          styles.frequencyTextSelected,
                         ]}
                       >
                         {freq}
@@ -655,7 +675,7 @@ const AddPatient = () => {
 
                 <Text style={styles.medicineLabel}>Timing</Text>
                 <View style={styles.timesContainer}>
-                  {medicine.times.map((time, timeIndex) => (
+                  {medicine.medicineTimes.map((time, timeIndex) => (
                     <View key={timeIndex} style={styles.timeItem}>
                       <Text style={styles.timeLabel}>Dose {timeIndex + 1}</Text>
                       <TouchableOpacity
@@ -700,9 +720,9 @@ const AddPatient = () => {
                         key={day.code}
                         style={[
                           styles.dayCircle,
-                          medicine.days &&
-                            medicine.days.includes(day.code) &&
-                            styles.daySelected,
+                          medicine.medicineDays &&
+                          medicine.medicineDays.includes(day.code) &&
+                          styles.daySelected,
                         ]}
                         onPress={() => toggleMedicineDay(medIndex, day.code)}
                         activeOpacity={0.7}
@@ -710,12 +730,12 @@ const AddPatient = () => {
                         <Text
                           style={[
                             styles.dayText,
-                            medicine.days &&
-                              medicine.days.includes(day.code) &&
-                              styles.dayTextSelected,
+                            medicine.medicineDays &&
+                            medicine.medicineDays.includes(day.code) &&
+                            styles.dayTextSelected,
                           ]}
                         >
-                          {day.code}
+                          {day.shortName}
                         </Text>
                       </TouchableOpacity>
                     ))}
@@ -725,9 +745,9 @@ const AddPatient = () => {
                       style={styles.daySelectionButton}
                       onPress={() => {
                         const weekdays = daysOfWeek
-                          .slice(0, 5)
+                          .filter((_, index) => index < 5)
                           .map((d) => d.code);
-                        updateMedicine(medIndex, "days", weekdays);
+                        updateMedicine(medIndex, "medicineDays", weekdays);
                       }}
                     >
                       <Text style={styles.daySelectionButtonText}>
@@ -737,8 +757,11 @@ const AddPatient = () => {
                     <TouchableOpacity
                       style={styles.daySelectionButton}
                       onPress={() => {
-                        const weekend = daysOfWeek.slice(5).map((d) => d.code);
-                        updateMedicine(medIndex, "days", weekend);
+                        const weekend = daysOfWeek
+                          .filter((_, index) => index > 4)
+                          .map((d) => d.code);
+                        updateMedicine(medIndex, "medicineDays", weekend);
+                        // Update form values for weekend                        
                       }}
                     >
                       <Text style={styles.daySelectionButtonText}>Weekend</Text>
@@ -747,7 +770,7 @@ const AddPatient = () => {
                       style={styles.daySelectionButton}
                       onPress={() => {
                         const allDays = daysOfWeek.map((d) => d.code);
-                        updateMedicine(medIndex, "days", allDays);
+                        updateMedicine(medIndex, "medicineDays", allDays);
                       }}
                     >
                       <Text style={styles.daySelectionButtonText}>
@@ -1034,7 +1057,7 @@ const styles = StyleSheet.create({
     marginBottom: 12,
   },
   dayCircle: {
-    width: 35,
+    width: 38,
     height: 40,
     borderRadius: 20,
     borderWidth: 1,
