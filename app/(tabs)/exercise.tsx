@@ -61,7 +61,7 @@ const exercises = [
     duration: "5 min",
     description:
       "Description: Extend one arm across your chest. Use your opposite hand to gently press the arm closer to your chest. Hold for 10-15 seconds per arm.",
-    videoUrl: "https://www.w3schools.com/html/movie.mp4",
+    videoUrl: "https://mediac.in/video/Arm%20Stretch%2001%20(Freepik).mp4",
     thumbnail: "https://via.placeholder.com/150?text=Arm+Stretches",
   },
   {
@@ -83,7 +83,7 @@ const exercises = [
     duration: "3 min",
     description:
       "Description: Rotate your ankles in a circular motion 10 times in each direction.",
-    videoUrl: "https://www.w3schools.com/html/movie.mp4",
+    videoUrl: "https://mediac.in/video/Ankle%20Rotation%20(Freepik).mp4",
     thumbnail: "https://via.placeholder.com/150?text=Ankle+Rotations",
   },
   {
@@ -94,7 +94,7 @@ const exercises = [
     duration: "5 min",
     description:
       "Description: Stand facing a wall. Place your hands on the wall at shoulder height. Step one foot back, keeping it straight with the heel on the floor. Lean forward gently until you feel a stretch in the back leg. Hold for 10-15 seconds per leg.",
-    videoUrl: "https://www.w3schools.com/html/movie.mp4",
+    videoUrl: "https://mediac.in/video/Calf%20Stretch%20(Pexels).mp4",
     thumbnail: "https://via.placeholder.com/150?text=Calf+Stretch",
   },
   {
@@ -105,7 +105,7 @@ const exercises = [
     duration: "15-20 min",
     description:
       "1. Benefits: Low-impact exercise that boosts cardiovascular fitness. 2. Tips: Begin with a low resistance and cycle for short intervals, around 10-15 minutes. Increase the time gradually as your endurance improves.",
-    videoUrl: "https://www.w3schools.com/html/movie.mp4",
+    videoUrl: "https://mediac.in/video/Cycling%20(Freepik).mp4",
     thumbnail: "https://via.placeholder.com/150?text=Cycling",
   },
   {
@@ -116,7 +116,7 @@ const exercises = [
     duration: "20-30 min",
     description:
       "1. Benefits: Provides gentle resistance and minimizes joint strain, especially beneficial for those with arthritis or joint issues. 2. Tips: Start with slow-paced swimming or basic water aerobics movements. Perform only if you know swimming or perform under supervision.",
-    videoUrl: "https://www.w3schools.com/html/movie.mp4",
+    videoUrl: "https://mediac.in/video/Swimming%20(Freepik).mp4",
     thumbnail: "https://via.placeholder.com/150?text=Swimming",
   },
   {
@@ -127,7 +127,7 @@ const exercises = [
     duration: "10-15 min",
     description:
       "1. Benefits: Fun and rhythmic, this activity improves coordination and cardiovascular health. 2. Tips: Start with slow movements, and ensure you don't exert yourself too much.",
-    videoUrl: "https://www.w3schools.com/html/movie.mp4",
+    videoUrl: "https://mediac.in/video/Slow%20Dancing%20(Freepik).mp4",
     thumbnail: "https://via.placeholder.com/150?text=Dancing",
   },
   {
@@ -138,7 +138,7 @@ const exercises = [
     duration: "20-30 min",
     description:
       "1. Benefits: Running/jogging boosts cardiovascular health, improves endurance, and elevates mood through endorphin release. 2. Tips: Start at a comfortable pace, wear proper footwear, and stay hydrated to prevent fatigue and injury.",
-    videoUrl: "https://www.w3schools.com/html/movie.mp4",
+    videoUrl: "https://mediac.in/video/Running%20Jogging%20(Freepik).mp4",
     thumbnail: "https://via.placeholder.com/150?text=Running",
   },
   {
@@ -149,7 +149,7 @@ const exercises = [
     duration: "15-30 min",
     description:
       "1. Benefits: Enhances flexibility, reduces stress, and increases mobility. 2. Tips: Perform gentle seated movements that engage the upper body, such as arm circles or leg raises, without putting strain on the heart.",
-    videoUrl: "https://www.w3schools.com/html/movie.mp4",
+    videoUrl: "https://mediac.in/video/Pranayama%20(Pexels).mp4",
     thumbnail: "https://via.placeholder.com/150?text=Yoga",
   },
   {
@@ -160,7 +160,7 @@ const exercises = [
     duration: "10 min",
     description:
       "1. Benefits: Helps reduce stress, lower blood pressure, and enhance oxygen flow. 2. Tips: Practice slow, deep breathing techniques like diaphragmatic breathing. Pair this with relaxation techniques such as meditation.",
-    videoUrl: "https://www.w3schools.com/html/movie.mp4",
+    videoUrl: "",
     thumbnail: "https://via.placeholder.com/150?text=Relaxation",
   },
 ];
