@@ -160,7 +160,7 @@ const exercises = [
     duration: "10 min",
     description:
       "1. Benefits: Helps reduce stress, lower blood pressure, and enhance oxygen flow. 2. Tips: Practice slow, deep breathing techniques like diaphragmatic breathing. Pair this with relaxation techniques such as meditation.",
-    videoUrl: "",
+    videoUrl: "https://mediac.in/video/New%20Project.mp4",
     thumbnail: "https://via.placeholder.com/150?text=Relaxation",
   },
 ];
