@@ -1,3 +1,5 @@
+"use client";
+
 import {
   View,
   Text,
@@ -12,9 +14,11 @@ import { Ionicons } from "@expo/vector-icons";
 import { router } from "expo-router";
 import packageJson from "../../package.json";
 import { useDecodedToken } from "@/hooks/useDecodedToken";
+import { useState } from "react";
 
 export default function Dashboard() {
   const user = useDecodedToken();
+  const [selectedDateIndex, setSelectedDateIndex] = useState(0);
 
   const statusBarHeight =
     Platform.OS === "android" ? StatusBar.currentHeight || 0 : 0;
@@ -36,9 +40,53 @@ export default function Dashboard() {
   const options = { weekday: "long", day: "numeric", month: "long" };
   const formattedDate = today.toLocaleDateString("en-US", options);
 
+  // Generate next 6 days (today + 5 more)
+  const generateNextDays = () => {
+    const days = [];
+    for (let i = 0; i < 6; i++) {
+      const date = new Date();
+      date.setDate(today.getDate() + i);
+
+      const dayName = new Intl.DateTimeFormat("en-US", {
+        weekday: "short",
+      }).format(date);
+      const dayNumber = date.getDate();
+
+      // Random reminder count for demo purposes
+      const reminderCount = Math.floor(Math.random() * 3);
+
+      days.push({
+        date,
+        dayName,
+        dayNumber,
+        reminderCount,
+        isToday: i === 0,
+      });
+    }
+    return days;
+  };
+
+  const nextDays = generateNextDays();
+
+  // Card background colors
+  const cardBackgroundColors = [
+    "#E6F7FF", // Light blue
+    "#FFF2E6", // Light orange
+    "#E6FFFA", // Light teal
+    "#F2E6FF", // Light purple
+    "#E6FFE6", // Light green
+    "#FFE6E6", // Light red
+    "#FFF9E6", // Light yellow
+    "#F0E6FF", // Light lavender
+  ];
+
   return (
     <SafeAreaView style={styles.safeArea}>
-      <StatusBar barStyle="dark-content" backgroundColor="#f8f9fa" />
+      <StatusBar barStyle="dark-content" backgroundColor="#f0f2f8" />
+      {/* Background decorative elements */}
+      <View style={styles.purpleAccent1} />
+      <View style={styles.purpleAccent2} />
+      <View style={styles.purpleAccent3} />
       <View style={styles.container}>
         {/* Header */}
         <View style={styles.header}>
@@ -60,12 +108,6 @@ export default function Dashboard() {
           showsVerticalScrollIndicator={false}
           contentContainerStyle={styles.scrollContent}
         >
-          {/* App Title */}
-          {/* <View style={styles.titleContainer}>
-            <Text style={styles.appTitle}>{appName} Dashboard</Text>
-            <Text style={styles.subtitle}>Your health metrics at a glance</Text>
-          </View> */}
-
           {/* ADMIN VIEW - For healthcare providers */}
           {user?.role === 1 && (
             <>
@@ -97,6 +139,7 @@ export default function Dashboard() {
                   label="Patients"
                   count={10}
                   color="#4A55A2"
+                  backgroundColor={cardBackgroundColors[0]}
                   onPress={() => console.log("Patients pressed")}
                 />
                 <DashboardCard
@@ -104,6 +147,7 @@ export default function Dashboard() {
                   label="Exercises"
                   count={20}
                   color="#00A86B"
+                  backgroundColor={cardBackgroundColors[2]}
                   onPress={() => console.log("Exercises pressed")}
                 />
                 <DashboardCard
@@ -111,6 +155,7 @@ export default function Dashboard() {
                   label="Medicines"
                   count={2}
                   color="#FF5A5F"
+                  backgroundColor={cardBackgroundColors[5]}
                   onPress={() => console.log("Medicines pressed")}
                 />
                 <DashboardCard
@@ -118,6 +163,7 @@ export default function Dashboard() {
                   label="Appointments"
                   count={0}
                   color="#FFC107"
+                  backgroundColor={cardBackgroundColors[6]}
                   onPress={() => console.log("Appointments pressed")}
                 />
               </View>
@@ -127,30 +173,79 @@ export default function Dashboard() {
           {/* PATIENT VIEW - For regular users */}
           {user?.role === 0 && (
             <>
+              {/* Date selector */}
+              <ScrollView
+                horizontal
+                showsHorizontalScrollIndicator={false}
+                contentContainerStyle={styles.dateSelector}
+              >
+                {nextDays.map((day, index) => (
+                  <TouchableOpacity
+                    key={index}
+                    style={[
+                      styles.dateItem,
+                      selectedDateIndex === index && styles.selectedDateItem,
+                    ]}
+                    onPress={() => setSelectedDateIndex(index)}
+                  >
+                    <Text
+                      style={[
+                        styles.dayName,
+                        selectedDateIndex === index && styles.selectedDayText,
+                      ]}
+                    >
+                      {day.dayName}
+                    </Text>
+                    <Text
+                      style={[
+                        styles.dayNumber,
+                        selectedDateIndex === index && styles.selectedDayText,
+                      ]}
+                    >
+                      {day.dayNumber}
+                    </Text>
+                    {day.reminderCount > 0 && (
+                      <View style={styles.reminderBadge}>
+                        <Text style={styles.reminderCount}>
+                          {day.reminderCount}
+                        </Text>
+                      </View>
+                    )}
+                    {day.isToday && (
+                      <Text style={styles.todayLabel}>Today</Text>
+                    )}
+                  </TouchableOpacity>
+                ))}
+              </ScrollView>
+
               {/* Health Metrics Grid */}
               <View style={styles.dashboardGrid}>
                 <HealthMetricCard
                   icon="fitness-outline"
                   label="Blood Pressure"
                   color="#4A55A2"
+                  backgroundColor={cardBackgroundColors[0]}
                   onPress={() => router.push("/metrics/blood-pressure")}
                 />
                 <HealthMetricCard
                   icon="water-outline"
                   label="Sugar Level"
                   color="#FF5A5F"
+                  backgroundColor={cardBackgroundColors[5]}
                   onPress={() => router.push("/metrics/sugar-level")}
                 />
                 <HealthMetricCard
                   icon="resize-outline"
                   label="Height"
                   color="#00A86B"
+                  backgroundColor={cardBackgroundColors[4]}
                   onPress={() => router.push("/metrics/height")}
                 />
                 <HealthMetricCard
                   icon="scale-outline"
                   label="Weight"
                   color="#FFC107"
+                  backgroundColor={cardBackgroundColors[6]}
                   onPress={() => router.push("/metrics/weight")}
                 />
               </View>
@@ -185,8 +280,6 @@ export default function Dashboard() {
               </View>
             </>
           )}
-
-          {/* Recent Activity section has been removed for both user roles */}
         </ScrollView>
       </View>
     </SafeAreaView>
@@ -219,9 +312,22 @@ const SummaryCard = ({ icon, label, count, trend, color }) => {
 };
 
 // Dashboard Card Component
-const DashboardCard = ({ icon, label, count, color, onPress }) => (
-  <TouchableOpacity style={styles.card} onPress={onPress}>
-    <View style={[styles.cardIconContainer, { backgroundColor: `${color}15` }]}>
+const DashboardCard = ({
+  icon,
+  label,
+  count,
+  color,
+  backgroundColor,
+  onPress,
+}) => (
+  <TouchableOpacity
+    style={[
+      styles.card,
+      { backgroundColor: backgroundColor || "rgba(255, 255, 255, 0.9)" },
+    ]}
+    onPress={onPress}
+  >
+    <View style={[styles.cardIconContainer, { backgroundColor: `${color}20` }]}>
       <Ionicons name={icon} size={28} color={color} />
     </View>
     <Text style={styles.cardCount}>{count}</Text>
@@ -230,12 +336,18 @@ const DashboardCard = ({ icon, label, count, color, onPress }) => (
 );
 
 // Health Metric Card Component for patient view
-const HealthMetricCard = ({ icon, label, color, onPress }) => (
-  <TouchableOpacity style={styles.healthCard} onPress={onPress}>
+const HealthMetricCard = ({ icon, label, color, backgroundColor, onPress }) => (
+  <TouchableOpacity
+    style={[
+      styles.healthCard,
+      { backgroundColor: backgroundColor || "rgba(255, 255, 255, 0.9)" },
+    ]}
+    onPress={onPress}
+  >
     <View
       style={[
         styles.healthCardIconContainer,
-        { backgroundColor: `${color}15` },
+        { backgroundColor: `${color}20` },
       ]}
     >
       <Ionicons name={icon} size={32} color={color} />
@@ -283,12 +395,13 @@ const ActivityItem = ({ icon, title, description, time }) => (
 const styles = StyleSheet.create({
   safeArea: {
     flex: 1,
-    backgroundColor: "#f8f9fa",
+    backgroundColor: "#f0f2f8", // Light blue-gray base color
     paddingTop: Platform.OS === "android" ? StatusBar.currentHeight : 0,
   },
   container: {
     flex: 1,
     paddingHorizontal: 20,
+    backgroundColor: "transparent", // Make transparent to show the background
   },
   scrollContent: {
     paddingBottom: 30,
@@ -312,6 +425,66 @@ const styles = StyleSheet.create({
   profileButton: {
     padding: 4,
   },
+  // Date selector styles
+  dateSelector: {
+    paddingVertical: 10,
+    marginBottom: 16,
+  },
+  dateItem: {
+    width: 60,
+    height: 80,
+    borderRadius: 12,
+    backgroundColor: "rgba(255, 255, 255, 0.8)",
+    marginRight: 10,
+    alignItems: "center",
+    justifyContent: "center",
+    padding: 8,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.1,
+    shadowRadius: 2,
+    elevation: 2,
+    position: "relative",
+  },
+  selectedDateItem: {
+    backgroundColor: "#7A39A3",
+  },
+  dayName: {
+    fontSize: 12,
+    color: "#666",
+    marginBottom: 4,
+  },
+  dayNumber: {
+    fontSize: 18,
+    fontWeight: "bold",
+    color: "#333",
+  },
+  selectedDayText: {
+    color: "#fff",
+  },
+  reminderBadge: {
+    position: "absolute",
+    top: 5,
+    right: 5,
+    backgroundColor: "#FF5A5F",
+    width: 18,
+    height: 18,
+    borderRadius: 9,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  reminderCount: {
+    color: "#fff",
+    fontSize: 10,
+    fontWeight: "bold",
+  },
+  todayLabel: {
+    position: "absolute",
+    bottom: 5,
+    fontSize: 9,
+    color: "#7A39A3",
+    fontWeight: "bold",
+  },
   titleContainer: {
     marginTop: 0,
     marginBottom: 24,
@@ -334,7 +507,7 @@ const styles = StyleSheet.create({
   summaryCard: {
     flexDirection: "row",
     alignItems: "center",
-    backgroundColor: "white",
+    backgroundColor: "rgba(255, 255, 255, 0.9)",
     padding: 16,
     borderRadius: 12,
     width: "48%",
@@ -381,18 +554,18 @@ const styles = StyleSheet.create({
     flexWrap: "wrap",
     justifyContent: "space-between",
     marginBottom: 24,
+    marginTop: 15,
   },
   card: {
     width: "48%",
-    backgroundColor: "white",
     padding: 16,
     borderRadius: 12,
     alignItems: "center",
     shadowColor: "#000",
     shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.05,
+    shadowOpacity: 0.1,
     shadowRadius: 3.84,
-    elevation: 2,
+    elevation: 3,
     marginBottom: 16,
   },
   cardIconContainer: {
@@ -416,15 +589,14 @@ const styles = StyleSheet.create({
   // Health Metric Card styles for patient view
   healthCard: {
     width: "48%",
-    backgroundColor: "white",
     padding: 16,
     borderRadius: 12,
     alignItems: "center",
     shadowColor: "#000",
     shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.05,
+    shadowOpacity: 0.1,
     shadowRadius: 3.84,
-    elevation: 2,
+    elevation: 3,
     marginBottom: 16,
     position: "relative",
   },
@@ -449,7 +621,7 @@ const styles = StyleSheet.create({
   },
   // Latest readings styles
   latestReadingsContainer: {
-    backgroundColor: "white",
+    backgroundColor: "rgba(255, 255, 255, 0.9)",
     borderRadius: 12,
     padding: 8,
     shadowColor: "#000",
@@ -547,5 +719,32 @@ const styles = StyleSheet.create({
   activityTime: {
     fontSize: 12,
     color: "#999",
+  },
+  purpleAccent1: {
+    position: "absolute",
+    width: 120,
+    height: 120,
+    borderRadius: 60,
+    backgroundColor: "rgba(122, 57, 163, 0.1)",
+    top: -20,
+    right: -30,
+  },
+  purpleAccent2: {
+    position: "absolute",
+    width: 80,
+    height: 80,
+    borderRadius: 40,
+    backgroundColor: "rgba(122, 57, 163, 0.08)",
+    top: 100,
+    right: 40,
+  },
+  purpleAccent3: {
+    position: "absolute",
+    width: 150,
+    height: 150,
+    borderRadius: 75,
+    backgroundColor: "rgba(122, 57, 163, 0.05)",
+    bottom: 100,
+    left: -50,
   },
 });
