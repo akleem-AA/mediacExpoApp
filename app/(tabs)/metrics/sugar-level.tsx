@@ -192,7 +192,7 @@ export default function SugarLevelInput() {
                       styles.measurementTypeTextActive,
                   ]}
                 >
-                  After Meal
+                  2hrs After Meal
                 </Text>
               </TouchableOpacity>
             </View>

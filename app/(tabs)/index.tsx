@@ -229,7 +229,7 @@ export default function Dashboard() {
                 />
                 <HealthMetricCard
                   icon="water-outline"
-                  label="Sugar Level"
+                  label="Blood Sugar"
                   color="#FF5A5F"
                   backgroundColor={cardBackgroundColors[5]}
                   onPress={() => router.push("/metrics/sugar-level")}
