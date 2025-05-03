@@ -25,7 +25,6 @@ const exercises = [
     name: "Walking",
     category: "Cardio",
     difficulty: "Beginner",
-    duration: "10-15 min",
     description:
       "1. Benefits: Improves circulation, strengthens the heart, and boosts stamina. 2. Tips: Start with short, flat walks (10-15 minutes) and slowly increase the time and pace over weeks. You can progress to brisk walking as tolerated",
     videoUrl: "https://mediac.in/video/Walking%20Video%20(Freepik).mp4",
@@ -36,7 +35,6 @@ const exercises = [
     name: "Neck Stretch",
     category: "Stretching",
     difficulty: "Beginner",
-    duration: "5 min",
     description:
       "Description: Sit or stand upright. Gently tilt your head to one side, bringing your ear toward your shoulder. Hold for 10–15 seconds on each side.",
     videoUrl: "https://mediac.in/video/Neck%20Stretch%20(Pexels)(1).mp4",
@@ -47,7 +45,6 @@ const exercises = [
     name: "Shoulder Rotation",
     category: "Stretching",
     difficulty: "Beginner",
-    duration: "5 min",
     description:
       "Description: Sit or stand with your back straight. Rotate your shoulders forward in a circular motion 5-10 times. Repeat rolling backward.",
     videoUrl: "https://mediac.in/video/Shoulder%20Rotation%20(Freepik).mp4",
@@ -58,7 +55,6 @@ const exercises = [
     name: "Arm Stretches",
     category: "Stretching",
     difficulty: "Beginner",
-    duration: "5 min",
     description:
       "Description: Extend one arm across your chest. Use your opposite hand to gently press the arm closer to your chest. Hold for 10-15 seconds per arm.",
     videoUrl: "https://mediac.in/video/Arm%20Stretch%2001%20(Freepik).mp4",
@@ -69,7 +65,6 @@ const exercises = [
     name: "Forward Bend",
     category: "Stretching",
     difficulty: "Intermediate",
-    duration: "5 min",
     description:
       "Description: Slowly bend forward from the hips, keeping your back straight, and reach toward your knees or shins. Hold for 10-15 seconds.",
     videoUrl: "https://mediac.in/video/Forward%20Bend%20(Freepik).mp4",
@@ -80,7 +75,6 @@ const exercises = [
     name: "Ankle Rotations",
     category: "Stretching",
     difficulty: "Beginner",
-    duration: "3 min",
     description:
       "Description: Rotate your ankles in a circular motion 10 times in each direction.",
     videoUrl: "https://mediac.in/video/Ankle%20Rotation%20(Freepik).mp4",
@@ -91,7 +85,6 @@ const exercises = [
     name: "Calf Stretch",
     category: "Stretching",
     difficulty: "Beginner",
-    duration: "5 min",
     description:
       "Description: Stand facing a wall. Place your hands on the wall at shoulder height. Step one foot back, keeping it straight with the heel on the floor. Lean forward gently until you feel a stretch in the back leg. Hold for 10-15 seconds per leg.",
     videoUrl: "https://mediac.in/video/Calf%20Stretch%20(Pexels).mp4",
@@ -102,7 +95,6 @@ const exercises = [
     name: "Stationary Cycling",
     category: "Cardio",
     difficulty: "Intermediate",
-    duration: "15-20 min",
     description:
       "1. Benefits: Low-impact exercise that boosts cardiovascular fitness. 2. Tips: Begin with a low resistance and cycle for short intervals, around 10-15 minutes. Increase the time gradually as your endurance improves.",
     videoUrl: "https://mediac.in/video/Cycling%20(Freepik).mp4",
@@ -113,7 +105,6 @@ const exercises = [
     name: "Swimming",
     category: "Cardio",
     difficulty: "Intermediate",
-    duration: "20-30 min",
     description:
       "1. Benefits: Provides gentle resistance and minimizes joint strain, especially beneficial for those with arthritis or joint issues. 2. Tips: Start with slow-paced swimming or basic water aerobics movements. Perform only if you know swimming or perform under supervision.",
     videoUrl: "https://mediac.in/video/Swimming%20(Freepik).mp4",
@@ -124,7 +115,6 @@ const exercises = [
     name: "Slow Dancing",
     category: "Cardio",
     difficulty: "Beginner",
-    duration: "10-15 min",
     description:
       "1. Benefits: Fun and rhythmic, this activity improves coordination and cardiovascular health. 2. Tips: Start with slow movements, and ensure you don't exert yourself too much.",
     videoUrl: "https://mediac.in/video/Slow%20Dancing%20(Freepik).mp4",
@@ -135,7 +125,6 @@ const exercises = [
     name: "Running/Jogging",
     category: "Cardio",
     difficulty: "Advanced",
-    duration: "20-30 min",
     description:
       "1. Benefits: Running/jogging boosts cardiovascular health, improves endurance, and elevates mood through endorphin release. 2. Tips: Start at a comfortable pace, wear proper footwear, and stay hydrated to prevent fatigue and injury.",
     videoUrl: "https://mediac.in/video/Running%20Jogging%20(Freepik).mp4",
@@ -146,7 +135,6 @@ const exercises = [
     name: "Yoga",
     category: "Flexibility",
     difficulty: "Intermediate",
-    duration: "15-30 min",
     description:
       "1. Benefits: Enhances flexibility, reduces stress, and increases mobility. 2. Tips: Perform gentle seated movements that engage the upper body, such as arm circles or leg raises, without putting strain on the heart.",
     videoUrl: "https://mediac.in/video/Pranayama%20(Pexels).mp4",
@@ -157,7 +145,6 @@ const exercises = [
     name: "Head to Toe Relaxation",
     category: "Relaxation",
     difficulty: "Beginner",
-    duration: "10 min",
     description:
       "1. Benefits: Helps reduce stress, lower blood pressure, and enhance oxygen flow. 2. Tips: Practice slow, deep breathing techniques like diaphragmatic breathing. Pair this with relaxation techniques such as meditation.",
     videoUrl: "https://mediac.in/video/New%20Project.mp4",
@@ -177,9 +164,68 @@ const ExerciseList = () => {
   const [countdown, setCountdown] = useState(5);
   const [exerciseStarted, setExerciseStarted] = useState(false);
   const [disclaimerVisible, setDisclaimerVisible] = useState(true);
+  const [language, setLanguage] = useState("en"); // en or hi
 
   const modalAnimation = useRef(new Animated.Value(0)).current;
   const { width, height } = Dimensions.get("window");
+
+  // Translations
+  const translations = {
+    en: {
+      "Exercise Library": "Exercise Library",
+      "Find the perfect exercise for your routine":
+        "Find the perfect exercise for your routine",
+      "Filter by category:": "Filter by category:",
+      "Important Guidelines": "Important Guidelines",
+      "Consult Your Doctor": "Consult Your Doctor",
+      "Gradual Progression": "Gradual Progression",
+      "Warm-Up and Cool-Down": "Warm-Up and Cool-Down",
+      Target: "Target",
+      "Avoid Overexertion": "Avoid Overexertion",
+      "Pace Yourself": "Pace Yourself",
+      "I Understand": "I Understand",
+      "No exercises found": "No exercises found",
+      Instructions: "Instructions",
+      "Start Exercise": "Start Exercise",
+      "Exercise in Progress": "Exercise in Progress",
+      "End Exercise": "End Exercise",
+      "Starting in...": "Starting in...",
+      Difficulty: "Difficulty",
+      Category: "Category",
+    },
+    hi: {
+      "Exercise Library": "व्यायाम पुस्तकालय",
+      "Find the perfect exercise for your routine":
+        "अपनी दिनचर्या के लिए सही व्यायाम खोजें",
+      "Filter by category:": "श्रेणी के अनुसार फ़िल्टर करें:",
+      "Important Guidelines": "महत्वपूर्ण दिशानिर्देश",
+      "Consult Your Doctor": "अपने डॉक्टर से परामर्श करें",
+      "Gradual Progression": "क्रमिक प्रगति",
+      "Warm-Up and Cool-Down": "वार्म-अप और कूल-डाउन",
+      Target: "लक्ष्य",
+      "Avoid Overexertion": "अधिक परिश्रम से बचें",
+      "Pace Yourself": "अपनी गति से चलें",
+      "I Understand": "मैं समझता हूँ",
+      "No exercises found": "कोई व्यायाम नहीं मिला",
+      Instructions: "निर्देश",
+      "Start Exercise": "व्यायाम शुरू करें",
+      "Exercise in Progress": "व्यायाम प्रगति पर है",
+      "End Exercise": "व्यायाम समाप्त करें",
+      "Starting in...": "शुरू हो रहा है...",
+      Difficulty: "कठिनाई",
+      Category: "श्रेणी",
+    },
+  };
+
+  // Translation function
+  const t = (key) => {
+    return translations[language][key] || key;
+  };
+
+  // Toggle language
+  const toggleLanguage = () => {
+    setLanguage(language === "en" ? "hi" : "en");
+  };
 
   // Countdown timer effect
   useEffect(() => {
@@ -278,10 +324,6 @@ const ExerciseList = () => {
           <Text style={styles.exerciseName}>{exercise.name}</Text>
           <View style={styles.exerciseMetaRow}>
             <View style={styles.exerciseMetaItem}>
-              <Ionicons name="time-outline" size={14} color="#666" />
-              <Text style={styles.exerciseMetaText}>{exercise.duration}</Text>
-            </View>
-            <View style={styles.exerciseMetaItem}>
               <Ionicons name="fitness-outline" size={14} color="#666" />
               <Text style={styles.exerciseMetaText}>{exercise.difficulty}</Text>
             </View>
@@ -312,15 +354,25 @@ const ExerciseList = () => {
       <StatusBar barStyle="dark-content" backgroundColor="#f8f9fa" />
       <View style={styles.container}>
         <View style={styles.header}>
-          <Text style={styles.title}>Exercise Library</Text>
+          <View style={styles.headerTop}>
+            <Text style={styles.title}>{t("Exercise Library")}</Text>
+            <TouchableOpacity
+              style={styles.languageToggle}
+              onPress={toggleLanguage}
+            >
+              <Text style={styles.languageToggleText}>
+                {language === "en" ? "हिंदी" : "EN"}
+              </Text>
+            </TouchableOpacity>
+          </View>
           <Text style={styles.subtitle}>
-            Find the perfect exercise for your routine
+            {t("Find the perfect exercise for your routine")}
           </Text>
         </View>
 
         {/* Category Filter - Made more visible for mobile */}
         <View style={styles.categoryFilterContainer}>
-          <Text style={styles.filterLabel}>Filter by category:</Text>
+          <Text style={styles.filterLabel}>{t("Filter by category:")}</Text>
           <ScrollView
             horizontal
             showsHorizontalScrollIndicator={false}
@@ -336,7 +388,9 @@ const ExerciseList = () => {
             <View style={styles.disclaimerHeader}>
               <View style={styles.disclaimerTitleContainer}>
                 <Ionicons name="alert-circle" size={22} color="#e53935" />
-                <Text style={styles.disclaimerTitle}>Important Guidelines</Text>
+                <Text style={styles.disclaimerTitle}>
+                  {t("Important Guidelines")}
+                </Text>
               </View>
               <TouchableOpacity onPress={dismissDisclaimer}>
                 <Ionicons name="close-circle" size={24} color="#666" />
@@ -348,7 +402,7 @@ const ExerciseList = () => {
                 <Text style={styles.disclaimerItemNumber}>1.</Text>
                 <View style={styles.disclaimerItemContent}>
                   <Text style={styles.disclaimerItemTitle}>
-                    Consult Your Doctor
+                    {t("Consult Your Doctor")}
                   </Text>
                   <Text style={styles.disclaimerItemText}>
                     Discuss your physical activity plan with a healthcare
@@ -362,7 +416,7 @@ const ExerciseList = () => {
                 <Text style={styles.disclaimerItemNumber}>2.</Text>
                 <View style={styles.disclaimerItemContent}>
                   <Text style={styles.disclaimerItemTitle}>
-                    Gradual Progression
+                    {t("Gradual Progression")}
                   </Text>
                   <Text style={styles.disclaimerItemText}>
                     Begin with low-intensity exercises and gradually increase
@@ -376,7 +430,7 @@ const ExerciseList = () => {
                 <Text style={styles.disclaimerItemNumber}>3.</Text>
                 <View style={styles.disclaimerItemContent}>
                   <Text style={styles.disclaimerItemTitle}>
-                    Warm-Up and Cool-Down
+                    {t("Warm-Up and Cool-Down")}
                   </Text>
                   <Text style={styles.disclaimerItemText}>
                     Warm-Up: Spend 5–10 minutes preparing your body with light
@@ -390,7 +444,7 @@ const ExerciseList = () => {
               <View style={styles.disclaimerItem}>
                 <Text style={styles.disclaimerItemNumber}>4.</Text>
                 <View style={styles.disclaimerItemContent}>
-                  <Text style={styles.disclaimerItemTitle}>Target</Text>
+                  <Text style={styles.disclaimerItemTitle}>{t("Target")}</Text>
                   <Text style={styles.disclaimerItemText}>
                     At least 150 minutes of moderate-intensity or 75 minutes of
                     vigorous-intensity aerobic exercise per week. Alternatively,
@@ -403,7 +457,7 @@ const ExerciseList = () => {
                 <Text style={styles.disclaimerItemNumber}>5.</Text>
                 <View style={styles.disclaimerItemContent}>
                   <Text style={styles.disclaimerItemTitle}>
-                    Avoid Overexertion
+                    {t("Avoid Overexertion")}
                   </Text>
                   <Text style={styles.disclaimerItemText}>
                     Stop exercising and seek medical attention if you experience
@@ -416,7 +470,9 @@ const ExerciseList = () => {
               <View style={styles.disclaimerItem}>
                 <Text style={styles.disclaimerItemNumber}>6.</Text>
                 <View style={styles.disclaimerItemContent}>
-                  <Text style={styles.disclaimerItemTitle}>Pace Yourself</Text>
+                  <Text style={styles.disclaimerItemTitle}>
+                    {t("Pace Yourself")}
+                  </Text>
                   <Text style={styles.disclaimerItemText}>
                     On days when energy levels are lower, opt for lighter
                     activities like slow walking or stretching.
@@ -429,7 +485,9 @@ const ExerciseList = () => {
               style={styles.disclaimerButton}
               onPress={dismissDisclaimer}
             >
-              <Text style={styles.disclaimerButtonText}>I Understand</Text>
+              <Text style={styles.disclaimerButtonText}>
+                {t("I Understand")}
+              </Text>
             </TouchableOpacity>
           </View>
         )}
@@ -444,7 +502,9 @@ const ExerciseList = () => {
           ) : (
             <View style={styles.emptyState}>
               <Ionicons name="fitness-outline" size={60} color="#ccc" />
-              <Text style={styles.emptyStateText}>No exercises found</Text>
+              <Text style={styles.emptyStateText}>
+                {t("No exercises found")}
+              </Text>
             </View>
           )}
         </ScrollView>
@@ -485,7 +545,7 @@ const ExerciseList = () => {
                       <View style={styles.countdownContainer}>
                         <Text style={styles.countdownText}>{countdown}</Text>
                         <Text style={styles.countdownLabel}>
-                          Starting in...
+                          {t("Starting in...")}
                         </Text>
                       </View>
                     </View>
@@ -494,19 +554,15 @@ const ExerciseList = () => {
                   {exerciseStarted ? (
                     <View style={styles.exerciseActiveContainer}>
                       <Text style={styles.exerciseActiveTitle}>
-                        Exercise in Progress
+                        {t("Exercise in Progress")}
                       </Text>
-                      <View style={styles.exerciseTimerContainer}>
-                        <Ionicons name="time" size={24} color="#4A55A2" />
-                        <Text style={styles.exerciseTimerText}>
-                          {selectedExercise.duration}
-                        </Text>
-                      </View>
                       <TouchableOpacity
                         style={styles.stopButton}
                         onPress={closeModal}
                       >
-                        <Text style={styles.stopButtonText}>End Exercise</Text>
+                        <Text style={styles.stopButtonText}>
+                          {t("End Exercise")}
+                        </Text>
                       </TouchableOpacity>
                     </View>
                   ) : (
@@ -525,22 +581,13 @@ const ExerciseList = () => {
                         <View style={styles.detailsRow}>
                           <View style={styles.detailItem}>
                             <Ionicons
-                              name="time-outline"
-                              size={18}
-                              color="#4A55A2"
-                            />
-                            <Text style={styles.detailLabel}>Duration</Text>
-                            <Text style={styles.detailValue}>
-                              {selectedExercise.duration}
-                            </Text>
-                          </View>
-                          <View style={styles.detailItem}>
-                            <Ionicons
                               name="fitness-outline"
                               size={18}
                               color="#4A55A2"
                             />
-                            <Text style={styles.detailLabel}>Difficulty</Text>
+                            <Text style={styles.detailLabel}>
+                              {t("Difficulty")}
+                            </Text>
                             <Text style={styles.detailValue}>
                               {selectedExercise.difficulty}
                             </Text>
@@ -551,7 +598,9 @@ const ExerciseList = () => {
                               size={18}
                               color="#4A55A2"
                             />
-                            <Text style={styles.detailLabel}>Category</Text>
+                            <Text style={styles.detailLabel}>
+                              {t("Category")}
+                            </Text>
                             <Text style={styles.detailValue}>
                               {selectedExercise.category}
                             </Text>
@@ -561,7 +610,7 @@ const ExerciseList = () => {
 
                       <ScrollView style={styles.descriptionContainer}>
                         <Text style={styles.descriptionTitle}>
-                          Instructions
+                          {t("Instructions")}
                         </Text>
                         <Text style={styles.descriptionText}>
                           {selectedExercise.description}
@@ -579,7 +628,7 @@ const ExerciseList = () => {
                           style={styles.startButtonIcon}
                         />
                         <Text style={styles.startButtonText}>
-                          Start Exercise
+                          {t("Start Exercise")}
                         </Text>
                       </TouchableOpacity>
                     </>
@@ -609,6 +658,12 @@ const styles = StyleSheet.create({
     paddingTop: 16,
     paddingBottom: 8,
   },
+  headerTop: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    marginBottom: 4,
+  },
   title: {
     fontSize: 28,
     fontWeight: "bold",
@@ -618,6 +673,17 @@ const styles = StyleSheet.create({
     fontSize: 16,
     color: "#666",
     marginTop: 4,
+  },
+  languageToggle: {
+    backgroundColor: "#4A55A2",
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 20,
+  },
+  languageToggleText: {
+    color: "#fff",
+    fontWeight: "600",
+    fontSize: 14,
   },
   // Enhanced category filter visibility
   categoryFilterContainer: {
