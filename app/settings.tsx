@@ -1,151 +1,250 @@
+"use client";
+
+import React from "react";
 import {
   View,
   StyleSheet,
-  ScrollView,
   TouchableOpacity,
   SafeAreaView,
   Platform,
   StatusBar,
+  Animated,
+  Dimensions,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { router } from "expo-router";
 import { ThemedText } from "@/components/ThemedText";
 import { useAuth } from "@/context/AuthProvider";
+import { LinearGradient } from "expo-linear-gradient";
+
+const { width } = Dimensions.get("window");
 
 export default function ProfileScreen() {
   const { user, onLogout } = useAuth();
+  const scrollY = React.useRef(new Animated.Value(0)).current;
 
   const handleLogout = async () => {
     try {
-      await onLogout()
+      await onLogout();
       router.push("/auth/login");
     } catch (error) {
       console.error("Logout failed:", error);
     }
   };
 
+  // Animation for header
+  const headerOpacity = scrollY.interpolate({
+    inputRange: [0, 100],
+    outputRange: [0, 1],
+    extrapolate: "clamp",
+  });
+
   return (
     <SafeAreaView style={styles.safeArea}>
-      <ScrollView contentContainerStyle={styles.container}>
-        {/* Header */}
-        {/* <View style={styles.header}>
-          <ThemedText style={styles.headerTitle}>Profile</ThemedText>
-        </View> */}
+      {/* Animated Header */}
+      {/* <Animated.View
+        style={[styles.animatedHeader, { opacity: headerOpacity }]}
+      >
+        <ThemedText style={styles.headerTitle}>Profile</ThemedText>
+      </Animated.View> */}
 
-        {/* Profile Section */}
-        <View style={styles.profileSection}>
-          <View style={styles.avatarContainer}>
-            <Ionicons name="person-circle" size={80} color="#4A55A2" />
+      <Animated.ScrollView
+        contentContainerStyle={styles.container}
+        showsVerticalScrollIndicator={false}
+        onScroll={Animated.event(
+          [{ nativeEvent: { contentOffset: { y: scrollY } } }],
+          { useNativeDriver: true }
+        )}
+        scrollEventThrottle={16}
+      >
+        {/* Profile Section with Gradient */}
+        <LinearGradient
+          colors={["#2A2D3E", "#1F2132"]}
+          start={{ x: 0, y: 0 }}
+          end={{ x: 1, y: 1 }}
+          style={styles.profileGradient}
+        >
+          <View style={styles.profileSection}>
+            <View style={styles.avatarContainer}>
+              <View style={styles.avatarOuterRing}>
+                <View style={styles.avatarInnerRing}>
+                  <Ionicons name="person" size={40} color="#E0E0E0" />
+                </View>
+              </View>
+            </View>
+            <View style={styles.userInfo}>
+              <ThemedText style={styles.userName}>
+                {user?.user || "User Name"}
+              </ThemedText>
+              <ThemedText style={styles.userEmail}>
+                {user?.email || "user@example.com"}
+              </ThemedText>
+            </View>
           </View>
-          <View style={styles.userInfo}>
-            <ThemedText style={styles.userName}>
-              {user?.user || "User Name"}
-            </ThemedText>
-            <ThemedText style={styles.userEmail}>
-              {user?.email || "user@example.com"}
-            </ThemedText>
-          </View>
-        </View>
+        </LinearGradient>
 
         {/* Menu Items */}
         <View style={styles.menuSection}>
-          <MenuItem
+          {/* <MenuItem
             icon="settings-outline"
             title="Account Settings"
+            description="Privacy, security, and language"
             onPress={() => console.log("Settings pressed")}
           />
           <MenuItem
             icon="shield-checkmark-outline"
             title="Privacy & Security"
+            description="Control your data and permissions"
             onPress={() => console.log("Privacy pressed")}
+          /> */}
+          <MenuItem
+            icon="notifications-outline"
+            title="Notifications"
+            description="Manage your alerts and reminders"
+            onPress={() => console.log("Notifications pressed")}
           />
           <MenuItem
             icon="help-circle-outline"
             title="Help & Support"
+            description="FAQs and contact information"
             onPress={() => console.log("Help pressed")}
           />
           <MenuItem
             icon="information-circle-outline"
             title="About"
+            description="App version and legal information"
             onPress={() => console.log("About pressed")}
           />
         </View>
 
         {/* Logout Button */}
         <TouchableOpacity style={styles.logoutButton} onPress={handleLogout}>
-          <Ionicons name="log-out-outline" size={22} color="#fff" />
-          <ThemedText style={styles.logoutText}>Logout</ThemedText>
+          <LinearGradient
+            colors={["#FF5A5F", "#FF414B"]}
+            start={{ x: 0, y: 0 }}
+            end={{ x: 1, y: 0 }}
+            style={styles.logoutGradient}
+          >
+            <Ionicons name="log-out-outline" size={22} color="#fff" />
+            <ThemedText style={styles.logoutText}>Logout</ThemedText>
+          </LinearGradient>
         </TouchableOpacity>
-      </ScrollView>
+      </Animated.ScrollView>
     </SafeAreaView>
   );
 }
 
-// Menu Item Component
-const MenuItem = ({ icon, title, onPress }) => (
-  <TouchableOpacity style={styles.menuItem} onPress={onPress}>
+// Enhanced Menu Item Component
+const MenuItem = ({ icon, title, description, onPress }) => (
+  <TouchableOpacity
+    style={styles.menuItem}
+    onPress={onPress}
+    activeOpacity={0.7}
+  >
     <View style={styles.menuIconContainer}>
-      <Ionicons name={icon} size={22} color="#4A55A2" />
+      <LinearGradient
+        colors={["#4A55A2", "#3A4382"]}
+        style={styles.iconGradient}
+        start={{ x: 0, y: 0 }}
+        end={{ x: 1, y: 1 }}
+      >
+        <Ionicons name={icon} size={22} color="#fff" />
+      </LinearGradient>
     </View>
     <View style={styles.menuTextContainer}>
       <ThemedText style={styles.menuTitle}>{title}</ThemedText>
+      <ThemedText style={styles.menuDescription}>{description}</ThemedText>
     </View>
-    <Ionicons name="chevron-forward" size={20} color="#ccc" />
+    <View style={styles.menuArrow}>
+      <Ionicons name="chevron-forward" size={20} color="#6D6D6D" />
+    </View>
   </TouchableOpacity>
 );
 
 const styles = StyleSheet.create({
   safeArea: {
     flex: 1,
-    backgroundColor: "#f8f9fa",
+    backgroundColor: "#121212",
     paddingTop: Platform.OS === "android" ? StatusBar.currentHeight : 0,
   },
   container: {
     flexGrow: 1,
     paddingBottom: 30,
   },
-  header: {
-    padding: 16,
+  animatedHeader: {
+    position: "absolute",
+    top: Platform.OS === "android" ? StatusBar.currentHeight : 0,
+    left: 0,
+    right: 0,
+    height: 60,
+    backgroundColor: "#121212",
+    zIndex: 1000,
+    alignItems: "center",
+    justifyContent: "center",
     borderBottomWidth: 1,
-    borderBottomColor: "#eaeaea",
-    backgroundColor: "#fff",
+    borderBottomColor: "#2A2A2A",
   },
   headerTitle: {
-    fontSize: 20,
+    fontSize: 18,
     fontWeight: "600",
+    color: "#FFFFFF",
+  },
+  profileGradient: {
+    borderBottomLeftRadius: 30,
+    borderBottomRightRadius: 30,
+    overflow: "hidden",
+    marginBottom: 10,
   },
   profileSection: {
     alignItems: "center",
-    padding: 20,
-    backgroundColor: "#fff",
-    marginBottom: 20,
+    padding: 10,
+    //paddingTop: 20,
   },
   avatarContainer: {
-    marginBottom: 16,
+    marginBottom: 10,
+  },
+  avatarOuterRing: {
+    width: 80,
+    height: 80,
+    borderRadius: 60,
+    backgroundColor: "rgba(255, 255, 255, 0.1)",
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  avatarInnerRing: {
+    width: 70,
+    height: 70,
+    borderRadius: 55,
+    backgroundColor: "#4A55A2",
+    justifyContent: "center",
+    alignItems: "center",
+    borderWidth: 3,
+    borderColor: "rgba(255, 255, 255, 0.2)",
   },
   userInfo: {
     alignItems: "center",
   },
   userName: {
-    fontSize: 22,
-    fontWeight: "600",
+    fontSize: 24,
+    fontWeight: "700",
     marginBottom: 4,
+    color: "#FFFFFF",
   },
   userEmail: {
     fontSize: 16,
-    color: "#666",
+    color: "#B0B0B0",
   },
   menuSection: {
-    backgroundColor: "#fff",
-    borderRadius: 10,
+    backgroundColor: "#1E1E1E",
+    borderRadius: 16,
     marginHorizontal: 16,
     marginBottom: 20,
     overflow: "hidden",
     shadowColor: "#000",
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.05,
-    shadowRadius: 3.84,
-    elevation: 3,
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.3,
+    shadowRadius: 8,
+    elevation: 5,
   },
   menuItem: {
     flexDirection: "row",
@@ -153,27 +252,49 @@ const styles = StyleSheet.create({
     paddingVertical: 16,
     paddingHorizontal: 16,
     borderBottomWidth: 1,
-    borderBottomColor: "#f0f0f0",
+    borderBottomColor: "#2A2A2A",
   },
   menuIconContainer: {
-    width: 40,
+    marginRight: 16,
+  },
+  iconGradient: {
+    width: 44,
+    height: 44,
+    borderRadius: 12,
+    justifyContent: "center",
     alignItems: "center",
   },
   menuTextContainer: {
     flex: 1,
-    marginLeft: 12,
   },
   menuTitle: {
     fontSize: 16,
+    fontWeight: "600",
+    color: "#FFFFFF",
+    marginBottom: 4,
+  },
+  menuDescription: {
+    fontSize: 13,
+    color: "#9E9E9E",
+  },
+  menuArrow: {
+    padding: 4,
   },
   logoutButton: {
+    marginHorizontal: 16,
+    borderRadius: 16,
+    overflow: "hidden",
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.3,
+    shadowRadius: 8,
+    elevation: 5,
+  },
+  logoutGradient: {
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "center",
-    backgroundColor: "#FF5A5F",
-    marginHorizontal: 16,
-    paddingVertical: 14,
-    borderRadius: 10,
+    paddingVertical: 16,
   },
   logoutText: {
     color: "#fff",
