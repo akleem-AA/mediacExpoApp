@@ -9,17 +9,26 @@ import {
   SafeAreaView,
   StatusBar,
   Platform,
+  Alert,
+  ActivityIndicator,
+  RefreshControl,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { router } from "expo-router";
 import packageJson from "../../package.json";
 import { useDecodedToken } from "@/hooks/useDecodedToken";
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import axios from "axios";
+import { getDecodedToken, getToken } from "@/services/auth";
+import { API_URL } from "@/constants/Api";
 
 export default function Dashboard() {
   const user = useDecodedToken();
   const [selectedDateIndex, setSelectedDateIndex] = useState(0);
   const [language, setLanguage] = useState("en"); // en or hi
+  const [medicines, setMedicines] = useState([]);
+  const [loading, setLoading] = useState(false);
+  const [refreshing, setRefreshing] = useState(false);
 
   const statusBarHeight =
     Platform.OS === "android" ? StatusBar.currentHeight || 0 : 0;
@@ -47,6 +56,18 @@ export default function Dashboard() {
       "Upload Files": "Upload Files   ",
       "Latest Readings": "Latest Readings",
       "Total Patients": "Total Patients",
+      "Prescribed Medicines": "Prescribed Medicines",
+      Morning: "Morning",
+      Afternoon: "Afternoon",
+      Evening: "Evening",
+      Daily: "Daily",
+      "Twice Daily": "Twice Daily",
+      "Every Other Day": "Every Other Day",
+      "Mon,Wed,Fri": "Mon,Wed,Fri",
+      "All Days": "All Days",
+      "Multiple Times": "Multiple Times",
+      "Once Daily": "Once Daily",
+      "No medicines prescribed": "No medicines prescribed",
     },
     hi: {
       "Good morning": "सुप्रभात",
@@ -66,6 +87,18 @@ export default function Dashboard() {
       "Upload Files": "फ़ाइलें अपलोड करें",
       "Latest Readings": "नवीनतम रीडिंग",
       "Total Patients": "कुल मरीज़",
+      "Prescribed Medicines": "निर्धारित दवाएं",
+      Morning: "सुबह",
+      Afternoon: "दोपहर",
+      Evening: "शाम",
+      Daily: "रोज़ाना",
+      "Twice Daily": "दिन में दो बार",
+      "Every Other Day": "एक दिन छोड़कर",
+      "Mon,Wed,Fri": "सोम,बुध,शुक्र",
+      "All Days": "सभी दिन",
+      "Multiple Times": "कई बार",
+      "Once Daily": "दिन में एक बार",
+      "No medicines prescribed": "कोई दवा निर्धारित नहीं है",
     },
   };
 
@@ -78,6 +111,40 @@ export default function Dashboard() {
   const toggleLanguage = () => {
     setLanguage(language === "en" ? "hi" : "en");
   };
+
+  const fetchMedicines = async () => {
+    setLoading(true);
+    try {
+      const token = await getToken();
+      const response = await axios.get(`${API_URL}/patients/${user?.userId}`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      if (response.data) {
+        const medicineData = response.data.filter((p: any) => p); // Filter out falsy values
+        setMedicines(medicineData);
+      }
+    } catch (error) {
+      console.error("Error fetching Medicines:", error);
+      Alert.alert("Error", "Failed to load Medicines. Please try again.");
+    } finally {
+      setLoading(false);
+      setRefreshing(false);
+    }
+  };
+
+  const handleRefresh = () => {
+    setRefreshing(true);
+    fetchMedicines();
+  };
+
+  useEffect(() => {
+    if (user?.userId) {
+      fetchMedicines();
+    }
+  }, [user]);
 
   // Get current date for the greeting
   const today = new Date();
@@ -133,6 +200,14 @@ export default function Dashboard() {
     "#F0E6FF", // Light lavender
   ];
 
+  const formatDays = (days) => {
+    if (!days || days.length === 0) return t("All Days");
+    if (days.length === 7) return t("All Days");
+
+    const dayNames = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
+    return days.map((day) => dayNames[day]).join(", ");
+  };
+
   return (
     <SafeAreaView style={styles.safeArea}>
       <StatusBar barStyle="dark-content" backgroundColor="#f0f2f8" />
@@ -170,6 +245,9 @@ export default function Dashboard() {
         <ScrollView
           showsVerticalScrollIndicator={false}
           contentContainerStyle={styles.scrollContent}
+          refreshControl={
+            <RefreshControl refreshing={refreshing} onRefresh={handleRefresh} />
+          }
         >
           {/* ADMIN VIEW - For healthcare providers */}
           {user?.role === 1 && (
@@ -331,6 +409,39 @@ export default function Dashboard() {
                 />
               </View>
 
+              {/* Prescribed Medicines Section */}
+              <Text style={styles.sectionTitle}>
+                {t("Prescribed Medicines")}
+              </Text>
+              <View style={styles.medicinesContainer}>
+                {loading ? (
+                  <View style={styles.loadingContainer}>
+                    <ActivityIndicator size="small" color="#4A55A2" />
+                    <Text style={styles.loadingText}>Loading medicines...</Text>
+                  </View>
+                ) : medicines.length > 0 ? (
+                  medicines.map((medicine, index) => (
+                    <MedicineItem
+                      key={medicine.id}
+                      name={medicine.medicineName}
+                      frequency={
+                        medicine.medicineTime.length > 1
+                          ? t("Multiple Times")
+                          : t("Once Daily")
+                      }
+                      doseTime={medicine.medicineTime.join(", ")}
+                      daysOfWeek={formatDays(medicine.medicineDays)}
+                      color={index % 2 === 0 ? "#4A55A2" : "#FF5A5F"}
+                      isLast={index === medicines.length - 1}
+                    />
+                  ))
+                ) : (
+                  <Text style={styles.noMedicinesText}>
+                    {t("No medicines prescribed")}
+                  </Text>
+                )}
+              </View>
+
               {/* Latest Readings Section */}
               <Text style={styles.sectionTitle}>{t("Latest Readings")}</Text>
               <View style={styles.latestReadingsContainer}>
@@ -366,6 +477,56 @@ export default function Dashboard() {
     </SafeAreaView>
   );
 }
+
+// Medicine Item Component
+const MedicineItem = ({
+  name,
+  frequency,
+  doseTime,
+  daysOfWeek,
+  color,
+  isLast,
+}) => (
+  <View style={[styles.medicineItem, !isLast && styles.medicineItemBorder]}>
+    <View
+      style={[styles.medicineIconContainer, { backgroundColor: `${color}15` }]}
+    >
+      <Ionicons name="medical" size={20} color={color} />
+    </View>
+    <View style={styles.medicineContent}>
+      <Text style={styles.medicineName}>{name}</Text>
+      <View style={styles.medicineDetailsContainer}>
+        <View style={styles.medicineDetailItem}>
+          <Ionicons
+            name="repeat"
+            size={14}
+            color="#666"
+            style={styles.medicineDetailIcon}
+          />
+          <Text style={styles.medicineDetailText}>{frequency}</Text>
+        </View>
+        <View style={styles.medicineDetailItem}>
+          <Ionicons
+            name="time-outline"
+            size={14}
+            color="#666"
+            style={styles.medicineDetailIcon}
+          />
+          <Text style={styles.medicineDetailText}>{doseTime}</Text>
+        </View>
+        <View style={styles.medicineDetailItem}>
+          <Ionicons
+            name="calendar-outline"
+            size={14}
+            color="#666"
+            style={styles.medicineDetailIcon}
+          />
+          <Text style={styles.medicineDetailText}>{daysOfWeek}</Text>
+        </View>
+      </View>
+    </View>
+  </View>
+);
 
 // Summary Card Component
 const SummaryCard = ({ icon, label, count, trend, color }) => {
@@ -719,6 +880,60 @@ const styles = StyleSheet.create({
     bottom: 6,
     right: 6,
   },
+  // Prescribed Medicines styles
+  medicinesContainer: {
+    backgroundColor: "rgba(255, 255, 255, 0.9)",
+    borderRadius: 12,
+    padding: 8,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.05,
+    shadowRadius: 3.84,
+    elevation: 2,
+    marginBottom: 24,
+  },
+  medicineItem: {
+    flexDirection: "row",
+    alignItems: "flex-start",
+    paddingVertical: 12,
+    paddingHorizontal: 8,
+  },
+  medicineItemBorder: {
+    borderBottomWidth: 1,
+    borderBottomColor: "#f0f0f0",
+  },
+  medicineIconContainer: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    justifyContent: "center",
+    alignItems: "center",
+    marginRight: 12,
+  },
+  medicineContent: {
+    flex: 1,
+  },
+  medicineName: {
+    fontSize: 16,
+    fontWeight: "600",
+    color: "#333",
+    marginBottom: 4,
+  },
+  medicineDetailsContainer: {
+    marginTop: 2,
+  },
+  medicineDetailItem: {
+    flexDirection: "row",
+    alignItems: "center",
+    marginBottom: 4,
+  },
+  medicineDetailIcon: {
+    marginRight: 6,
+  },
+  medicineDetailText: {
+    fontSize: 13,
+    color: "#666",
+  },
   // Latest readings styles
   latestReadingsContainer: {
     backgroundColor: "rgba(255, 255, 255, 0.9)",
@@ -801,5 +1016,18 @@ const styles = StyleSheet.create({
     backgroundColor: "rgba(122, 57, 163, 0.05)",
     bottom: 100,
     left: -50,
+  },
+  loadingContainer: {
+    padding: 20,
+    alignItems: "center",
+  },
+  loadingText: {
+    marginTop: 8,
+    color: "#666",
+  },
+  noMedicinesText: {
+    padding: 20,
+    textAlign: "center",
+    color: "#666",
   },
 });

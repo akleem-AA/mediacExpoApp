@@ -38,7 +38,7 @@ interface FormData {
   age: string;
   gender: string;
   exerciseTime: string;
-  medicines: Medicine[]
+  medicines: Medicine[];
 }
 
 const AddPatient = () => {
@@ -59,7 +59,7 @@ const AddPatient = () => {
       age: "",
       gender: "Male",
       exerciseTime: "00:00",
-      medicines: []
+      medicines: [],
     },
   });
 
@@ -111,7 +111,7 @@ const AddPatient = () => {
   const frequencies = [1, 2, 3, 4];
 
   const addMedicine = () => {
-    if (watch("medicines").length < 5) {
+    if (watch("medicines").length < 10) {
       setValue("medicines", [
         ...watch("medicines"),
         {
@@ -119,11 +119,11 @@ const AddPatient = () => {
           name: availableMedicines[0].name,
           frequency: 1,
           medicineTimes: [new Date()],
-          medicineDays: [], // Initialize with empty array for no days selected        
-        }
+          medicineDays: [], // Initialize with empty array for no days selected
+        },
       ] as Medicine[]);
     } else {
-      Alert.alert("Limit Reached", "Maximum 5 medicines can be added");
+      Alert.alert("Limit Reached", "Maximum 10 medicines can be added");
     }
   };
 
@@ -155,7 +155,7 @@ const AddPatient = () => {
 
     // Update form values when medicine name (id) is changed
     if (field === "medicineId") {
-      updatedMedicines[index].medicineId = value
+      updatedMedicines[index].medicineId = value;
     }
 
     if (field === "medicineDays") {
@@ -192,7 +192,9 @@ const AddPatient = () => {
 
     if (currentDays.includes(day)) {
       // Remove day if already selected
-      updatedMedicines[medIndex].medicineDays = currentDays.filter((d) => d !== day);
+      updatedMedicines[medIndex].medicineDays = currentDays.filter(
+        (d) => d !== day
+      );
     } else {
       // Add day if not selected
       updatedMedicines[medIndex].medicineDays = [...currentDays, day];
@@ -223,7 +225,9 @@ const AddPatient = () => {
       // Format medicine times
       const formattedMedicines = watch("medicines").map((med) => ({
         ...med,
-        medicineTimes: med.medicineTimes.map((time) => time.toTimeString().slice(0, 5)),
+        medicineTimes: med.medicineTimes.map((time) =>
+          time.toTimeString().slice(0, 5)
+        ),
         medicineDays: med.medicineDays, // Include days in the submitted data
       }));
 
@@ -234,7 +238,7 @@ const AddPatient = () => {
         medicines: formattedMedicines as any,
         role: 0, // Assuming 0 is for patients
       };
-      console.log(JSON.stringify(patientData, null, 2))
+      console.log(JSON.stringify(patientData, null, 2));
       await httpApiHandler.post(`/patients`, patientData);
 
       Alert.alert("Success", "Patient added successfully", [
@@ -276,7 +280,7 @@ const AddPatient = () => {
   //   }
   // }, [medicines, setValue]);
 
-  const medicines = watch("medicines")
+  const medicines = watch("medicines");
 
   return (
     <KeyboardAvoidingView
@@ -664,7 +668,7 @@ const AddPatient = () => {
                         style={[
                           styles.frequencyText,
                           medicine.frequency === freq &&
-                          styles.frequencyTextSelected,
+                            styles.frequencyTextSelected,
                         ]}
                       >
                         {freq}
@@ -721,8 +725,8 @@ const AddPatient = () => {
                         style={[
                           styles.dayCircle,
                           medicine.medicineDays &&
-                          medicine.medicineDays.includes(day.code) &&
-                          styles.daySelected,
+                            medicine.medicineDays.includes(day.code) &&
+                            styles.daySelected,
                         ]}
                         onPress={() => toggleMedicineDay(medIndex, day.code)}
                         activeOpacity={0.7}
@@ -731,8 +735,8 @@ const AddPatient = () => {
                           style={[
                             styles.dayText,
                             medicine.medicineDays &&
-                            medicine.medicineDays.includes(day.code) &&
-                            styles.dayTextSelected,
+                              medicine.medicineDays.includes(day.code) &&
+                              styles.dayTextSelected,
                           ]}
                         >
                           {day.shortName}
@@ -761,7 +765,7 @@ const AddPatient = () => {
                           .filter((_, index) => index > 4)
                           .map((d) => d.code);
                         updateMedicine(medIndex, "medicineDays", weekend);
-                        // Update form values for weekend                        
+                        // Update form values for weekend
                       }}
                     >
                       <Text style={styles.daySelectionButtonText}>Weekend</Text>
