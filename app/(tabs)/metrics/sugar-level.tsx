@@ -1,3 +1,5 @@
+"use client";
+
 import React, { useState } from "react";
 import {
   View,
@@ -10,18 +12,25 @@ import {
   TextInput,
   KeyboardAvoidingView,
   ScrollView,
+  ActivityIndicator,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { router } from "expo-router";
 import DateTimePicker from "@react-native-community/datetimepicker";
+import axios from "axios";
+import { API_URL } from "@/constants/Api";
+import { getToken } from "@/services/auth";
+import { useDecodedToken } from "@/hooks/useDecodedToken";
 
 export default function SugarLevelInput() {
+  const user = useDecodedToken();
   const [glucoseLevel, setGlucoseLevel] = useState("");
-  const [measurementType, setMeasurementType] = useState("fasting"); // fasting, before meal, after meal
+  const [measurementType, setMeasurementType] = useState("fasting"); // fasting, before_meal, after_meal
   const [notes, setNotes] = useState("");
   const [date, setDate] = useState(new Date());
   const [showDatePicker, setShowDatePicker] = useState(false);
   const [errors, setErrors] = useState({});
+  const [loading, setLoading] = useState(false);
 
   const onDateChange = (event, selectedDate) => {
     const currentDate = selectedDate || date;
@@ -52,19 +61,72 @@ export default function SugarLevelInput() {
     return Object.keys(newErrors).length === 0;
   };
 
-  const handleSubmit = () => {
-    if (validateForm()) {
-      // Here you would save the data to your backend or local storage
-      console.log({
-        glucoseLevel,
-        measurementType,
-        notes,
-        date,
-      });
+  const getUserId = async () => {
+    return user?.userId;
+  };
 
-      // Show success message and navigate back
-      alert("Blood sugar reading saved successfully!");
-      router.back();
+  const getMeasurementTypeValue = () => {
+    switch (measurementType) {
+      case "fasting":
+        return 1;
+      case "before_meal":
+        return 2;
+      case "after_meal":
+        return 3;
+      default:
+        return 1;
+    }
+  };
+
+  const handleSubmit = async () => {
+    if (validateForm()) {
+      try {
+        setLoading(true);
+        const token = await getToken();
+
+        // Prepare the data payload
+        const bloodSugarData = {
+          userId: await getUserId(),
+          entryDatetime: date.toISOString(),
+          sugarLevel: Number.parseInt(glucoseLevel),
+          measurementType: getMeasurementTypeValue(),
+          notes: notes || undefined,
+        };
+        console.log(bloodSugarData);
+
+        // Make the API call
+        const response = await axios.post(
+          `${API_URL}/blood_sugars`,
+          bloodSugarData,
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+              "Content-Type": "application/json",
+            },
+          }
+        );
+
+        // Handle success
+        if (response.status === 201 || response.status === 200) {
+          alert("Blood sugar reading saved successfully!");
+          router.back();
+        } else {
+          alert("Error saving blood sugar reading. Please try again.");
+        }
+      } catch (error) {
+        console.error("Error saving blood sugar:", error);
+        if (axios.isAxiosError(error)) {
+          console.error("Response data:", error.response?.data);
+          console.error("Response status:", error.response?.status);
+          alert(
+            `Failed to save: ${error.response?.data?.message || error.message}`
+          );
+        } else {
+          alert("Failed to save blood sugar reading. Please try again.");
+        }
+      } finally {
+        setLoading(false);
+      }
     }
   };
 
@@ -213,8 +275,13 @@ export default function SugarLevelInput() {
           <TouchableOpacity
             style={[styles.submitButton, { backgroundColor: "#FF5A5F" }]}
             onPress={handleSubmit}
+            disabled={loading}
           >
-            <Text style={styles.submitButtonText}>Save Reading</Text>
+            {loading ? (
+              <ActivityIndicator size="small" color="#ffffff" />
+            ) : (
+              <Text style={styles.submitButtonText}>Save Reading</Text>
+            )}
           </TouchableOpacity>
         </ScrollView>
       </KeyboardAvoidingView>
