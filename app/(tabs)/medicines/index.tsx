@@ -888,6 +888,7 @@ const styles = StyleSheet.create({
   sortContainer: {
     flexDirection: "row",
     marginBottom: 16,
+    height: 40,
   },
   sortButton: {
     flexDirection: "row",

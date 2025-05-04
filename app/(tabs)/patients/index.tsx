@@ -1,5 +1,5 @@
 "use client";
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import {
   View,
   Text,
@@ -13,8 +13,14 @@ import {
   ActivityIndicator,
   ScrollView,
   RefreshControl,
+  Platform,
 } from "react-native";
-import { Ionicons, MaterialIcons, FontAwesome5 } from "@expo/vector-icons";
+import {
+  Ionicons,
+  MaterialIcons,
+  FontAwesome5,
+  Feather,
+} from "@expo/vector-icons";
 import { router } from "expo-router";
 import { API_URL } from "@/constants/Api";
 import axios from "axios";
@@ -33,6 +39,7 @@ interface Patient {
   exerciseTime: string;
   password?: string;
   role: number;
+  createdAt?: string; // Add createdAt field for sorting by recent
 }
 
 export default function PatientScreen() {
@@ -45,8 +52,9 @@ export default function PatientScreen() {
   const [detailModalVisible, setDetailModalVisible] = useState(false);
   const [editModalVisible, setEditModalVisible] = useState(false);
   const [editedPatient, setEditedPatient] = useState<Partial<Patient>>({});
-  const [sortBy, setSortBy] = useState("name");
-  const [sortOrder, setSortOrder] = useState("asc");
+  const [sortBy, setSortBy] = useState("recent"); // Default to recent
+  const [sortOrder, setSortOrder] = useState("desc"); // Default to descending for recent
+  const [isRefreshing, setIsRefreshing] = useState(false);
 
   // Fetch patients data
   const fetchPatients = async () => {
@@ -59,7 +67,14 @@ export default function PatientScreen() {
         },
       });
       if (response.data) {
-        const patientData = response.data.filter((p: any) => p.role === 0);
+        // Filter patients and add timestamp if not present
+        const patientData = response.data
+          .filter((p: any) => p && p.role === 0)
+          .map((p: any) => ({
+            ...p,
+            // If createdAt doesn't exist, use current time as fallback
+            createdAt: p.createdAt || new Date().toISOString(),
+          }));
         setPatients(patientData);
         applyFilters(patientData, searchQuery);
       }
@@ -69,6 +84,7 @@ export default function PatientScreen() {
     } finally {
       setLoading(false);
       setRefreshing(false);
+      setIsRefreshing(false);
     }
   };
 
@@ -80,9 +96,9 @@ export default function PatientScreen() {
     if (query) {
       filtered = filtered.filter(
         (p) =>
-          p.name.toLowerCase().includes(query.toLowerCase()) ||
-          p.uhidNumber.toLowerCase().includes(query.toLowerCase()) ||
-          p.email.toLowerCase().includes(query.toLowerCase())
+          p.name?.toLowerCase().includes(query.toLowerCase()) ||
+          p.uhidNumber?.toLowerCase().includes(query.toLowerCase()) ||
+          p.email?.toLowerCase().includes(query.toLowerCase())
       );
     }
 
@@ -91,17 +107,23 @@ export default function PatientScreen() {
       let comparison = 0;
 
       switch (sortBy) {
+        case "recent":
+          // Sort by creation date (newest first)
+          const dateA = new Date(a.createdAt || 0).getTime();
+          const dateB = new Date(b.createdAt || 0).getTime();
+          comparison = dateB - dateA; // Descending by default for recent
+          break;
         case "name":
-          comparison = a.name.localeCompare(b.name);
+          comparison = (a.name || "").localeCompare(b.name || "");
           break;
         case "uhid":
-          comparison = a.uhidNumber.localeCompare(b.uhidNumber);
+          comparison = (a.uhidNumber || "").localeCompare(b.uhidNumber || "");
           break;
         case "gender":
-          comparison = a.gender.localeCompare(b.gender);
+          comparison = (a.gender || "").localeCompare(b.gender || "");
           break;
         case "age":
-          comparison = a.age - b.age;
+          comparison = (a.age || 0) - (b.age || 0);
           break;
         default:
           comparison = 0;
@@ -122,6 +144,12 @@ export default function PatientScreen() {
   // Handle refresh
   const onRefresh = () => {
     setRefreshing(true);
+    fetchPatients();
+  };
+
+  // Manual refresh function
+  const handleManualRefresh = () => {
+    setIsRefreshing(true);
     fetchPatients();
   };
 
@@ -206,7 +234,8 @@ export default function PatientScreen() {
       setSortOrder(sortOrder === "asc" ? "desc" : "asc");
     } else {
       setSortBy(field);
-      setSortOrder("asc");
+      // For "recent" sort, default to descending (newest first)
+      setSortOrder(field === "recent" ? "desc" : "asc");
     }
   };
 
@@ -231,18 +260,68 @@ export default function PatientScreen() {
     );
   };
 
+  // Format phone number for better readability
+  const formatPhoneNumber = (phone: string) => {
+    if (!phone) return "";
+    // Remove non-numeric characters
+    const cleaned = phone.replace(/\D/g, "");
+    // Format based on length
+    if (cleaned.length === 10) {
+      return `${cleaned.slice(0, 3)}-${cleaned.slice(3, 6)}-${cleaned.slice(
+        6
+      )}`;
+    }
+    return phone;
+  };
+
+  // Get time elapsed since creation
+  const getTimeElapsed = (createdAt: string) => {
+    if (!createdAt) return "";
+
+    const created = new Date(createdAt);
+    const now = new Date();
+    const diffMs = now.getTime() - created.getTime();
+    const diffMins = Math.floor(diffMs / 60000);
+    const diffHours = Math.floor(diffMins / 60);
+    const diffDays = Math.floor(diffHours / 24);
+
+    if (diffMins < 60) {
+      return `${diffMins}m ago`;
+    } else if (diffHours < 24) {
+      return `${diffHours}h ago`;
+    } else if (diffDays < 30) {
+      return `${diffDays}d ago`;
+    } else {
+      return created.toLocaleDateString();
+    }
+  };
+
   return (
     <View style={styles.container}>
       {/* Top Bar with Add Patient Button */}
       <View style={styles.topBar}>
         <Text style={styles.pageTitle}>Patients</Text>
-        <TouchableOpacity
-          style={styles.addButton}
-          onPress={() => router.push("/add-patients")}
-        >
-          <Ionicons name="add-circle-outline" size={28} color="white" />
-          <Text style={styles.addButtonText}>Add</Text>
-        </TouchableOpacity>
+        <View style={styles.topBarActions}>
+          <TouchableOpacity
+            style={styles.refreshButton}
+            onPress={handleManualRefresh}
+            disabled={isRefreshing}
+          >
+            <Feather
+              name="refresh-cw"
+              size={20}
+              color="white"
+              style={isRefreshing ? styles.rotating : undefined}
+            />
+          </TouchableOpacity>
+          <TouchableOpacity
+            style={styles.addButton}
+            onPress={() => router.push("/add-patients")}
+          >
+            <Ionicons name="add-circle-outline" size={24} color="white" />
+            <Text style={styles.addButtonText}>Add</Text>
+          </TouchableOpacity>
+        </View>
       </View>
 
       {/* Search and Filter Bar */}
@@ -275,6 +354,16 @@ export default function PatientScreen() {
         showsHorizontalScrollIndicator={false}
         style={styles.sortContainer}
       >
+        <TouchableOpacity
+          style={[
+            styles.sortButton,
+            sortBy === "recent" && styles.activeSortButton,
+          ]}
+          onPress={() => toggleSort("recent")}
+        >
+          <Text style={styles.sortButtonText}>Recent</Text>
+          {renderSortIndicator("recent")}
+        </TouchableOpacity>
         <TouchableOpacity
           style={[
             styles.sortButton,
@@ -342,6 +431,12 @@ export default function PatientScreen() {
                   ? "No patients match your search"
                   : "No patients found"}
               </Text>
+              <TouchableOpacity
+                style={styles.emptyRefreshButton}
+                onPress={onRefresh}
+              >
+                <Text style={styles.emptyRefreshText}>Refresh</Text>
+              </TouchableOpacity>
             </View>
           }
           renderItem={({ item }) => (
@@ -355,32 +450,41 @@ export default function PatientScreen() {
               <View style={styles.patientInfo}>
                 <View style={styles.patientHeader}>
                   <Text style={styles.patientName}>{item.name}</Text>
-                  <View style={styles.genderBadge}>
-                    <FontAwesome5
-                      name={
-                        item.gender.toLowerCase() === "male" ? "mars" : "venus"
-                      }
-                      size={12}
-                      color="white"
-                    />
-                    <Text style={styles.genderText}>{item.gender}</Text>
+                  <View style={styles.headerBadges}>
+                    <View style={styles.genderBadge}>
+                      <FontAwesome5
+                        name={
+                          item.gender?.toLowerCase() === "male"
+                            ? "mars"
+                            : "venus"
+                        }
+                        size={12}
+                        color="white"
+                      />
+                      <Text style={styles.genderText}>{item.gender}</Text>
+                    </View>
+
+                    {item.createdAt && (
+                      <View style={styles.timeBadge}>
+                        <Feather name="clock" size={10} color="white" />
+                        <Text style={styles.timeText}>
+                          {getTimeElapsed(item.createdAt)}
+                        </Text>
+                      </View>
+                    )}
                   </View>
                 </View>
 
                 <View style={styles.patientDetails}>
-                  <View style={styles.detailItem}>
-                    <FontAwesome5 name="id-card" size={12} color="#bbb" />
-                    <Text style={styles.patientInfoText}>
-                      UHID: {item.uhidNumber}
-                    </Text>
-                  </View>
-
-                  <View style={styles.detailItem}>
-                    <FontAwesome5 name="envelope" size={12} color="#bbb" />
-                    <Text style={styles.patientInfoText}>{item.email}</Text>
-                  </View>
-
                   <View style={styles.detailRow}>
+                    <View style={styles.detailItem}>
+                      <FontAwesome5 name="id-card" size={12} color="#bbb" />
+                      <Text style={styles.patientInfoText}>
+                        <Text style={styles.labelText}>UHID:</Text>{" "}
+                        {item.uhidNumber}
+                      </Text>
+                    </View>
+
                     <View style={styles.detailItem}>
                       <FontAwesome5
                         name="birthday-cake"
@@ -388,29 +492,41 @@ export default function PatientScreen() {
                         color="#bbb"
                       />
                       <Text style={styles.patientInfoText}>
-                        Age: {item.age}
-                      </Text>
-                    </View>
-
-                    <View style={styles.detailItem}>
-                      <FontAwesome5 name="phone" size={12} color="#bbb" />
-                      <Text style={styles.patientInfoText}>
-                        {item.phoneNumber}
+                        <Text style={styles.labelText}>Age:</Text> {item.age}
                       </Text>
                     </View>
                   </View>
 
                   <View style={styles.detailItem}>
-                    <FontAwesome5 name="running" size={12} color="#bbb" />
-                    <Text style={styles.patientInfoText}>
-                      Exercise: {item.exerciseTime}
+                    <FontAwesome5 name="envelope" size={12} color="#bbb" />
+                    <Text style={styles.patientInfoText} numberOfLines={1}>
+                      <Text style={styles.labelText}>Email:</Text> {item.email}
                     </Text>
+                  </View>
+
+                  <View style={styles.detailRow}>
+                    <View style={styles.detailItem}>
+                      <FontAwesome5 name="phone" size={12} color="#bbb" />
+                      <Text style={styles.patientInfoText}>
+                        <Text style={styles.labelText}>Phone:</Text>{" "}
+                        {formatPhoneNumber(item.phoneNumber)}
+                      </Text>
+                    </View>
+
+                    <View style={styles.detailItem}>
+                      <FontAwesome5 name="running" size={12} color="#bbb" />
+                      <Text style={styles.patientInfoText}>
+                        <Text style={styles.labelText}>Exercise:</Text>{" "}
+                        {item.exerciseTime}
+                      </Text>
+                    </View>
                   </View>
                 </View>
               </View>
 
               <View style={styles.actionIcons}>
                 <TouchableOpacity
+                  style={styles.actionButton}
                   onPress={(e) => {
                     e.stopPropagation();
                     setSelectedPatient(item);
@@ -418,16 +534,17 @@ export default function PatientScreen() {
                     setEditModalVisible(true);
                   }}
                 >
-                  <MaterialIcons name="edit" size={24} color="#4CAF50" />
+                  <MaterialIcons name="edit" size={22} color="#4CAF50" />
                 </TouchableOpacity>
 
                 <TouchableOpacity
+                  style={styles.actionButton}
                   onPress={(e) => {
                     e.stopPropagation();
                     handleDeletePatient(item.id);
                   }}
                 >
-                  <MaterialIcons name="delete" size={24} color="#E9446A" />
+                  <MaterialIcons name="delete" size={22} color="#E9446A" />
                 </TouchableOpacity>
               </View>
             </Pressable>
@@ -512,7 +629,7 @@ export default function PatientScreen() {
                     <View style={styles.detailCol}>
                       <Text style={styles.detailLabel}>Phone</Text>
                       <Text style={styles.detailValue}>
-                        {selectedPatient.phoneNumber}
+                        {formatPhoneNumber(selectedPatient.phoneNumber)}
                       </Text>
                     </View>
                   </View>
@@ -629,6 +746,7 @@ export default function PatientScreen() {
                 >
                   <Picker.Item label="Male" value="Male" />
                   <Picker.Item label="Female" value="Female" />
+                  <Picker.Item label="Other" value="Other" />
                 </Picker>
               </View>
 
@@ -639,7 +757,7 @@ export default function PatientScreen() {
                 onChangeText={(text) =>
                   setEditedPatient({
                     ...editedPatient,
-                    age: parseInt(text) || 0,
+                    age: Number.parseInt(text) || 0,
                   })
                 }
                 placeholder="Enter age"
@@ -688,7 +806,7 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: "#1A1A2E",
-    paddingTop: 50,
+    paddingTop: Platform.OS === "ios" ? 50 : 40,
     paddingHorizontal: 16,
   },
   topBar: {
@@ -696,6 +814,10 @@ const styles = StyleSheet.create({
     justifyContent: "space-between",
     alignItems: "center",
     marginBottom: 16,
+  },
+  topBarActions: {
+    flexDirection: "row",
+    alignItems: "center",
   },
   pageTitle: {
     fontSize: 24,
@@ -709,6 +831,15 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     paddingHorizontal: 16,
+  },
+  refreshButton: {
+    backgroundColor: "#3A3A4C",
+    padding: 10,
+    borderRadius: 50,
+    marginRight: 10,
+  },
+  rotating: {
+    transform: [{ rotate: "45deg" }],
   },
   addButtonText: {
     color: "#fff",
@@ -736,13 +867,14 @@ const styles = StyleSheet.create({
   sortContainer: {
     flexDirection: "row",
     marginBottom: 16,
+    height: 35,
   },
   sortButton: {
     flexDirection: "row",
     alignItems: "center",
     backgroundColor: "#2A2A3C",
     paddingHorizontal: 12,
-    paddingVertical: 6,
+    paddingVertical: 4,
     borderRadius: 20,
     marginRight: 8,
   },
@@ -763,6 +895,10 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     justifyContent: "space-between",
     elevation: 2,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
   },
   patientInfo: {
     flex: 1,
@@ -770,13 +906,18 @@ const styles = StyleSheet.create({
   patientHeader: {
     flexDirection: "row",
     alignItems: "center",
-    marginBottom: 8,
+    justifyContent: "space-between",
+    marginBottom: 10,
+  },
+  headerBadges: {
+    flexDirection: "row",
+    alignItems: "center",
   },
   patientName: {
     fontSize: 18,
     fontWeight: "bold",
     color: "#fff",
-    marginRight: 8,
+    flex: 1,
   },
   genderBadge: {
     flexDirection: "row",
@@ -785,33 +926,60 @@ const styles = StyleSheet.create({
     paddingHorizontal: 8,
     paddingVertical: 2,
     borderRadius: 12,
+    marginRight: 6,
   },
   genderText: {
     color: "#fff",
     fontSize: 12,
     marginLeft: 4,
   },
+  timeBadge: {
+    flexDirection: "row",
+    alignItems: "center",
+    backgroundColor: "#4CAF50",
+    paddingHorizontal: 8,
+    paddingVertical: 2,
+    borderRadius: 12,
+  },
+  timeText: {
+    color: "#fff",
+    fontSize: 12,
+    marginLeft: 4,
+  },
   patientDetails: {
-    gap: 6,
+    gap: 8,
   },
   detailRow: {
     flexDirection: "row",
     justifyContent: "space-between",
+    flexWrap: "wrap",
   },
   detailItem: {
     flexDirection: "row",
     alignItems: "center",
     gap: 6,
+    marginRight: 8,
+    marginBottom: 4,
+  },
+  labelText: {
+    color: "#999",
+    fontWeight: "500",
   },
   patientInfoText: {
     fontSize: 14,
-    color: "#bbb",
-    marginRight: 8,
+    color: "#ddd",
   },
   actionIcons: {
     flexDirection: "column",
     justifyContent: "center",
-    gap: 16,
+    gap: 12,
+  },
+  actionButton: {
+    padding: 6,
+    backgroundColor: "rgba(255,255,255,0.1)",
+    borderRadius: 8,
+    alignItems: "center",
+    justifyContent: "center",
   },
   loadingContainer: {
     flex: 1,
@@ -832,6 +1000,17 @@ const styles = StyleSheet.create({
     color: "#bbb",
     marginTop: 16,
     fontSize: 16,
+  },
+  emptyRefreshButton: {
+    marginTop: 16,
+    paddingVertical: 8,
+    paddingHorizontal: 16,
+    backgroundColor: "#E9446A",
+    borderRadius: 8,
+  },
+  emptyRefreshText: {
+    color: "#fff",
+    fontWeight: "500",
   },
   modalOverlay: {
     flex: 1,
@@ -892,6 +1071,14 @@ const styles = StyleSheet.create({
   },
   picker: {
     color: "#fff",
+  },
+  saveButton: {
+    backgroundColor: "#E9446A",
+    padding: 14,
+    borderRadius: 8,
+    alignItems: "center",
+    marginTop: 8,
+    marginBottom: 20,
   },
   saveButton: {
     backgroundColor: "#E9446A",
