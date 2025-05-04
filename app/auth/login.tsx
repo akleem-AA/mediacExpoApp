@@ -24,14 +24,14 @@ export default function LoginScreen() {
 
   const handleLogin = async () => {
     if (!email || !password) {
-      setMessage("Please enter both email and password");
+      setMessage("Please enter both email/phone and password");
       return;
     }
 
     try {
       setIsLoading(true);
       await onLogin(email, password);
-      setIsLoading(false);      
+      setIsLoading(false);
       setMessage(`Login successful!`);
     } catch (error: any) {
       console.log(error);
@@ -66,9 +66,9 @@ export default function LoginScreen() {
           {/* Form Section */}
           <View style={styles.formSection}>
             <View style={styles.inputContainer}>
-              <Text style={styles.inputLabel}>Email</Text>
+              <Text style={styles.inputLabel}>Email or Phone Number</Text>
               <TextInput
-                placeholder="Enter your email"
+                placeholder="Enter your email or phone number"
                 value={email}
                 onChangeText={setEmail}
                 style={styles.input}
@@ -122,14 +122,14 @@ export default function LoginScreen() {
             <View style={styles.imageContainer}>
               <View style={styles.imageWrapper}>
                 <Image
-                  source={{ uri: "https://setfacility.in/mediac/health1.jpg" }}
+                  source={{ uri: "https://mediac.in/images/health1.jpg" }}
                   style={styles.image}
                 />
                 <Text style={styles.imageCaption}>Exercise</Text>
               </View>
               <View style={styles.imageWrapper}>
                 <Image
-                  source={{ uri: "https://setfacility.in/mediac/health2.jpg" }}
+                  source={{ uri: "https://mediac.in/images/health2.jpg" }}
                   style={styles.image}
                 />
                 <Text style={styles.imageCaption}>Nutrition</Text>

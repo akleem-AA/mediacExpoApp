@@ -1,4 +1,6 @@
-import React, { useState } from "react";
+"use client";
+
+import { useState } from "react";
 import {
   View,
   Text,
@@ -10,10 +12,14 @@ import {
   TextInput,
   KeyboardAvoidingView,
   ScrollView,
+  ActivityIndicator,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { router } from "expo-router";
 import DateTimePicker from "@react-native-community/datetimepicker";
+import axios from "axios";
+import { API_URL } from "@/constants/Api";
+import { getToken } from "@/services/auth";
 
 export default function BloodPressureInput() {
   const [systolic, setSystolic] = useState("");
@@ -23,14 +29,15 @@ export default function BloodPressureInput() {
   const [date, setDate] = useState(new Date());
   const [showDatePicker, setShowDatePicker] = useState(false);
   const [errors, setErrors] = useState({});
+  const [loading, setLoading] = useState(false);
 
-  const onDateChange = (event, selectedDate) => {
+  const onDateChange = (event: any, selectedDate: Date) => {
     const currentDate = selectedDate || date;
     setShowDatePicker(Platform.OS === "ios");
     setDate(currentDate);
   };
 
-  const formatDate = (date) => {
+  const formatDate = (date: Date) => {
     return date.toLocaleDateString("en-US", {
       year: "numeric",
       month: "short",
@@ -41,21 +48,30 @@ export default function BloodPressureInput() {
   };
 
   const validateForm = () => {
-    let newErrors = {};
+    const newErrors = {};
 
     if (!systolic) {
       newErrors.systolic = "Systolic pressure is required";
-    } else if (parseInt(systolic) < 70 || parseInt(systolic) > 220) {
+    } else if (
+      Number.parseInt(systolic) < 70 ||
+      Number.parseInt(systolic) > 220
+    ) {
       newErrors.systolic = "Value should be between 70-220 mmHg";
     }
 
     if (!diastolic) {
       newErrors.diastolic = "Diastolic pressure is required";
-    } else if (parseInt(diastolic) < 40 || parseInt(diastolic) > 120) {
+    } else if (
+      Number.parseInt(diastolic) < 40 ||
+      Number.parseInt(diastolic) > 120
+    ) {
       newErrors.diastolic = "Value should be between 40-120 mmHg";
     }
 
-    if (pulse && (parseInt(pulse) < 40 || parseInt(pulse) > 200)) {
+    if (
+      pulse &&
+      (Number.parseInt(pulse) < 40 || Number.parseInt(pulse) > 200)
+    ) {
       newErrors.pulse = "Value should be between 40-200 bpm";
     }
 
@@ -63,20 +79,62 @@ export default function BloodPressureInput() {
     return Object.keys(newErrors).length === 0;
   };
 
-  const handleSubmit = () => {
-    if (validateForm()) {
-      // Here you would save the data to your backend or local storage
-      console.log({
-        systolic,
-        diastolic,
-        pulse,
-        notes,
-        date,
-      });
+  const getUserId = async () => {
+    // This is a placeholder - implement according to your auth system
+    // For example, you might get it from AsyncStorage or a context
+    // return await AsyncStorage.getItem('userId');
+    return "current-user-id"; // Replace with actual implementation
+  };
 
-      // Show success message and navigate back
-      alert("Blood pressure reading saved successfully!");
-      router.back();
+  const handleSubmit = async () => {
+    if (validateForm()) {
+      try {
+        setLoading(true);
+        const token = await getToken();
+
+        // Prepare the data payload
+        const bloodPressureData = {
+          userId: await getUserId(), // You'll need to implement this function
+          entryDatetime: date.toISOString(),
+          systolic: Number.parseInt(systolic),
+          diastolic: Number.parseInt(diastolic),
+          pulse: pulse ? Number.parseInt(pulse) : undefined,
+          notes: notes || undefined,
+        };
+
+        // Make the API call
+        const response = await axios.post(
+          `${API_URL}/blood-pressures`,
+          bloodPressureData,
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+              "Content-Type": "application/json",
+            },
+          }
+        );
+
+        // Handle success
+        if (response.status === 201 || response.status === 200) {
+          alert("Blood pressure reading saved successfully!");
+          router.back();
+        } else {
+          alert("Error saving blood pressure reading. Please try again.");
+        }
+      } catch (error) {
+        console.error("Error saving blood pressure:", error);
+        if (axios.isAxiosError(error)) {
+          console.error("Response data:", error.response?.data);
+          console.error("Response status:", error.response?.status);
+          alert(
+            `Failed to save: ${error.response?.data?.message || error.message}`
+          );
+        } else {
+          alert("Failed to save blood pressure reading. Please try again.");
+        }
+      } finally {
+        setLoading(false);
+      }
     }
   };
 
@@ -196,8 +254,16 @@ export default function BloodPressureInput() {
             />
           </View>
 
-          <TouchableOpacity style={styles.submitButton} onPress={handleSubmit}>
-            <Text style={styles.submitButtonText}>Save Reading</Text>
+          <TouchableOpacity
+            style={styles.submitButton}
+            onPress={handleSubmit}
+            disabled={loading}
+          >
+            {loading ? (
+              <ActivityIndicator size="small" color="#ffffff" />
+            ) : (
+              <Text style={styles.submitButtonText}>Save Reading</Text>
+            )}
           </TouchableOpacity>
         </ScrollView>
       </KeyboardAvoidingView>
