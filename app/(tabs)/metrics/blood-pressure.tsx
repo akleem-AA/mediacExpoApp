@@ -20,8 +20,10 @@ import DateTimePicker from "@react-native-community/datetimepicker";
 import axios from "axios";
 import { API_URL } from "@/constants/Api";
 import { getToken } from "@/services/auth";
+import { useDecodedToken } from "@/hooks/useDecodedToken";
 
 export default function BloodPressureInput() {
+  const user = useDecodedToken();
   const [systolic, setSystolic] = useState("");
   const [diastolic, setDiastolic] = useState("");
   const [pulse, setPulse] = useState("");
@@ -83,7 +85,7 @@ export default function BloodPressureInput() {
     // This is a placeholder - implement according to your auth system
     // For example, you might get it from AsyncStorage or a context
     // return await AsyncStorage.getItem('userId');
-    return "current-user-id"; // Replace with actual implementation
+    return user?.userId;
   };
 
   const handleSubmit = async () => {
@@ -104,7 +106,7 @@ export default function BloodPressureInput() {
 
         // Make the API call
         const response = await axios.post(
-          `${API_URL}/blood-pressures`,
+          `${API_URL}/blood_pressures`,
           bloodPressureData,
           {
             headers: {
