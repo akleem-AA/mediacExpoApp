@@ -58,9 +58,9 @@ export default function LoginScreen() {
               resizeMode="contain"
             />
             <Text style={styles.title}>Mediac</Text>
-            <Text style={styles.subtitle}>
+            {/* <Text style={styles.subtitle}>
               Sign in to continue your health journey
-            </Text>
+            </Text> */}
           </View>
 
           {/* Form Section */}
