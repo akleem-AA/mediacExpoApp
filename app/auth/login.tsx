@@ -136,7 +136,7 @@ export default function LoginScreen() {
               </View>
               <View style={styles.imageWrapper}>
                 <Image
-                  source={{ uri: "https://setfacility.in/mediac/health3.jpg" }}
+                  source={{ uri: "https://mediac.in/images/health3.jpg" }}
                   style={styles.image}
                 />
                 <Text style={styles.imageCaption}>Wellness</Text>
