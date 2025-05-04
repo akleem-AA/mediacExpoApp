@@ -25,11 +25,12 @@ import { getToken } from "@/services/auth";
 interface Medicine {
   id: number;
   medicineName: string;
-  medicineDose: number;
+  medicineDose: string;
   medicineDoseUnit: string;
   medicineFrequency: string;
   timing: string;
   medicine_notes?: string;
+  notes?: string;
   startDate: string;
   endDate?: string;
 }
@@ -65,7 +66,20 @@ export default function MedicineScreen() {
         },
       });
       if (response.data) {
-        const medicineData = response.data.filter((p: any) => p);
+        // Filter out null/undefined entries and ensure each item has required properties
+        const medicineData = response.data
+          .filter((p) => p)
+          .map((medicine) => ({
+            id: medicine.id || Math.random(),
+            medicineName: medicine.medicineName || "Unknown",
+            medicineDose: medicine.medicineDose || "0",
+            medicineDoseUnit: medicine.medicineDoseUnit || "mg",
+            medicineFrequency: medicine.medicineFrequency || "Once daily",
+            timing: medicine.timing || "",
+            medicine_notes:
+              medicine.medicineNotes || medicine.medicine_notes || "",
+            startDate: medicine.startDate || new Date().toISOString(),
+          }));
         setMedicines(medicineData);
         applyFilters(medicineData, searchQuery);
       }
@@ -77,8 +91,6 @@ export default function MedicineScreen() {
       setRefreshing(false);
     }
   };
-
-  console.log("medicines", medicines);
 
   // Apply filters and sorting
   const applyFilters = (data: Medicine[], query: string) => {
@@ -102,7 +114,9 @@ export default function MedicineScreen() {
           comparison = a.medicineName.localeCompare(b.medicineName);
           break;
         case "medicineDose":
-          comparison = a.medicineDose - b.medicineDose;
+          const doseA = Number.parseFloat(a.medicineDose) || 0;
+          const doseB = Number.parseFloat(b.medicineDose) || 0;
+          comparison = doseA - doseB;
           break;
         case "medicineFrequency":
           comparison = a.medicineFrequency.localeCompare(b.medicineFrequency);
@@ -182,33 +196,78 @@ export default function MedicineScreen() {
   };
 
   // Handle add medicine
-  const handleAddMedicine = () => {
+  const handleAddMedicine = async () => {
     // Validate required fields
     if (!newMedicine.medicineName || !newMedicine.medicineDose) {
       Alert.alert("Error", "Name and Dose are required fields");
       return;
     }
 
-    const newId = Math.max(...medicines.map((m) => m.id), 0) + 1;
-    const medicineToAdd = {
-      ...newMedicine,
-      id: newId,
-    } as Medicine;
+    const medicineData = {
+      medicineName: newMedicine.medicineName,
+      medicineDose: newMedicine.medicineDose,
+      medicineDoseUnit: newMedicine.medicineDoseUnit || "mg",
+      medicineFrequency: newMedicine.medicineFrequency || "Once daily",
+      medicineNotes: newMedicine.notes || "",
+    };
 
-    // In a real app, you would call API to add
-    const updatedMedicines = [...medicines, medicineToAdd];
-    setMedicines(updatedMedicines);
-    applyFilters(updatedMedicines, searchQuery);
-    setAddModalVisible(false);
-    setNewMedicine({
-      medicineName: "",
-      medicineDose: 0,
-      medicineDoseUnit: "mg",
-      medicineFrequency: "Once daily",
-      timing: "Morning",
-      startDate: new Date().toISOString().split("T")[0],
-    });
-    Alert.alert("Success", "Medication added successfully");
+    try {
+      // Get the authentication token
+      const token = await getToken();
+
+      // Send a POST request to add the medicine to the backend with the Authorization header
+      const response = await axios.post(`${API_URL}/medicines`, medicineData, {
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      // Assuming the API returns the newly added medicine with an `id` and other details
+      const newMedicineFromAPI = response.data;
+
+      // Ensure the new medicine has all required properties before adding to state
+      const completeNewMedicine = {
+        id: newMedicineFromAPI.id || Math.random(), // Fallback to random ID if none provided
+        medicineName:
+          newMedicineFromAPI.medicineName || medicineData.medicineName,
+        medicineDose:
+          newMedicineFromAPI.medicineDose || medicineData.medicineDose,
+        medicineDoseUnit:
+          newMedicineFromAPI.medicineDoseUnit || medicineData.medicineDoseUnit,
+        medicineFrequency:
+          newMedicineFromAPI.medicineFrequency ||
+          medicineData.medicineFrequency,
+        medicine_notes:
+          newMedicineFromAPI.medicineNotes || medicineData.medicineNotes,
+        startDate: new Date().toISOString(), // Default to current date if not provided
+        timing: "",
+      };
+
+      // Update the state with the new medicine
+      const updatedMedicines = [...medicines, completeNewMedicine];
+      setMedicines(updatedMedicines);
+
+      // Apply any filters or updates needed after adding the new medicine
+      applyFilters(updatedMedicines, searchQuery);
+
+      // Close the modal and reset the form
+      setAddModalVisible(false);
+      setNewMedicine({
+        medicineName: "",
+        medicineDose: "",
+        medicineDoseUnit: "mg",
+        medicineFrequency: "Once daily",
+      });
+
+      Alert.alert("Success", "Medication added successfully");
+    } catch (error) {
+      console.error("Error adding medicine:", error);
+      Alert.alert(
+        "Error",
+        "There was an issue adding the medication. Please try again."
+      );
+    }
   };
 
   // Toggle sort order
@@ -333,7 +392,9 @@ export default function MedicineScreen() {
       ) : (
         <FlatList
           data={filteredMedicines}
-          keyExtractor={(item) => item.id.toString()}
+          keyExtractor={(item) =>
+            item.id ? item.id.toString() : Math.random().toString()
+          }
           refreshControl={
             <RefreshControl
               refreshing={refreshing}
@@ -351,84 +412,78 @@ export default function MedicineScreen() {
               </Text>
             </View>
           }
-          renderItem={({ item }) => (
-            <Pressable
-              style={styles.medicineCard}
-              onPress={() => {
-                setSelectedMedicine(item);
-                setDetailModalVisible(true);
-              }}
-            >
-              <View style={styles.medicineInfo}>
-                <View style={styles.medicineHeader}>
-                  <Text style={styles.medicineName}>{item.medicineName}</Text>
-                  <View style={styles.doseBadge}>
-                    <Text style={styles.doseText}>
-                      {item.medicineDose} {item.medicineDoseUnit}
-                    </Text>
-                  </View>
-                </View>
+          renderItem={({ item }) => {
+            // Ensure all required properties exist
+            if (!item || !item.medicineName) {
+              return null; // Skip rendering if essential data is missing
+            }
 
-                <View style={styles.medicineDetails}>
-                  <View style={styles.detailItem}>
-                    <FontAwesome5 name="clock" size={12} color="#bbb" />
-                    <Text style={styles.medicineInfoText}>
-                      {item.medicineFrequency}
-                    </Text>
-                  </View>
-
-                  {/* <View style={styles.detailItem}>
-                    <FontAwesome5 name="calendar-alt" size={12} color="#bbb" />
-                    <Text style={styles.medicineInfoText}>
-                      Since {new Date(item.startDate).toLocaleDateString()}
-                      {item.endDate &&
-                        ` to ${new Date(item.endDate).toLocaleDateString()}`}
-                    </Text>
-                  </View> */}
-                  {/* 
-                  <View style={styles.detailItem}>
-                    <FontAwesome5
-                      name="hourglass-half"
-                      size={12}
-                      color="#bbb"
-                    />
-                    <Text style={styles.medicineInfoText}>{item.timing}</Text>
-                  </View> */}
-
-                  {item.medicineNotes && (
-                    <View style={styles.detailItem}>
-                      <FontAwesome5 name="sticky-note" size={12} color="#bbb" />
-                      <Text style={styles.medicineInfoText} numberOfLines={1}>
-                        {item.medicineNotes}
+            return (
+              <Pressable
+                style={styles.medicineCard}
+                onPress={() => {
+                  setSelectedMedicine(item);
+                  setDetailModalVisible(true);
+                }}
+              >
+                <View style={styles.medicineInfo}>
+                  <View style={styles.medicineHeader}>
+                    <Text style={styles.medicineName}>{item.medicineName}</Text>
+                    <View style={styles.doseBadge}>
+                      <Text style={styles.doseText}>
+                        {item.medicineDose || "N/A"}{" "}
+                        {item.medicineDoseUnit || ""}
                       </Text>
                     </View>
-                  )}
+                  </View>
+
+                  <View style={styles.medicineDetails}>
+                    <View style={styles.detailItem}>
+                      <FontAwesome5 name="clock" size={12} color="#bbb" />
+                      <Text style={styles.medicineInfoText}>
+                        {item.medicineFrequency || "N/A"}
+                      </Text>
+                    </View>
+
+                    {item.medicineNotes && (
+                      <View style={styles.detailItem}>
+                        <FontAwesome5
+                          name="sticky-note"
+                          size={12}
+                          color="#bbb"
+                        />
+                        <Text style={styles.medicineInfoText} numberOfLines={1}>
+                          {item.medicineNotes}
+                        </Text>
+                      </View>
+                    )}
+                  </View>
                 </View>
-              </View>
 
-              <View style={styles.actionIcons}>
-                <TouchableOpacity
-                  onPress={(e) => {
-                    e.stopPropagation();
-                    setSelectedMedicine(item);
-                    setEditedMedicine({ ...item });
-                    setEditModalVisible(true);
-                  }}
-                >
-                  <MaterialIcons name="edit" size={24} color="#4CAF50" />
-                </TouchableOpacity>
+                <View style={styles.actionIcons}>
+                  <TouchableOpacity
+                    onPress={(e) => {
+                      e.stopPropagation();
+                      setSelectedMedicine(item);
+                      setEditedMedicine({ ...item });
+                      setEditModalVisible(true);
+                    }}
+                  >
+                    <MaterialIcons name="edit" size={24} color="#4CAF50" />
+                  </TouchableOpacity>
 
-                <TouchableOpacity
-                  onPress={(e) => {
-                    e.stopPropagation();
-                    handleDeleteMedicine(item.id);
-                  }}
-                >
-                  <MaterialIcons name="delete" size={24} color="#E9446A" />
-                </TouchableOpacity>
-              </View>
-            </Pressable>
-          )}
+                  <TouchableOpacity
+                    onPress={(e) => {
+                      e.stopPropagation();
+                      handleDeleteMedicine(item.id);
+                    }}
+                  >
+                    <MaterialIcons name="delete" size={24} color="#E9446A" />
+                  </TouchableOpacity>
+                </View>
+              </Pressable>
+            );
+          }}
         />
       )}
 
@@ -482,43 +537,6 @@ export default function MedicineScreen() {
                         {selectedMedicine.medicineFrequency}
                       </Text>
                     </View>
-                  </View>
-
-                  <View style={styles.detailRow}>
-                    <View style={styles.detailCol}>
-                      <Text style={styles.detailLabel}>Timing</Text>
-                      <Text style={styles.detailValue}>
-                        {selectedMedicine.timing}
-                      </Text>
-                    </View>
-                  </View>
-                </View>
-
-                <View style={styles.detailSection}>
-                  <Text style={styles.detailSectionTitle}>
-                    Schedule Information
-                  </Text>
-
-                  <View style={styles.detailRow}>
-                    <View style={styles.detailCol}>
-                      <Text style={styles.detailLabel}>Start Date</Text>
-                      <Text style={styles.detailValue}>
-                        {new Date(
-                          selectedMedicine.startDate
-                        ).toLocaleDateString()}
-                      </Text>
-                    </View>
-
-                    {selectedMedicine.endDate && (
-                      <View style={styles.detailCol}>
-                        <Text style={styles.detailLabel}>End Date</Text>
-                        <Text style={styles.detailValue}>
-                          {new Date(
-                            selectedMedicine.endDate
-                          ).toLocaleDateString()}
-                        </Text>
-                      </View>
-                    )}
                   </View>
                 </View>
 
@@ -602,11 +620,11 @@ export default function MedicineScreen() {
                   <Text style={styles.inputLabel}>Dose *</Text>
                   <TextInput
                     style={styles.input}
-                    value={editedMedicine.medicineDose?.toString()}
+                    value={editedMedicine.medicineDose}
                     onChangeText={(text) =>
                       setEditedMedicine({
                         ...editedMedicine,
-                        medicineDose: Number.parseInt(text) || 0,
+                        medicineDose: text,
                       })
                     }
                     placeholder="Enter dose"
@@ -667,59 +685,6 @@ export default function MedicineScreen() {
                   <Picker.Item label="As needed" value="As needed" />
                 </Picker>
               </View>
-
-              <Text style={styles.inputLabel}>Timing</Text>
-              <View style={styles.pickerContainer}>
-                <Picker
-                  selectedValue={editedMedicine.timing}
-                  onValueChange={(value) =>
-                    setEditedMedicine({ ...editedMedicine, timing: value })
-                  }
-                  style={styles.picker}
-                  dropdownIconColor="#fff"
-                >
-                  <Picker.Item label="Morning" value="Morning" />
-                  <Picker.Item label="Afternoon" value="Afternoon" />
-                  <Picker.Item label="Evening" value="Evening" />
-                  <Picker.Item label="Bedtime" value="Bedtime" />
-                  <Picker.Item
-                    label="Before breakfast"
-                    value="Before breakfast"
-                  />
-                  <Picker.Item
-                    label="After breakfast"
-                    value="After breakfast"
-                  />
-                  <Picker.Item label="Before lunch" value="Before lunch" />
-                  <Picker.Item label="After lunch" value="After lunch" />
-                  <Picker.Item label="Before dinner" value="Before dinner" />
-                  <Picker.Item label="After dinner" value="After dinner" />
-                  <Picker.Item label="With meals" value="With meals" />
-                  <Picker.Item label="Between meals" value="Between meals" />
-                </Picker>
-              </View>
-
-              <Text style={styles.inputLabel}>Start Date</Text>
-              <TextInput
-                style={styles.input}
-                value={editedMedicine.startDate}
-                onChangeText={(text) =>
-                  setEditedMedicine({ ...editedMedicine, startDate: text })
-                }
-                placeholder="YYYY-MM-DD"
-                placeholderTextColor="#888"
-              />
-
-              <Text style={styles.inputLabel}>End Date (Optional)</Text>
-              <TextInput
-                style={styles.input}
-                value={editedMedicine.endDate}
-                onChangeText={(text) =>
-                  setEditedMedicine({ ...editedMedicine, endDate: text })
-                }
-                placeholder="YYYY-MM-DD"
-                placeholderTextColor="#888"
-              />
 
               <Text style={styles.inputLabel}>Notes (Optional)</Text>
               <TextInput
@@ -785,7 +750,7 @@ export default function MedicineScreen() {
                     onChangeText={(text) =>
                       setNewMedicine({
                         ...newMedicine,
-                        medicineDose: Number.parseInt(text) || 0,
+                        medicineDose: text,
                       })
                     }
                     placeholder="Enter dose"
@@ -819,9 +784,9 @@ export default function MedicineScreen() {
               <Text style={styles.inputLabel}>Frequency</Text>
               <View style={styles.pickerContainer}>
                 <Picker
-                  selectedValue={newMedicine.frequency}
+                  selectedValue={newMedicine.medicineFrequency}
                   onValueChange={(value) =>
-                    setNewMedicine({ ...newMedicine, frequency: value })
+                    setNewMedicine({ ...newMedicine, medicineFrequency: value })
                   }
                   style={styles.picker}
                   dropdownIconColor="#fff"

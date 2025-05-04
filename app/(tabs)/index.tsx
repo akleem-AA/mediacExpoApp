@@ -127,8 +127,8 @@ export default function Dashboard() {
         setMedicines(medicineData);
       }
     } catch (error) {
-      console.error("Error fetching Medicines:", error);
-      Alert.alert("Error", "Failed to load Medicines. Please try again.");
+      //console.error("Error fetching Medicines:", error);
+      //Alert.alert("Error", "Failed to load Medicines. Please try again.");
     } finally {
       setLoading(false);
       setRefreshing(false);

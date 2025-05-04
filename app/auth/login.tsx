@@ -34,7 +34,7 @@ export default function LoginScreen() {
       setIsLoading(false);
       setMessage(`Login successful!`);
     } catch (error: any) {
-      console.log(error);
+      //console.log(error);
       setIsLoading(false);
       setMessage(error?.error || "Login failed");
     }
