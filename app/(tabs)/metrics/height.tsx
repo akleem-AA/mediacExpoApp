@@ -1,3 +1,5 @@
+"use client";
+
 import React, { useState } from "react";
 import {
   View,
@@ -10,12 +12,18 @@ import {
   TextInput,
   KeyboardAvoidingView,
   ScrollView,
+  ActivityIndicator,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { router } from "expo-router";
 import DateTimePicker from "@react-native-community/datetimepicker";
+import axios from "axios";
+import { API_URL } from "@/constants/Api";
+import { getToken } from "@/services/auth";
+import { useDecodedToken } from "@/hooks/useDecodedToken";
 
 export default function HeightInput() {
+  const user = useDecodedToken();
   const [heightCm, setHeightCm] = useState("");
   const [heightFt, setHeightFt] = useState("");
   const [heightIn, setHeightIn] = useState("");
@@ -24,6 +32,7 @@ export default function HeightInput() {
   const [date, setDate] = useState(new Date());
   const [showDatePicker, setShowDatePicker] = useState(false);
   const [errors, setErrors] = useState({});
+  const [loading, setLoading] = useState(false);
 
   const onDateChange = (event, selectedDate) => {
     const currentDate = selectedDate || date;
@@ -64,30 +73,73 @@ export default function HeightInput() {
     return Object.keys(newErrors).length === 0;
   };
 
-  const handleSubmit = () => {
+  const getUserId = async () => {
+    return user?.userId;
+  };
+
+  const getUnitValue = () => {
+    return unit === "cm" ? 1 : 2;
+  };
+
+  const handleSubmit = async () => {
     if (validateForm()) {
-      // Convert to cm for storage if in feet/inches
-      let heightInCm;
-      if (unit === "cm") {
-        heightInCm = parseInt(heightCm);
-      } else {
-        const feet = parseInt(heightFt) || 0;
-        const inches = parseInt(heightIn) || 0;
-        heightInCm = feet * 30.48 + inches * 2.54;
+      try {
+        setLoading(true);
+        const token = await getToken();
+
+        // Convert to cm for storage if in feet/inches
+        let heightInCm;
+        if (unit === "cm") {
+          heightInCm = parseInt(heightCm);
+        } else {
+          const feet = parseInt(heightFt) || 0;
+          const inches = parseInt(heightIn) || 0;
+          heightInCm = Math.round(feet * 30.48 + inches * 2.54);
+        }
+
+        // Prepare the data payload
+        const heightData = {
+          userId: await getUserId(),
+          entryDatetime: date.toISOString(),
+          height: heightInCm,
+          unit: getUnitValue(),
+          notes: notes || undefined,
+        };
+        console.log(heightData);
+
+        // Make the API call
+        const response = await axios.post(
+          `${API_URL}/patient_heights`,
+          heightData,
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+              "Content-Type": "application/json",
+            },
+          }
+        );
+
+        // Handle success
+        if (response.status === 201 || response.status === 200) {
+          alert("Height measurement saved successfully!");
+          router.back();
+        } else {
+          alert("Error saving height measurement. Please try again.");
+        }
+      } catch (error) {
+        console.error("Error saving height:", error);
+        if (axios.isAxiosError(error)) {
+          console.error("Response data:", error.response?.data);
+          console.error("Response status:", error.response?.status);
+          alert(
+            `Failed to save: ${error.response?.data?.message || error.message}`
+          );
+        } else {
+          alert("Failed to save height measurement. Please try again.");
+        }
+      } finally {
+        setLoading(false);
       }
-
-      // Here you would save the data to your backend or local storage
-      console.log({
-        height: heightInCm,
-        unit: "cm", // Always store in cm for consistency
-        displayUnit: unit,
-        notes,
-        date,
-      });
-
-      // Show success message and navigate back
-      alert("Height measurement saved successfully!");
-      router.back();
     }
   };
 
@@ -247,8 +299,13 @@ export default function HeightInput() {
           <TouchableOpacity
             style={[styles.submitButton, { backgroundColor: "#00A86B" }]}
             onPress={handleSubmit}
+            disabled={loading}
           >
-            <Text style={styles.submitButtonText}>Save Measurement</Text>
+            {loading ? (
+              <ActivityIndicator size="small" color="#ffffff" />
+            ) : (
+              <Text style={styles.submitButtonText}>Save Measurement</Text>
+            )}
           </TouchableOpacity>
         </ScrollView>
       </KeyboardAvoidingView>

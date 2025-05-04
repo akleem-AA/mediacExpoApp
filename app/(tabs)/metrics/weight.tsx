@@ -1,3 +1,5 @@
+"use client";
+
 import React, { useState } from "react";
 import {
   View,
@@ -10,18 +12,25 @@ import {
   TextInput,
   KeyboardAvoidingView,
   ScrollView,
+  ActivityIndicator,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { router } from "expo-router";
 import DateTimePicker from "@react-native-community/datetimepicker";
+import axios from "axios";
+import { API_URL } from "@/constants/Api";
+import { getToken } from "@/services/auth";
+import { useDecodedToken } from "@/hooks/useDecodedToken";
 
 export default function WeightInput() {
+  const user = useDecodedToken();
   const [weight, setWeight] = useState("");
   const [unit, setUnit] = useState("kg"); // kg or lbs
   const [notes, setNotes] = useState("");
   const [date, setDate] = useState(new Date());
   const [showDatePicker, setShowDatePicker] = useState(false);
   const [errors, setErrors] = useState({});
+  const [loading, setLoading] = useState(false);
 
   const onDateChange = (event, selectedDate) => {
     const currentDate = selectedDate || date;
@@ -58,28 +67,71 @@ export default function WeightInput() {
     return Object.keys(newErrors).length === 0;
   };
 
-  const handleSubmit = () => {
+  const getUserId = async () => {
+    return user?.userId;
+  };
+
+  const getUnitValue = () => {
+    return unit === "kg" ? 1 : 2;
+  };
+
+  const handleSubmit = async () => {
     if (validateForm()) {
-      // Convert to kg for storage if in lbs
-      let weightInKg;
-      if (unit === "kg") {
-        weightInKg = parseFloat(weight);
-      } else {
-        weightInKg = parseFloat(weight) * 0.45359237;
+      try {
+        setLoading(true);
+        const token = await getToken();
+
+        // Convert to kg for storage if in lbs
+        let weightInKg;
+        if (unit === "kg") {
+          weightInKg = parseFloat(weight);
+        } else {
+          weightInKg = parseFloat(weight) * 0.45359237;
+        }
+
+        // Prepare the data payload
+        const weightData = {
+          userId: await getUserId(),
+          entryDatetime: date.toISOString(),
+          weight: weightInKg,
+          unit: getUnitValue(),
+          notes: notes || undefined,
+        };
+        console.log(weightData);
+
+        // Make the API call
+        const response = await axios.post(
+          `${API_URL}/patient_weights`,
+          weightData,
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+              "Content-Type": "application/json",
+            },
+          }
+        );
+
+        // Handle success
+        if (response.status === 201 || response.status === 200) {
+          alert("Weight measurement saved successfully!");
+          router.back();
+        } else {
+          alert("Error saving weight measurement. Please try again.");
+        }
+      } catch (error) {
+        console.error("Error saving weight:", error);
+        if (axios.isAxiosError(error)) {
+          console.error("Response data:", error.response?.data);
+          console.error("Response status:", error.response?.status);
+          alert(
+            `Failed to save: ${error.response?.data?.message || error.message}`
+          );
+        } else {
+          alert("Failed to save weight measurement. Please try again.");
+        }
+      } finally {
+        setLoading(false);
       }
-
-      // Here you would save the data to your backend or local storage
-      console.log({
-        weight: weightInKg,
-        unit: "kg", // Always store in kg for consistency
-        displayUnit: unit,
-        notes,
-        date,
-      });
-
-      // Show success message and navigate back
-      alert("Weight measurement saved successfully!");
-      router.back();
     }
   };
 
@@ -205,8 +257,13 @@ export default function WeightInput() {
           <TouchableOpacity
             style={[styles.submitButton, { backgroundColor: "#FFC107" }]}
             onPress={handleSubmit}
+            disabled={loading}
           >
-            <Text style={styles.submitButtonText}>Save Measurement</Text>
+            {loading ? (
+              <ActivityIndicator size="small" color="#ffffff" />
+            ) : (
+              <Text style={styles.submitButtonText}>Save Measurement</Text>
+            )}
           </TouchableOpacity>
         </ScrollView>
       </KeyboardAvoidingView>
