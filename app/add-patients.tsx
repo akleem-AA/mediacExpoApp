@@ -440,13 +440,13 @@ const AddPatient = () => {
           <Text style={styles.sectionTitle}>Contact Information</Text>
 
           <Text style={styles.label}>
-            Email <Text style={styles.required}>*</Text>
+            Email
+            {/* <Text style={styles.required}>*</Text> */}
           </Text>
           <Controller
             control={control}
             name="email"
             rules={{
-              required: "Email is required",
               pattern: {
                 value: /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i,
                 message: "Invalid email address",
