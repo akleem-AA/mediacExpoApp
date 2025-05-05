@@ -122,7 +122,7 @@ export default function LoginScreen() {
             <View style={styles.imageContainer}>
               <View style={styles.imageWrapper}>
                 <Image
-                  source={{ uri: "https://mediac.in/images/health1.jpg" }}
+                  source={{ uri: "https://mediac.in/images/health3.jpg" }}
                   style={styles.image}
                 />
                 <Text style={styles.imageCaption}>Exercise</Text>
@@ -136,7 +136,7 @@ export default function LoginScreen() {
               </View>
               <View style={styles.imageWrapper}>
                 <Image
-                  source={{ uri: "https://mediac.in/images/health3.jpg" }}
+                  source={{ uri: "https://mediac.in/images/health1.jpg" }}
                   style={styles.image}
                 />
                 <Text style={styles.imageCaption}>Wellness</Text>
