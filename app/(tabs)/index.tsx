@@ -491,14 +491,16 @@ export default function Dashboard() {
                   label={t("Add Symptoms")}
                   color="#7A39A3"
                   backgroundColor={cardBackgroundColors[3]}
-                  onPress={() => router.push("/symptoms")}
+                  onPress={() => {}} // Disabled functionality
+                  isUpcoming={true}
                 />
                 <HealthMetricCard
                   icon="cloud-upload-outline"
                   label={t("Upload Files")}
                   color="#4A55A2"
                   backgroundColor={cardBackgroundColors[7]}
-                  onPress={() => router.push("/files")}
+                  onPress={() => {}} // Disabled functionality
+                  isUpcoming={true}
                 />
               </View>
 
@@ -565,7 +567,19 @@ export default function Dashboard() {
                       icon="water-outline"
                       title={t("Blood Sugar")}
                       value={bloodSugar ? bloodSugar.sugarLevel : "--"}
-                      unit={bloodSugar ? bloodSugar.measurementType : "mg/dL"}
+                      unit={
+                        bloodSugar
+                          ? `mg/dL${
+                              bloodSugar.measurementType === 1
+                                ? " (Fasting)"
+                                : bloodSugar.measurementType === 2
+                                ? " (Before meal)"
+                                : bloodSugar.measurementType === 3
+                                ? " (2hrs after meal)"
+                                : ""
+                            }`
+                          : "mg/dL"
+                      }
                       time={
                         bloodSugar
                           ? new Date(bloodSugar.createdAt).toLocaleString()
@@ -577,7 +591,7 @@ export default function Dashboard() {
                       icon="resize-outline"
                       title={t("Height")}
                       value={height ? height.height : "--"}
-                      unit={height ? height.unit : "cm"}
+                      unit="cm"
                       time={
                         height
                           ? new Date(height.createdAt).toLocaleString()
@@ -589,7 +603,7 @@ export default function Dashboard() {
                       icon="scale-outline"
                       title={t("Weight")}
                       value={weight ? weight.weight : "--"}
-                      unit={weight ? weight.unit : "kg"}
+                      unit="kg"
                       time={
                         weight
                           ? new Date(weight.createdAt).toLocaleString()
@@ -708,26 +722,44 @@ const DashboardCard = ({
 );
 
 // Health Metric Card Component for patient view
-const HealthMetricCard = ({ icon, label, color, backgroundColor, onPress }) => (
+const HealthMetricCard = ({
+  icon,
+  label,
+  color,
+  backgroundColor,
+  onPress,
+  isUpcoming = false,
+}) => (
   <TouchableOpacity
     style={[
       styles.healthCard,
       { backgroundColor: backgroundColor || "rgba(255, 255, 255, 0.9)" },
+      isUpcoming && styles.upcomingCard,
     ]}
     onPress={onPress}
+    disabled={isUpcoming}
   >
     <View
       style={[
         styles.healthCardIconContainer,
         { backgroundColor: `${color}20`, borderColor: `${color}40` },
+        isUpcoming && styles.upcomingIcon,
       ]}
     >
-      <Ionicons name={icon} size={24} color={color} />
+      <Ionicons name={icon} size={24} color={isUpcoming ? "#999" : color} />
     </View>
-    <Text style={styles.healthCardLabel}>{label}</Text>
-    <View style={styles.addButtonContainer}>
-      <Ionicons name="add-circle" size={20} color={color} />
-    </View>
+    <Text style={[styles.healthCardLabel, isUpcoming && styles.upcomingText]}>
+      {label}
+    </Text>
+    {isUpcoming ? (
+      <View style={styles.upcomingBadge}>
+        <Text style={styles.upcomingBadgeText}>Upcoming</Text>
+      </View>
+    ) : (
+      <View style={styles.addButtonContainer}>
+        <Ionicons name="add-circle" size={20} color={color} />
+      </View>
+    )}
   </TouchableOpacity>
 );
 
@@ -1159,5 +1191,31 @@ const styles = StyleSheet.create({
     padding: 20,
     textAlign: "center",
     color: "#666",
+  },
+  upcomingCard: {
+    opacity: 0.8,
+    borderStyle: "dashed",
+    borderWidth: 1,
+    borderColor: "#ccc",
+  },
+  upcomingIcon: {
+    opacity: 0.6,
+  },
+  upcomingText: {
+    color: "#999",
+  },
+  upcomingBadge: {
+    position: "absolute",
+    bottom: 6,
+    right: 6,
+    backgroundColor: "#f0f0f0",
+    paddingHorizontal: 6,
+    paddingVertical: 2,
+    borderRadius: 10,
+  },
+  upcomingBadgeText: {
+    fontSize: 8,
+    color: "#666",
+    fontWeight: "bold",
   },
 });
