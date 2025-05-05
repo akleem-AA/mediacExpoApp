@@ -9,7 +9,6 @@ import {
   SafeAreaView,
   StatusBar,
   Platform,
-  Alert,
   ActivityIndicator,
   RefreshControl,
 } from "react-native";
@@ -19,7 +18,7 @@ import packageJson from "../../package.json";
 import { useDecodedToken } from "@/hooks/useDecodedToken";
 import { useState, useEffect } from "react";
 import axios from "axios";
-import { getDecodedToken, getToken } from "@/services/auth";
+import { getToken } from "@/services/auth";
 import { API_URL } from "@/constants/Api";
 
 export default function Dashboard() {
@@ -29,6 +28,11 @@ export default function Dashboard() {
   const [medicines, setMedicines] = useState([]);
   const [loading, setLoading] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
+  const [bloodPressure, setBloodPressure] = useState(null);
+  const [bloodSugar, setBloodSugar] = useState(null);
+  const [height, setHeight] = useState(null);
+  const [weight, setWeight] = useState(null);
+  const [readingsLoading, setReadingsLoading] = useState(false);
 
   const statusBarHeight =
     Platform.OS === "android" ? StatusBar.currentHeight || 0 : 0;
@@ -135,14 +139,103 @@ export default function Dashboard() {
     }
   };
 
+  const fetchBloodPressure = async () => {
+    try {
+      const token = await getToken();
+      const response = await axios.get(
+        `${API_URL}/patients/bloodpressure/${user?.userId}`,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+      if (response.data) {
+        setBloodPressure(response.data);
+      }
+    } catch (error) {
+      console.error("Error fetching blood pressure:", error);
+    }
+  };
+
+  const fetchBloodSugar = async () => {
+    try {
+      const token = await getToken();
+      const response = await axios.get(
+        `${API_URL}/patients/bloodsugar/${user?.userId}`,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+      if (response.data) {
+        setBloodSugar(response.data);
+      }
+    } catch (error) {
+      console.error("Error fetching blood sugar:", error);
+    }
+  };
+
+  const fetchHeight = async () => {
+    try {
+      const token = await getToken();
+      const response = await axios.get(
+        `${API_URL}/patients/height/${user?.userId}`,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+      if (response.data) {
+        setHeight(response.data);
+      }
+    } catch (error) {
+      console.error("Error fetching height:", error);
+    }
+  };
+
+  const fetchWeight = async () => {
+    try {
+      const token = await getToken();
+      const response = await axios.get(
+        `${API_URL}/patients/weight/${user?.userId}`,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+      if (response.data) {
+        setWeight(response.data);
+      }
+    } catch (error) {
+      console.error("Error fetching weight:", error);
+    }
+  };
+
+  const fetchAllReadings = async () => {
+    setReadingsLoading(true);
+    await Promise.all([
+      fetchBloodPressure(),
+      fetchBloodSugar(),
+      fetchHeight(),
+      fetchWeight(),
+    ]);
+    setReadingsLoading(false);
+  };
+
   const handleRefresh = () => {
     setRefreshing(true);
     fetchMedicines();
+    fetchAllReadings();
   };
 
   useEffect(() => {
     if (user?.userId) {
       fetchMedicines();
+      fetchAllReadings();
     }
   }, [user]);
 
@@ -315,7 +408,7 @@ export default function Dashboard() {
           {user?.role === 0 && (
             <>
               {/* Date selector */}
-              <ScrollView
+              {/* <ScrollView
                 horizontal
                 showsHorizontalScrollIndicator={false}
                 contentContainerStyle={styles.dateSelector}
@@ -357,7 +450,7 @@ export default function Dashboard() {
                     )}
                   </TouchableOpacity>
                 ))}
-              </ScrollView>
+              </ScrollView> */}
 
               {/* Health Metrics Grid */}
               <View style={styles.dashboardGrid}>
@@ -445,30 +538,67 @@ export default function Dashboard() {
               {/* Latest Readings Section */}
               <Text style={styles.sectionTitle}>{t("Latest Readings")}</Text>
               <View style={styles.latestReadingsContainer}>
-                <LatestReading
-                  icon="fitness-outline"
-                  title={t("Blood Pressure")}
-                  value="120/80"
-                  unit="mmHg"
-                  time="Today, 8:30 AM"
-                  color="#4A55A2"
-                />
-                <LatestReading
-                  icon="water-outline"
-                  title={t("Blood Sugar")}
-                  value="95"
-                  unit="mg/dL"
-                  time="Yesterday, 7:15 PM"
-                  color="#FF5A5F"
-                />
-                <LatestReading
-                  icon="scale-outline"
-                  title={t("Weight")}
-                  value="68"
-                  unit="kg"
-                  time="3 days ago"
-                  color="#FFC107"
-                />
+                {readingsLoading ? (
+                  <View style={styles.loadingContainer}>
+                    <ActivityIndicator size="small" color="#4A55A2" />
+                    <Text style={styles.loadingText}>Loading readings...</Text>
+                  </View>
+                ) : (
+                  <>
+                    <LatestReading
+                      icon="fitness-outline"
+                      title={t("Blood Pressure")}
+                      value={
+                        bloodPressure
+                          ? `${bloodPressure.systolic}/${bloodPressure.diastolic}`
+                          : "--/--"
+                      }
+                      unit="mmHg"
+                      time={
+                        bloodPressure
+                          ? new Date(bloodPressure.createdAt).toLocaleString()
+                          : "--"
+                      }
+                      color="#4A55A2"
+                    />
+                    <LatestReading
+                      icon="water-outline"
+                      title={t("Blood Sugar")}
+                      value={bloodSugar ? bloodSugar.sugarLevel : "--"}
+                      unit={bloodSugar ? bloodSugar.measurementType : "mg/dL"}
+                      time={
+                        bloodSugar
+                          ? new Date(bloodSugar.createdAt).toLocaleString()
+                          : "--"
+                      }
+                      color="#FF5A5F"
+                    />
+                    <LatestReading
+                      icon="resize-outline"
+                      title={t("Height")}
+                      value={height ? height.height : "--"}
+                      unit={height ? height.unit : "cm"}
+                      time={
+                        height
+                          ? new Date(height.createdAt).toLocaleString()
+                          : "--"
+                      }
+                      color="#00A86B"
+                    />
+                    <LatestReading
+                      icon="scale-outline"
+                      title={t("Weight")}
+                      value={weight ? weight.weight : "--"}
+                      unit={weight ? weight.unit : "kg"}
+                      time={
+                        weight
+                          ? new Date(weight.createdAt).toLocaleString()
+                          : "--"
+                      }
+                      color="#FFC107"
+                    />
+                  </>
+                )}
               </View>
             </>
           )}
