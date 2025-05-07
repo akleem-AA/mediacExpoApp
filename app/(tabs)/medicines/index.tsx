@@ -69,30 +69,18 @@ export default function MedicineScreen() {
       if (response.data) {
         // Filter out null/undefined entries and ensure each item has required properties
         const medicineData = response.data
-          .filter((p: any) => p)
-          .map(
-            (medicine: {
-              id: any;
-              medicineName: any;
-              medicineDose: any;
-              medicineDoseUnit: any;
-              medicineFrequency: any;
-              timing: any;
-              medicineNotes: any;
-              medicine_notes: any;
-              startDate: any;
-            }) => ({
-              id: medicine.id || Math.random(),
-              medicineName: medicine.medicineName || "Unknown",
-              medicineDose: medicine.medicineDose || "0",
-              medicineDoseUnit: medicine.medicineDoseUnit || "mg",
-              medicineFrequency: medicine.medicineFrequency || "Once daily",
-              timing: medicine.timing || "",
-              medicine_notes:
-                medicine.medicineNotes || medicine.medicine_notes || "",
-              startDate: medicine.startDate || new Date().toISOString(),
-            })
-          );
+          .filter((p) => p)
+          .map((medicine) => ({
+            id: medicine.id || Math.random(),
+            medicineName: medicine.medicineName || "Unknown",
+            medicineDose: medicine.medicineDose || "0",
+            medicineDoseUnit: medicine.medicineDoseUnit || "mg",
+            medicineFrequency: medicine.medicineFrequency || "Once daily",
+            timing: medicine.timing || "",
+            medicine_notes:
+              medicine.medicineNotes || medicine.medicine_notes || "",
+            startDate: medicine.startDate || new Date().toISOString(),
+          }));
         setMedicines(medicineData);
         applyFilters(medicineData, searchQuery);
       }
@@ -159,8 +147,6 @@ export default function MedicineScreen() {
     setRefreshing(true);
     fetchMedicines();
   };
-
-  // Handle delete medicine
   const handleDeleteMedicine = (id: number) => {
     Alert.alert(
       "Delete Medication",
@@ -173,33 +159,33 @@ export default function MedicineScreen() {
           onPress: async () => {
             try {
               setLoading(true);
-              // Get the authentication token
-              const token = await getToken();
+              const token = await getToken(); // Get the auth token
 
-              // Send a DELETE request to delete the medicine
-              await axios.delete(`${API_URL}/medicines/${id}/delete`, {
-                headers: {
-                  Authorization: `Bearer ${token}`,
-                },
-              });
-
-              // Update the local state after successful deletion
-              const updatedMedicines = medicines.filter((m) => m.id !== id);
-              setMedicines(updatedMedicines);
-              applyFilters(updatedMedicines, searchQuery);
-
-              // Close the detail modal if it's open
-              if (detailModalVisible) {
-                setDetailModalVisible(false);
-              }
-
-              Alert.alert("Success", "Medication deleted successfully");
-            } catch (error) {
-              console.error("Error deleting medicine:", error);
-              Alert.alert(
-                "Error",
-                "There was an issue deleting the medication. Please try again."
+              const response = await axios.patch(
+                `${API_URL}/medicines/${id}/delete`,
+                {},
+                { headers: { Authorization: `Bearer ${token}` } }
               );
+
+              // Check the response status
+              if (response.status === 200) {
+                // Update state after successful "delete" (e.g., marking as deleted)
+                const updatedMedicines = medicines.filter((m) => m.id !== id);
+                setMedicines(updatedMedicines);
+                applyFilters(updatedMedicines, searchQuery);
+
+                if (detailModalVisible) setDetailModalVisible(false);
+                Alert.alert("Success", "Medication deleted successfully");
+              } else {
+                throw new Error(`Unexpected response: ${response.status}`);
+              }
+            } catch (error: any) {
+              console.error("Error deleting medicine:", error);
+              const message =
+                error.response?.status === 400
+                  ? "Invalid request. Please try again."
+                  : "There was an issue deleting the medication. Please try again.";
+              Alert.alert("Error", message);
             } finally {
               setLoading(false);
             }
@@ -221,24 +207,23 @@ export default function MedicineScreen() {
 
     try {
       setLoading(true);
+      const token = await getToken(); // Get the auth token
 
-      // Prepare the medicine data for update
-      const medicineData = {
-        medicineName: editedMedicine.medicineName,
-        medicineDose: editedMedicine.medicineDose,
-        medicineDoseUnit: editedMedicine.medicineDoseUnit || "mg",
-        medicineFrequency: editedMedicine.medicineFrequency || "Once daily",
+      // Construct the JSON object to submit
+      const updateData = {
+        medicineName: editedMedicine.medicineName || "", // Ensure empty string if not provided
+        medicineDose: editedMedicine.medicineDose || "", // Ensure empty string if not provided
+        medicineDoseUnit: editedMedicine.medicineDoseUnit || "", // Default to empty string if not provided
         medicineNotes:
-          editedMedicine.notes || editedMedicine.medicine_notes || "",
+          editedMedicine.medicineNotes !== undefined
+            ? editedMedicine.medicineNotes
+            : "", // Default to empty string if not undefined
       };
 
-      // Get the authentication token
-      const token = await getToken();
-
-      // Send a PUT request to update the medicine
-      const response = await axios.put(
+      // Send PATCH request
+      const response = await axios.patch(
         `${API_URL}/medicines/${selectedMedicine.id}`,
-        medicineData,
+        updateData,
         {
           headers: {
             "Content-Type": "application/json",
@@ -247,44 +232,41 @@ export default function MedicineScreen() {
         }
       );
 
-      // Get the updated medicine from the response
-      const updatedMedicineFromAPI = response.data;
+      // Check the response status and handle accordingly
+      if (response.status === 200) {
+        // Update the local state with the updated medicine
+        const updatedMedicine = { ...selectedMedicine, ...response.data };
 
-      // Update the local state with the updated medicine
-      const updatedMedicines = medicines.map((m) =>
-        m.id === selectedMedicine.id
-          ? {
-              ...m,
-              medicineName:
-                updatedMedicineFromAPI.medicineName ||
-                editedMedicine.medicineName,
-              medicineDose:
-                updatedMedicineFromAPI.medicineDose ||
-                editedMedicine.medicineDose,
-              medicineDoseUnit:
-                updatedMedicineFromAPI.medicineDoseUnit ||
-                editedMedicine.medicineDoseUnit,
-              medicineFrequency:
-                updatedMedicineFromAPI.medicineFrequency ||
-                editedMedicine.medicineFrequency,
-              medicine_notes:
-                updatedMedicineFromAPI.medicineNotes ||
-                editedMedicine.notes ||
-                "",
-            }
-          : m
-      );
-
-      setMedicines(updatedMedicines);
-      applyFilters(updatedMedicines, searchQuery);
-      setEditModalVisible(false);
-      Alert.alert("Success", "Medication updated successfully");
-    } catch (error) {
+        setMedicines(
+          medicines.map((m) =>
+            m.id === selectedMedicine.id ? updatedMedicine : m
+          )
+        );
+        applyFilters(medicines, searchQuery);
+        setEditModalVisible(false);
+        Alert.alert("Success", "Medication updated successfully");
+      } else {
+        // Handle unexpected response status
+        Alert.alert(
+          "Error",
+          `Unexpected response from server: ${response.status}. Please try again.`
+        );
+      }
+    } catch (error: any) {
       console.error("Error updating medicine:", error);
-      Alert.alert(
-        "Error",
-        "There was an issue updating the medication. Please try again."
-      );
+
+      // Handle errors based on the response status code
+      const message =
+        error.response?.status === 400
+          ? `Bad request: ${
+              error.response?.data?.message || "Please check your input."
+            }`
+          : error.response?.status === 404
+          ? "Medicine not found. Please try again."
+          : "There was an issue updating the medication. Please try again.";
+
+      // Show an error alert with the appropriate message
+      Alert.alert("Error", message);
     } finally {
       setLoading(false);
     }
