@@ -31,6 +31,7 @@ interface Medicine {
   timing: string;
   medicine_notes?: string;
   notes?: string;
+  medicineNotes?: string;
   startDate: string;
   endDate?: string;
 }
@@ -68,18 +69,30 @@ export default function MedicineScreen() {
       if (response.data) {
         // Filter out null/undefined entries and ensure each item has required properties
         const medicineData = response.data
-          .filter((p) => p)
-          .map((medicine) => ({
-            id: medicine.id || Math.random(),
-            medicineName: medicine.medicineName || "Unknown",
-            medicineDose: medicine.medicineDose || "0",
-            medicineDoseUnit: medicine.medicineDoseUnit || "mg",
-            medicineFrequency: medicine.medicineFrequency || "Once daily",
-            timing: medicine.timing || "",
-            medicine_notes:
-              medicine.medicineNotes || medicine.medicine_notes || "",
-            startDate: medicine.startDate || new Date().toISOString(),
-          }));
+          .filter((p: any) => p)
+          .map(
+            (medicine: {
+              id: any;
+              medicineName: any;
+              medicineDose: any;
+              medicineDoseUnit: any;
+              medicineFrequency: any;
+              timing: any;
+              medicineNotes: any;
+              medicine_notes: any;
+              startDate: any;
+            }) => ({
+              id: medicine.id || Math.random(),
+              medicineName: medicine.medicineName || "Unknown",
+              medicineDose: medicine.medicineDose || "0",
+              medicineDoseUnit: medicine.medicineDoseUnit || "mg",
+              medicineFrequency: medicine.medicineFrequency || "Once daily",
+              timing: medicine.timing || "",
+              medicine_notes:
+                medicine.medicineNotes || medicine.medicine_notes || "",
+              startDate: medicine.startDate || new Date().toISOString(),
+            })
+          );
         setMedicines(medicineData);
         applyFilters(medicineData, searchQuery);
       }
@@ -144,7 +157,6 @@ export default function MedicineScreen() {
   // Handle refresh
   const onRefresh = () => {
     setRefreshing(true);
-    // In a real app, you would fetch data from API here
     fetchMedicines();
   };
 
@@ -158,14 +170,39 @@ export default function MedicineScreen() {
         {
           text: "Delete",
           style: "destructive",
-          onPress: () => {
-            // In a real app, you would call API to delete
-            setMedicines(medicines.filter((m) => m.id !== id));
-            applyFilters(
-              medicines.filter((m) => m.id !== id),
-              searchQuery
-            );
-            Alert.alert("Success", "Medication deleted successfully");
+          onPress: async () => {
+            try {
+              setLoading(true);
+              // Get the authentication token
+              const token = await getToken();
+
+              // Send a DELETE request to delete the medicine
+              await axios.delete(`${API_URL}/medicines/${id}/delete`, {
+                headers: {
+                  Authorization: `Bearer ${token}`,
+                },
+              });
+
+              // Update the local state after successful deletion
+              const updatedMedicines = medicines.filter((m) => m.id !== id);
+              setMedicines(updatedMedicines);
+              applyFilters(updatedMedicines, searchQuery);
+
+              // Close the detail modal if it's open
+              if (detailModalVisible) {
+                setDetailModalVisible(false);
+              }
+
+              Alert.alert("Success", "Medication deleted successfully");
+            } catch (error) {
+              console.error("Error deleting medicine:", error);
+              Alert.alert(
+                "Error",
+                "There was an issue deleting the medication. Please try again."
+              );
+            } finally {
+              setLoading(false);
+            }
           },
         },
       ]
@@ -173,7 +210,7 @@ export default function MedicineScreen() {
   };
 
   // Handle update medicine
-  const handleUpdateMedicine = () => {
+  const handleUpdateMedicine = async () => {
     if (!selectedMedicine) return;
 
     // Validate required fields
@@ -182,17 +219,75 @@ export default function MedicineScreen() {
       return;
     }
 
-    // In a real app, you would call API to update
-    const updatedMedicines = medicines.map((m) =>
-      m.id === selectedMedicine.id
-        ? ({ ...selectedMedicine, ...editedMedicine } as Medicine)
-        : m
-    );
+    try {
+      setLoading(true);
 
-    setMedicines(updatedMedicines);
-    applyFilters(updatedMedicines, searchQuery);
-    setEditModalVisible(false);
-    Alert.alert("Success", "Medication updated successfully");
+      // Prepare the medicine data for update
+      const medicineData = {
+        medicineName: editedMedicine.medicineName,
+        medicineDose: editedMedicine.medicineDose,
+        medicineDoseUnit: editedMedicine.medicineDoseUnit || "mg",
+        medicineFrequency: editedMedicine.medicineFrequency || "Once daily",
+        medicineNotes:
+          editedMedicine.notes || editedMedicine.medicine_notes || "",
+      };
+
+      // Get the authentication token
+      const token = await getToken();
+
+      // Send a PUT request to update the medicine
+      const response = await axios.put(
+        `${API_URL}/medicines/${selectedMedicine.id}`,
+        medicineData,
+        {
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+
+      // Get the updated medicine from the response
+      const updatedMedicineFromAPI = response.data;
+
+      // Update the local state with the updated medicine
+      const updatedMedicines = medicines.map((m) =>
+        m.id === selectedMedicine.id
+          ? {
+              ...m,
+              medicineName:
+                updatedMedicineFromAPI.medicineName ||
+                editedMedicine.medicineName,
+              medicineDose:
+                updatedMedicineFromAPI.medicineDose ||
+                editedMedicine.medicineDose,
+              medicineDoseUnit:
+                updatedMedicineFromAPI.medicineDoseUnit ||
+                editedMedicine.medicineDoseUnit,
+              medicineFrequency:
+                updatedMedicineFromAPI.medicineFrequency ||
+                editedMedicine.medicineFrequency,
+              medicine_notes:
+                updatedMedicineFromAPI.medicineNotes ||
+                editedMedicine.notes ||
+                "",
+            }
+          : m
+      );
+
+      setMedicines(updatedMedicines);
+      applyFilters(updatedMedicines, searchQuery);
+      setEditModalVisible(false);
+      Alert.alert("Success", "Medication updated successfully");
+    } catch (error) {
+      console.error("Error updating medicine:", error);
+      Alert.alert(
+        "Error",
+        "There was an issue updating the medication. Please try again."
+      );
+    } finally {
+      setLoading(false);
+    }
   };
 
   // Handle add medicine
@@ -212,6 +307,7 @@ export default function MedicineScreen() {
     };
 
     try {
+      setLoading(true);
       // Get the authentication token
       const token = await getToken();
 
@@ -267,6 +363,8 @@ export default function MedicineScreen() {
         "Error",
         "There was an issue adding the medication. Please try again."
       );
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -445,7 +543,7 @@ export default function MedicineScreen() {
                       </Text>
                     </View>
 
-                    {item.medicineNotes && (
+                    {(item.medicineNotes || item.medicine_notes) && (
                       <View style={styles.detailItem}>
                         <FontAwesome5
                           name="sticky-note"
@@ -453,7 +551,7 @@ export default function MedicineScreen() {
                           color="#bbb"
                         />
                         <Text style={styles.medicineInfoText} numberOfLines={1}>
-                          {item.medicineNotes}
+                          {item.medicineNotes || item.medicine_notes}
                         </Text>
                       </View>
                     )}
@@ -465,7 +563,10 @@ export default function MedicineScreen() {
                     onPress={(e) => {
                       e.stopPropagation();
                       setSelectedMedicine(item);
-                      setEditedMedicine({ ...item });
+                      setEditedMedicine({
+                        ...item,
+                        notes: item.medicine_notes || item.medicineNotes || "",
+                      });
                       setEditModalVisible(true);
                     }}
                   >
@@ -540,14 +641,16 @@ export default function MedicineScreen() {
                   </View>
                 </View>
 
-                {selectedMedicine.medicine_notes && (
+                {(selectedMedicine.medicine_notes ||
+                  selectedMedicine.medicineNotes) && (
                   <View style={styles.detailSection}>
                     <Text style={styles.detailSectionTitle}>Notes</Text>
 
                     <View style={styles.detailRow}>
                       <View style={styles.detailCol}>
                         <Text style={styles.detailValue}>
-                          {selectedMedicine.medicine_notes}
+                          {selectedMedicine.medicine_notes ||
+                            selectedMedicine.medicineNotes}
                         </Text>
                       </View>
                     </View>
@@ -559,7 +662,13 @@ export default function MedicineScreen() {
                     style={[styles.modalButton, styles.editButton]}
                     onPress={() => {
                       setDetailModalVisible(false);
-                      setEditedMedicine({ ...selectedMedicine });
+                      setEditedMedicine({
+                        ...selectedMedicine,
+                        notes:
+                          selectedMedicine.medicine_notes ||
+                          selectedMedicine.medicineNotes ||
+                          "",
+                      });
                       setEditModalVisible(true);
                     }}
                   >
@@ -570,7 +679,6 @@ export default function MedicineScreen() {
                   <TouchableOpacity
                     style={[styles.modalButton, styles.deleteButton]}
                     onPress={() => {
-                      setDetailModalVisible(false);
                       handleDeleteMedicine(selectedMedicine.id);
                     }}
                   >
