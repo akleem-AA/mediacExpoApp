@@ -157,7 +157,7 @@ export default function PatientScreen() {
   const handleDeletePatient = (id: number) => {
     Alert.alert(
       "Delete Patient",
-      "Are you sure you want to delete this patient?",
+      "Are you sure you want to deactivate this patient?",
       [
         { text: "Cancel", style: "cancel" },
         {
@@ -166,11 +166,17 @@ export default function PatientScreen() {
           onPress: async () => {
             try {
               const token = await getToken();
-              await axios.delete(`${API_URL}/users/${id}`, {
-                headers: {
-                  Authorization: `Bearer ${token}`,
-                },
-              });
+              // Changed from DELETE to PATCH request
+              await axios.patch(
+                `${API_URL}/patients/delete/${id}`,
+                { isActive: false },
+                {
+                  headers: {
+                    Authorization: `Bearer ${token}`,
+                  },
+                }
+              );
+              // Still remove from UI display
               setPatients(patients.filter((p) => p.id !== id));
               applyFilters(
                 patients.filter((p) => p.id !== id),
@@ -178,7 +184,7 @@ export default function PatientScreen() {
               );
               Alert.alert("Success", "Patient deleted successfully");
             } catch (error) {
-              console.error("Error deleting patient:", error);
+              console.error("Error deactivating patient:", error);
               Alert.alert("Error", "Failed to delete patient");
             }
           },
@@ -192,11 +198,7 @@ export default function PatientScreen() {
     if (!selectedPatient) return;
 
     // Validate required fields
-    if (
-      !editedPatient.name ||
-      !editedPatient.email ||
-      !editedPatient.uhidNumber
-    ) {
+    if (!editedPatient.name || !editedPatient.uhidNumber) {
       Alert.alert("Error", "Name, Email and UHID are required fields");
       return;
     }
@@ -207,21 +209,31 @@ export default function PatientScreen() {
         ...editedPatient,
       };
       const token = await getToken();
-      await axios.put(`${API_URL}/users/${selectedPatient.id}`, updatedData, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      });
 
-      // Update local state
-      const updatedPatients = patients.map((p) =>
-        p.id === selectedPatient.id ? (updatedData as Patient) : p
+      const response = await axios.put(
+        `${API_URL}/patients/users/${selectedPatient.id}`,
+        updatedData,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
       );
 
-      setPatients(updatedPatients);
-      applyFilters(updatedPatients, searchQuery);
-      setEditModalVisible(false);
-      Alert.alert("Success", "Patient updated successfully");
+      if (response.status === 200) {
+        // Update local state only if the response status is 200 (success)
+        const updatedPatients = patients.map((p) =>
+          p.id === selectedPatient.id ? (updatedData as Patient) : p
+        );
+
+        setPatients(updatedPatients);
+        applyFilters(updatedPatients, searchQuery);
+        setEditModalVisible(false);
+        Alert.alert("Success", "Patient updated successfully");
+      } else {
+        // Handle unexpected status codes
+        Alert.alert("Error", "Failed to update patient. Please try again.");
+      }
     } catch (error) {
       console.error("Error updating patient:", error);
       Alert.alert("Error", "Failed to update patient");
@@ -527,11 +539,46 @@ export default function PatientScreen() {
               <View style={styles.actionIcons}>
                 <TouchableOpacity
                   style={styles.actionButton}
-                  onPress={(e) => {
+                  onPress={async (e) => {
                     e.stopPropagation();
-                    setSelectedPatient(item);
-                    setEditedPatient({ ...item });
-                    setEditModalVisible(true);
+                    try {
+                      // Fetch the latest patient data from the API
+                      const token = await getToken();
+                      const response = await axios.get(
+                        `${API_URL}/patients/users/${item.id}`,
+                        {
+                          headers: {
+                            Authorization: `Bearer ${token}`,
+                          },
+                        }
+                      );
+
+                      if (response.data) {
+                        // Merge the API response with the existing patient data
+                        const patientData = {
+                          ...item,
+                          name: response.data.name || item.name,
+                          age: response.data.age || item.age,
+                          gender: response.data.gender || item.gender,
+                          uhidNumber:
+                            response.data.uhidNumber || item.uhidNumber,
+                          phoneNumber:
+                            response.data.phoneNumber || item.phoneNumber,
+                          exerciseTime:
+                            response.data.exerciseTime || item.exerciseTime,
+                        };
+
+                        setSelectedPatient(patientData);
+                        setEditedPatient({ ...patientData });
+                        setEditModalVisible(true);
+                      }
+                    } catch (error) {
+                      console.error("Error fetching patient details:", error);
+                      // Fallback to existing data if API call fails
+                      setSelectedPatient(item);
+                      setEditedPatient({ ...item });
+                      setEditModalVisible(true);
+                    }
                   }}
                 >
                   <MaterialIcons name="edit" size={22} color="#4CAF50" />
@@ -653,10 +700,49 @@ export default function PatientScreen() {
                 <View style={styles.modalActions}>
                   <TouchableOpacity
                     style={[styles.modalButton, styles.editButton]}
-                    onPress={() => {
-                      setDetailModalVisible(false);
-                      setEditedPatient({ ...selectedPatient });
-                      setEditModalVisible(true);
+                    onPress={async () => {
+                      try {
+                        // Fetch the latest patient data from the API
+                        const token = await getToken();
+                        const response = await axios.get(
+                          `${API_URL}/patients/users/${selectedPatient.id}`,
+                          {
+                            headers: {
+                              Authorization: `Bearer ${token}`,
+                            },
+                          }
+                        );
+
+                        if (response.data) {
+                          // Merge the API response with the existing patient data
+                          const patientData = {
+                            ...selectedPatient,
+                            name: response.data.name || selectedPatient.name,
+                            age: response.data.age || selectedPatient.age,
+                            gender:
+                              response.data.gender || selectedPatient.gender,
+                            uhidNumber:
+                              response.data.uhidNumber ||
+                              selectedPatient.uhidNumber,
+                            phoneNumber:
+                              response.data.phoneNumber ||
+                              selectedPatient.phoneNumber,
+                            exerciseTime:
+                              response.data.exerciseTime ||
+                              selectedPatient.exerciseTime,
+                          };
+
+                          setDetailModalVisible(false);
+                          setEditedPatient({ ...patientData });
+                          setEditModalVisible(true);
+                        }
+                      } catch (error) {
+                        console.error("Error fetching patient details:", error);
+                        // Fallback to existing data if API call fails
+                        setDetailModalVisible(false);
+                        setEditedPatient({ ...selectedPatient });
+                        setEditModalVisible(true);
+                      }
                     }}
                   >
                     <MaterialIcons name="edit" size={20} color="#fff" />
@@ -671,7 +757,7 @@ export default function PatientScreen() {
                     }}
                   >
                     <MaterialIcons name="delete" size={20} color="#fff" />
-                    <Text style={styles.modalButtonText}>Delete</Text>
+                    <Text style={styles.modalButtonText}>Deactivate</Text>
                   </TouchableOpacity>
                 </View>
               </ScrollView>
@@ -722,7 +808,7 @@ export default function PatientScreen() {
                 placeholderTextColor="#888"
               />
 
-              <Text style={styles.inputLabel}>Email *</Text>
+              <Text style={styles.inputLabel}>Email </Text>
               <TextInput
                 style={styles.input}
                 value={editedPatient.email}
@@ -980,6 +1066,11 @@ const styles = StyleSheet.create({
     borderRadius: 8,
     alignItems: "center",
     justifyContent: "center",
+    padding: 6,
+    backgroundColor: "rgba(255,255,255,0.1)",
+    borderRadius: 8,
+    alignItems: "center",
+    justifyContent: "center",
   },
   loadingContainer: {
     flex: 1,
@@ -1071,14 +1162,6 @@ const styles = StyleSheet.create({
   },
   picker: {
     color: "#fff",
-  },
-  saveButton: {
-    backgroundColor: "#E9446A",
-    padding: 14,
-    borderRadius: 8,
-    alignItems: "center",
-    marginTop: 8,
-    marginBottom: 20,
   },
   saveButton: {
     backgroundColor: "#E9446A",
