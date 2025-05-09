@@ -15,7 +15,12 @@ import {
   ScrollView,
   RefreshControl,
 } from "react-native";
-import { Ionicons, MaterialIcons, FontAwesome5 } from "@expo/vector-icons";
+import {
+  Ionicons,
+  MaterialIcons,
+  FontAwesome5,
+  Feather,
+} from "@expo/vector-icons";
 import { Picker } from "@react-native-picker/picker";
 import axios from "axios";
 import { API_URL } from "@/constants/Api";
@@ -53,8 +58,8 @@ export default function MedicineScreen() {
   const [addModalVisible, setAddModalVisible] = useState(false);
   const [editedMedicine, setEditedMedicine] = useState<Partial<Medicine>>({});
   const [newMedicine, setNewMedicine] = useState<Partial<Medicine>>({});
-  const [sortBy, setSortBy] = useState("name");
-  const [sortOrder, setSortOrder] = useState("asc");
+  const [sortBy, setSortBy] = useState("recent");
+  const [sortOrder, setSortOrder] = useState("desc");
 
   // Fetch medicines data
   const fetchMedicines = async () => {
@@ -111,20 +116,23 @@ export default function MedicineScreen() {
       let comparison = 0;
 
       switch (sortBy) {
+        case "recent":
+          // Sort by ID (assuming higher ID means more recent)
+          comparison = a.id - b.id;
+          break;
+        case "name":
         case "medicineName":
           comparison = a.medicineName.localeCompare(b.medicineName);
           break;
+        case "dose":
         case "medicineDose":
           const doseA = Number.parseFloat(a.medicineDose) || 0;
           const doseB = Number.parseFloat(b.medicineDose) || 0;
           comparison = doseA - doseB;
           break;
+        case "frequency":
         case "medicineFrequency":
           comparison = a.medicineFrequency.localeCompare(b.medicineFrequency);
-          break;
-        case "startDate":
-          comparison =
-            new Date(a.startDate).getTime() - new Date(b.startDate).getTime();
           break;
         default:
           comparison = 0;
@@ -382,13 +390,18 @@ export default function MedicineScreen() {
       {/* Top Bar with Add Medicine Button */}
       <View style={styles.topBar}>
         <Text style={styles.pageTitle}>Medications</Text>
-        <TouchableOpacity
-          style={styles.addButton}
-          onPress={() => setAddModalVisible(true)}
-        >
-          <Ionicons name="add-circle-outline" size={28} color="white" />
-          <Text style={styles.addButtonText}>Add</Text>
-        </TouchableOpacity>
+        <View style={styles.buttonContainer}>
+          <TouchableOpacity style={styles.reloadButton} onPress={onRefresh}>
+            <Feather name="refresh-cw" size={22} color="white" />
+          </TouchableOpacity>
+          <TouchableOpacity
+            style={styles.addButton}
+            onPress={() => setAddModalVisible(true)}
+          >
+            <Ionicons name="add-circle-outline" size={28} color="white" />
+            <Text style={styles.addButtonText}>Add</Text>
+          </TouchableOpacity>
+        </View>
       </View>
 
       {/* Search and Filter Bar */}
@@ -424,6 +437,16 @@ export default function MedicineScreen() {
         <TouchableOpacity
           style={[
             styles.sortButton,
+            sortBy === "recent" && styles.activeSortButton,
+          ]}
+          onPress={() => toggleSort("recent")}
+        >
+          <Text style={styles.sortButtonText}>Recent</Text>
+          {renderSortIndicator("recent")}
+        </TouchableOpacity>
+        <TouchableOpacity
+          style={[
+            styles.sortButton,
             sortBy === "name" && styles.activeSortButton,
           ]}
           onPress={() => toggleSort("name")}
@@ -450,16 +473,6 @@ export default function MedicineScreen() {
         >
           <Text style={styles.sortButtonText}>Frequency</Text>
           {renderSortIndicator("frequency")}
-        </TouchableOpacity>
-        <TouchableOpacity
-          style={[
-            styles.sortButton,
-            sortBy === "startDate" && styles.activeSortButton,
-          ]}
-          onPress={() => toggleSort("startDate")}
-        >
-          <Text style={styles.sortButtonText}>Start Date</Text>
-          {renderSortIndicator("startDate")}
         </TouchableOpacity>
       </ScrollView>
 
@@ -944,6 +957,18 @@ const styles = StyleSheet.create({
     fontWeight: "bold",
     color: "#fff",
   },
+  buttonContainer: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 10,
+  },
+  reloadButton: {
+    backgroundColor: "#3A3A4C",
+    padding: 10,
+    borderRadius: 50,
+    alignItems: "center",
+    justifyContent: "center",
+  },
   addButton: {
     backgroundColor: "#E9446A",
     padding: 10,
@@ -951,6 +976,7 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     paddingHorizontal: 16,
+    elevation: 3,
   },
   addButtonText: {
     color: "#fff",
@@ -966,6 +992,9 @@ const styles = StyleSheet.create({
     backgroundColor: "#2A2A3C",
     borderRadius: 10,
     paddingHorizontal: 10,
+    elevation: 2,
+    borderWidth: 1,
+    borderColor: "#3A3A4C",
   },
   searchIcon: {
     marginRight: 8,
@@ -985,9 +1014,10 @@ const styles = StyleSheet.create({
     alignItems: "center",
     backgroundColor: "#2A2A3C",
     paddingHorizontal: 12,
-    paddingVertical: 6,
+    paddingVertical: 8,
     borderRadius: 20,
     marginRight: 8,
+    elevation: 2,
   },
   activeSortButton: {
     backgroundColor: "#3A3A4C",
@@ -1005,7 +1035,9 @@ const styles = StyleSheet.create({
     marginBottom: 12,
     flexDirection: "row",
     justifyContent: "space-between",
-    elevation: 2,
+    elevation: 3,
+    borderLeftWidth: 4,
+    borderLeftColor: "#E9446A",
   },
   medicineInfo: {
     flex: 1,
@@ -1086,6 +1118,7 @@ const styles = StyleSheet.create({
     backgroundColor: "#2A2A3C",
     borderRadius: 12,
     overflow: "hidden",
+    elevation: 5,
   },
   detailModalContainer: {
     width: "90%",

@@ -313,15 +313,15 @@ export default function PatientScreen() {
       {/* Top Bar with Add Patient Button */}
       <View style={styles.topBar}>
         <Text style={styles.pageTitle}>Patients</Text>
-        <View style={styles.topBarActions}>
+        <View style={styles.buttonContainer}>
           <TouchableOpacity
-            style={styles.refreshButton}
+            style={styles.reloadButton}
             onPress={handleManualRefresh}
             disabled={isRefreshing}
           >
             <Feather
               name="refresh-cw"
-              size={20}
+              size={22}
               color="white"
               style={isRefreshing ? styles.rotating : undefined}
             />
@@ -330,7 +330,7 @@ export default function PatientScreen() {
             style={styles.addButton}
             onPress={() => router.push("/add-patients")}
           >
-            <Ionicons name="add-circle-outline" size={24} color="white" />
+            <Ionicons name="add-circle-outline" size={28} color="white" />
             <Text style={styles.addButtonText}>Add</Text>
           </TouchableOpacity>
         </View>
@@ -901,9 +901,10 @@ const styles = StyleSheet.create({
     alignItems: "center",
     marginBottom: 16,
   },
-  topBarActions: {
+  buttonContainer: {
     flexDirection: "row",
     alignItems: "center",
+    gap: 10,
   },
   pageTitle: {
     fontSize: 24,
@@ -917,12 +918,14 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     paddingHorizontal: 16,
+    elevation: 3,
   },
-  refreshButton: {
+  reloadButton: {
     backgroundColor: "#3A3A4C",
     padding: 10,
     borderRadius: 50,
-    marginRight: 10,
+    alignItems: "center",
+    justifyContent: "center",
   },
   rotating: {
     transform: [{ rotate: "45deg" }],
@@ -941,6 +944,9 @@ const styles = StyleSheet.create({
     backgroundColor: "#2A2A3C",
     borderRadius: 10,
     paddingHorizontal: 10,
+    elevation: 2,
+    borderWidth: 1,
+    borderColor: "#3A3A4C",
   },
   searchIcon: {
     marginRight: 8,
@@ -953,16 +959,17 @@ const styles = StyleSheet.create({
   sortContainer: {
     flexDirection: "row",
     marginBottom: 16,
-    height: 35,
+    height: 40,
   },
   sortButton: {
     flexDirection: "row",
     alignItems: "center",
     backgroundColor: "#2A2A3C",
     paddingHorizontal: 12,
-    paddingVertical: 4,
+    paddingVertical: 8,
     borderRadius: 20,
     marginRight: 8,
+    elevation: 2,
   },
   activeSortButton: {
     backgroundColor: "#3A3A4C",
@@ -980,11 +987,9 @@ const styles = StyleSheet.create({
     marginBottom: 12,
     flexDirection: "row",
     justifyContent: "space-between",
-    elevation: 2,
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
+    elevation: 3,
+    borderLeftWidth: 4,
+    borderLeftColor: "#E9446A",
   },
   patientInfo: {
     flex: 1,
@@ -1061,12 +1066,7 @@ const styles = StyleSheet.create({
     gap: 12,
   },
   actionButton: {
-    padding: 6,
-    backgroundColor: "rgba(255,255,255,0.1)",
-    borderRadius: 8,
-    alignItems: "center",
-    justifyContent: "center",
-    padding: 6,
+    padding: 8,
     backgroundColor: "rgba(255,255,255,0.1)",
     borderRadius: 8,
     alignItems: "center",
@@ -1098,6 +1098,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
     backgroundColor: "#E9446A",
     borderRadius: 8,
+    elevation: 2,
   },
   emptyRefreshText: {
     color: "#fff",
@@ -1115,6 +1116,7 @@ const styles = StyleSheet.create({
     backgroundColor: "#2A2A3C",
     borderRadius: 12,
     overflow: "hidden",
+    elevation: 5,
   },
   detailModalContainer: {
     width: "90%",
@@ -1122,6 +1124,7 @@ const styles = StyleSheet.create({
     backgroundColor: "#2A2A3C",
     borderRadius: 12,
     overflow: "hidden",
+    elevation: 5,
   },
   modalHeader: {
     flexDirection: "row",
@@ -1170,6 +1173,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
     marginTop: 8,
     marginBottom: 20,
+    elevation: 3,
   },
   saveButtonText: {
     color: "#fff",
