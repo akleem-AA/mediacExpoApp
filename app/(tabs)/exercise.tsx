@@ -192,6 +192,60 @@ const ExerciseList = () => {
       "Starting in...": "Starting in...",
       Difficulty: "Difficulty",
       Category: "Category",
+      Walking: "Walking",
+      "Neck Stretch": "Neck Stretch",
+      "Shoulder Rotation": "Shoulder Rotation",
+      "Arm Stretches": "Arm Stretches",
+      "Forward Bend": "Forward Bend",
+      "Ankle Rotations": "Ankle Rotations",
+      "Calf Stretch": "Calf Stretch",
+      "Stationary Cycling": "Stationary Cycling",
+      Swimming: "Swimming",
+      "Slow Dancing": "Slow Dancing",
+      "Running/Jogging": "Running/Jogging",
+      Yoga: "Yoga",
+      "Head to Toe Relaxation": "Head to Toe Relaxation",
+      All: "All",
+      Cardio: "Cardio",
+      Stretching: "Stretching",
+      Flexibility: "Flexibility",
+      Relaxation: "Relaxation",
+      Beginner: "Beginner",
+      Intermediate: "Intermediate",
+      Advanced: "Advanced",
+      Status: "Status",
+      Connected: "Connected",
+      "You are connected to the internet.":
+        "You are connected to the internet.",
+      Connectivity: "Connectivity",
+      "Wi-Fi": "Wi-Fi",
+      "Your internet connection is stable.":
+        "Your internet connection is stable.",
+      Latency: "Latency",
+      High: "High",
+      "We are experiencing some delays.": "We are experiencing some delays.",
+      Throughput: "Throughput",
+      Reduced: "Reduced",
+      "Your connection speed is slower than usual.":
+        "Your connection speed is slower than usual.",
+      "Packet Loss": "Packet Loss",
+      Increased: "Increased",
+      "Some data is not reaching its destination.":
+        "Some data is not reaching its destination.",
+      "Discuss your physical activity plan with a healthcare provider before starting, after a recent cardiac event, surgery, or diagnosis.":
+        "Discuss your physical activity plan with a healthcare provider before starting, after a recent cardiac event, surgery, or diagnosis.",
+      "Begin with low-intensity exercises and gradually increase duration and intensity. Start with sessions as short as 5–10 minutes if needed, and gradually aim for 30 minutes per day.":
+        "Begin with low-intensity exercises and gradually increase duration and intensity. Start with sessions as short as 5–10 minutes if needed, and gradually aim for 30 minutes per day.",
+      "Warm-Up: Spend 5–10 minutes preparing your body with light activity (e.g., slow walking).":
+        "Warm-Up: Spend 5–10 minutes preparing your body with light activity (e.g., slow walking).",
+      "Cool-Down: Gradually lower your heart rate with light activity and stretching.":
+        "Cool-Down: Gradually lower your heart rate with light activity and stretching.",
+      "At least 150 minutes of moderate-intensity or 75 minutes of vigorous-intensity aerobic exercise per week. Alternatively, a combination of both intensities is recommended.":
+        "At least 150 minutes of moderate-intensity or 75 minutes of vigorous-intensity aerobic exercise per week. Alternatively, a combination of both intensities is recommended.",
+      "Stop exercising and seek medical attention if you experience chest pain, shortness of breath, dizziness, or extreme fatigue.":
+        "Stop exercising and seek medical attention if you experience chest pain, shortness of breath, dizziness, or extreme fatigue.",
+      "On days when energy levels are lower, opt for lighter activities like slow walking or stretching.":
+        "On days when energy levels are lower, opt for lighter activities like slow walking or stretching.",
     },
     hi: {
       "Exercise Library": "व्यायाम पुस्तकालय",
@@ -214,6 +268,58 @@ const ExerciseList = () => {
       "Starting in...": "शुरू हो रहा है...",
       Difficulty: "कठिनाई",
       Category: "श्रेणी",
+      Walking: "चलना",
+      "Neck Stretch": "गर्दन की स्ट्रेचिंग",
+      "Shoulder Rotation": "कंधे का घुमाव",
+      "Arm Stretches": "बाहों की स्ट्रेचिंग",
+      "Forward Bend": "आगे झुकना",
+      "Ankle Rotations": "टखने का घुमाव",
+      "Calf Stretch": "पिंडली की स्ट्रेचिंग",
+      "Stationary Cycling": "स्थिर साइकिलिंग",
+      Swimming: "तैराकी",
+      "Slow Dancing": "धीमा नृत्य",
+      "Running/Jogging": "दौड़ना/जॉगिंग",
+      Yoga: "योग",
+      "Head to Toe Relaxation": "सिर से पैर तक आराम",
+      All: "सभी",
+      Cardio: "कार्डियो",
+      Stretching: "स्ट्रेचिंग",
+      Flexibility: "लचीलापन",
+      Relaxation: "आराम",
+      Beginner: "शुरुआती",
+      Intermediate: "मध्यम",
+      Advanced: "उन्नत",
+      Status: "स्थिति",
+      Connected: "जुड़ा हुआ",
+      "You are connected to the internet.": "आप इंटरनेट से जुड़े हैं।",
+      Connectivity: "कनेक्टिविटी",
+      "Wi-Fi": "वाई-फाई",
+      "Your internet connection is stable.": "आपका इंटरनेट कनेक्शन स्थिर है।",
+      Latency: "विलंबता",
+      High: "उच्च",
+      "We are experiencing some delays.": "हमें कुछ देरी का अनुभव हो रहा है।",
+      Throughput: "थ्रूपुट",
+      Reduced: "कम",
+      "Your connection speed is slower than usual.":
+        "आपकी कनेक्शन गति सामान्य से धीमी है।",
+      "Packet Loss": "पैकेट लॉस",
+      Increased: "बढ़ा हुआ",
+      "Some data is not reaching its destination.":
+        "कुछ डेटा अपने गंतव्य तक नहीं पहुंच रहा है।",
+      "Discuss your physical activity plan with a healthcare provider before starting, हाल ही में हृदय संबंधी घटना, सर्जरी या निदान के बाद":
+        "शुरू करने से पहले, हाल ही में हृदय संबंधी घटना, सर्जरी या निदान के बाद अपने शारीरिक गतिविधि योजना के बारे में स्वास्थ्य सेवा प्रदाता से चर्चा करें।",
+      "Begin with low-intensity exercises and gradually increase duration and intensity. Start with sessions as short as 5–10 minutes if needed, and gradually aim for 30 minutes per day.":
+        "कम तीव्रता वाले व्यायामों से शुरुआत करें और धीरे-धीरे अवधि और तीव्रता बढ़ाएं। यदि आवश्यक हो तो 5-10 मिनट के छोटे सत्रों से शुरू करें, और धीरे-धीरे प्रति दिन 30 मिनट का लक्ष्य रखें।",
+      "Warm-Up: Spend 5–10 minutes preparing your body with light activity (e.g., slow walking).":
+        "वार्म-अप: हल्की गतिविधि (जैसे, धीमी चाल) के साथ अपने शरीर को तैयार करने के लिए 5-10 मिनट बिताएं।",
+      "Cool-Down: Gradually lower your heart rate with light activity and stretching.":
+        "कूल-डाउन: हल्की गतिविधि और स्ट्रेचिंग के साथ धीरे-धीरे अपनी हृदय गति को कम करें।",
+      "At least 150 minutes of moderate-intensity or 75 minutes of vigorous-intensity aerobic exercise per week. Alternatively, a combination of both intensities is recommended.":
+        "प्रति सप्ताह कम से कम 150 मिनट मध्यम तीव्रता या 75 मिनट तीव्र तीव्रता वाले एरोबिक व्यायाम। वैकल्पिक रूप से, दोनों तीव्रताओं के संयोजन की सिफारिश की जाती है।",
+      "Stop exercising and seek medical attention if you experience chest pain, shortness of breath, चक्कर आना या अत्यधिक थकान":
+        "यदि आप सीने में दर्द, सांस की तकलीफ, चक्कर आना या अत्यधिक थकान का अनुभव करते हैं तो व्यायाम बंद करें और चिकित्सा सहायता लें।",
+      "On days when energy levels are lower, opt for lighter activities like slow walking or stretching.":
+        "जिन दिनों ऊर्जा का स्तर कम हो, उन दिनों धीमी चाल या स्ट्रेचिंग जैसी हल्की गतिविधियों का चयन करें।",
     },
   };
 
@@ -297,7 +403,7 @@ const ExerciseList = () => {
           selectedCategory === category && styles.categoryPillTextActive,
         ]}
       >
-        {category}
+        {t(category)}
       </Text>
     </TouchableOpacity>
   );
@@ -321,20 +427,22 @@ const ExerciseList = () => {
           </View>
         </View>
         <View style={styles.cardHeaderContent}>
-          <Text style={styles.exerciseName}>{exercise.name}</Text>
+          <Text style={styles.exerciseName}>{t(exercise.name)}</Text>
           <View style={styles.exerciseMetaRow}>
             <View style={styles.exerciseMetaItem}>
               <Ionicons name="fitness-outline" size={14} color="#666" />
-              <Text style={styles.exerciseMetaText}>{exercise.difficulty}</Text>
+              <Text style={styles.exerciseMetaText}>
+                {t(exercise.difficulty)}
+              </Text>
             </View>
           </View>
           <View style={styles.categoryTag}>
-            <Text style={styles.categoryTagText}>{exercise.category}</Text>
+            <Text style={styles.categoryTagText}>{t(exercise.category)}</Text>
           </View>
         </View>
       </View>
       <Text style={styles.description} numberOfLines={2}>
-        {exercise.description}
+        {t(exercise.description)}
       </Text>
     </TouchableOpacity>
   );
@@ -405,9 +513,9 @@ const ExerciseList = () => {
                     {t("Consult Your Doctor")}
                   </Text>
                   <Text style={styles.disclaimerItemText}>
-                    Discuss your physical activity plan with a healthcare
-                    provider before starting, after a recent cardiac event,
-                    surgery, or diagnosis.
+                    {t(
+                      "Discuss your physical activity plan with a healthcare provider before starting, हाल ही में हृदय संबंधी घटना, सर्जरी या निदान के बाद"
+                    )}
                   </Text>
                 </View>
               </View>
@@ -419,9 +527,9 @@ const ExerciseList = () => {
                     {t("Gradual Progression")}
                   </Text>
                   <Text style={styles.disclaimerItemText}>
-                    Begin with low-intensity exercises and gradually increase
-                    duration and intensity. Start with sessions as short as 5–10
-                    minutes if needed, and gradually aim for 30 minutes per day.
+                    {t(
+                      "Begin with low-intensity exercises and gradually increase duration and intensity. Start with sessions as short as 5–10 minutes if needed, and gradually aim for 30 minutes per day."
+                    )}
                   </Text>
                 </View>
               </View>
@@ -433,10 +541,13 @@ const ExerciseList = () => {
                     {t("Warm-Up and Cool-Down")}
                   </Text>
                   <Text style={styles.disclaimerItemText}>
-                    Warm-Up: Spend 5–10 minutes preparing your body with light
-                    activity (e.g., slow walking).{"\n"}
-                    Cool-Down: Gradually lower your heart rate with light
-                    activity and stretching.
+                    {t(
+                      "Warm-Up: Spend 5–10 minutes preparing your body with light activity (e.g., slow walking)."
+                    )}
+                    {"\n"}
+                    {t(
+                      "Cool-Down: Gradually lower your heart rate with light activity and stretching."
+                    )}
                   </Text>
                 </View>
               </View>
@@ -446,9 +557,9 @@ const ExerciseList = () => {
                 <View style={styles.disclaimerItemContent}>
                   <Text style={styles.disclaimerItemTitle}>{t("Target")}</Text>
                   <Text style={styles.disclaimerItemText}>
-                    At least 150 minutes of moderate-intensity or 75 minutes of
-                    vigorous-intensity aerobic exercise per week. Alternatively,
-                    a combination of both intensities is recommended.
+                    {t(
+                      "At least 150 minutes of moderate-intensity or 75 minutes of vigorous-intensity aerobic exercise per week. Alternatively, a combination of both intensities is recommended."
+                    )}
                   </Text>
                 </View>
               </View>
@@ -460,9 +571,9 @@ const ExerciseList = () => {
                     {t("Avoid Overexertion")}
                   </Text>
                   <Text style={styles.disclaimerItemText}>
-                    Stop exercising and seek medical attention if you experience
-                    chest pain, shortness of breath, dizziness, or extreme
-                    fatigue.
+                    {t(
+                      "Stop exercising and seek medical attention if you experience chest pain, shortness of breath, चक्कर आना या अत्यधिक थकान"
+                    )}
                   </Text>
                 </View>
               </View>
@@ -474,8 +585,9 @@ const ExerciseList = () => {
                     {t("Pace Yourself")}
                   </Text>
                   <Text style={styles.disclaimerItemText}>
-                    On days when energy levels are lower, opt for lighter
-                    activities like slow walking or stretching.
+                    {t(
+                      "On days when energy levels are lower, opt for lighter activities like slow walking or stretching."
+                    )}
                   </Text>
                 </View>
               </View>
@@ -530,7 +642,7 @@ const ExerciseList = () => {
                 <>
                   <View style={styles.modalHeader}>
                     <Text style={styles.modalTitle}>
-                      {selectedExercise.name}
+                      {t(selectedExercise.name)}
                     </Text>
                     <TouchableOpacity
                       style={styles.closeButton}
@@ -589,7 +701,7 @@ const ExerciseList = () => {
                               {t("Difficulty")}
                             </Text>
                             <Text style={styles.detailValue}>
-                              {selectedExercise.difficulty}
+                              {t(selectedExercise.difficulty)}
                             </Text>
                           </View>
                           <View style={styles.detailItem}>
@@ -602,7 +714,7 @@ const ExerciseList = () => {
                               {t("Category")}
                             </Text>
                             <Text style={styles.detailValue}>
-                              {selectedExercise.category}
+                              {t(selectedExercise.category)}
                             </Text>
                           </View>
                         </View>
@@ -613,7 +725,7 @@ const ExerciseList = () => {
                           {t("Instructions")}
                         </Text>
                         <Text style={styles.descriptionText}>
-                          {selectedExercise.description}
+                          {t(selectedExercise.description)}
                         </Text>
                       </ScrollView>
 
