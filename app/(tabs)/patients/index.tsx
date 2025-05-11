@@ -204,10 +204,17 @@ export default function PatientScreen() {
     }
 
     try {
+      // Create update data without password initially
       const updatedData = {
         ...selectedPatient,
         ...editedPatient,
       };
+
+      // Only include password if it's provided and not empty
+      if (!editedPatient.password || editedPatient.password.trim() === "") {
+        delete updatedData.password;
+      }
+
       const token = await getToken();
 
       const response = await axios.put(
@@ -569,14 +576,14 @@ export default function PatientScreen() {
                         };
 
                         setSelectedPatient(patientData);
-                        setEditedPatient({ ...patientData });
+                        setEditedPatient({ ...patientData, password: "" });
                         setEditModalVisible(true);
                       }
                     } catch (error) {
                       console.error("Error fetching patient details:", error);
                       // Fallback to existing data if API call fails
                       setSelectedPatient(item);
-                      setEditedPatient({ ...item });
+                      setEditedPatient({ ...item, password: "" });
                       setEditModalVisible(true);
                     }
                   }}
@@ -733,14 +740,14 @@ export default function PatientScreen() {
                           };
 
                           setDetailModalVisible(false);
-                          setEditedPatient({ ...patientData });
+                          setEditedPatient({ ...patientData, password: "" });
                           setEditModalVisible(true);
                         }
                       } catch (error) {
                         console.error("Error fetching patient details:", error);
                         // Fallback to existing data if API call fails
                         setDetailModalVisible(false);
-                        setEditedPatient({ ...selectedPatient });
+                        setEditedPatient({ ...selectedPatient, password: "" });
                         setEditModalVisible(true);
                       }
                     }}
@@ -818,6 +825,19 @@ export default function PatientScreen() {
                 placeholder="Enter email"
                 placeholderTextColor="#888"
                 keyboardType="email-address"
+              />
+
+              {/* Add password field for resetting */}
+              <Text style={styles.inputLabel}>Reset Password</Text>
+              <TextInput
+                style={styles.input}
+                value={editedPatient.password || ""}
+                onChangeText={(text) =>
+                  setEditedPatient({ ...editedPatient, password: text })
+                }
+                placeholder="Enter new password to reset"
+                placeholderTextColor="#888"
+                secureTextEntry={!!editedPatient.password}
               />
 
               <Text style={styles.inputLabel}>Gender</Text>
