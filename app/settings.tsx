@@ -101,19 +101,19 @@ export default function ProfileScreen() {
             icon="notifications-outline"
             title="Notifications"
             description="Manage your alerts and reminders"
-            onPress={() => console.log("Notifications pressed")}
+            onPress={() => router.push("/notification")}
           />
           <MenuItem
             icon="help-circle-outline"
             title="Help & Support"
             description="FAQs and contact information"
-            onPress={() => console.log("Help pressed")}
+            onPress={() => router.push("/help")}
           />
           <MenuItem
             icon="information-circle-outline"
             title="About"
             description="App version and legal information"
-            onPress={() => console.log("About pressed")}
+            onPress={() => router.push("/about")}
           />
         </View>
 
