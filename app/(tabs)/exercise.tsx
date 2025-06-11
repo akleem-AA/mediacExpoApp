@@ -165,6 +165,7 @@ const ExerciseList = () => {
   const [exerciseStarted, setExerciseStarted] = useState(false);
   const [disclaimerVisible, setDisclaimerVisible] = useState(true);
   const [language, setLanguage] = useState("en"); // en or hi
+  const [creditsVisible, setCreditsVisible] = useState(false);
 
   const modalAnimation = useRef(new Animated.Value(0)).current;
   const { width, height } = Dimensions.get("window");
@@ -246,6 +247,18 @@ const ExerciseList = () => {
         "Stop exercising and seek medical attention if you experience chest pain, shortness of breath, dizziness, or extreme fatigue.",
       "On days when energy levels are lower, opt for lighter activities like slow walking or stretching.":
         "On days when energy levels are lower, opt for lighter activities like slow walking or stretching.",
+      Credits: "Credits",
+      "Media Attribution": "Media Attribution",
+      "Photos & Videos": "Photos & Videos",
+      "This app uses photos and videos from the following sources:":
+        "This app uses photos and videos from the following sources:",
+      "High-quality stock photos and graphics":
+        "High-quality stock photos and graphics",
+      "Professional design templates and media":
+        "Professional design templates and media",
+      "We thank these platforms for providing excellent creative resources.":
+        "We thank these platforms for providing excellent creative resources.",
+      Close: "Close",
     },
     hi: {
       "Exercise Library": "व्यायाम पुस्तकालय",
@@ -308,9 +321,9 @@ const ExerciseList = () => {
         "कुछ डेटा अपने गंतव्य तक नहीं पहुंच रहा है।",
       "Discuss your physical activity plan with a healthcare provider before starting, हाल ही में हृदय संबंधी घटना, सर्जरी या निदान के बाद":
         "शुरू करने से पहले, हाल ही में हृदय संबंधी घटना, सर्जरी या निदान के बाद अपने शारीरिक गतिविधि योजना के बारे में स्वास्थ्य सेवा प्रदाता से चर्चा करें।",
-      "Begin with low-intensity exercises and gradually increase duration and intensity. Start with sessions as short as 5–10 minutes if needed, and gradually aim for 30 minutes per day.":
+      "Begin with low-intensity exercises and gradually increase duration and intensity. Start with sessions as short as 5–10 minutes if आवश्यक हो तो 5-10 मिनट के छोटे सत्रों से शुरू करें, और धीरे-धीरे प्रति दिन 30 मिनट का लक्ष्य रखें।":
         "कम तीव्रता वाले व्यायामों से शुरुआत करें और धीरे-धीरे अवधि और तीव्रता बढ़ाएं। यदि आवश्यक हो तो 5-10 मिनट के छोटे सत्रों से शुरू करें, और धीरे-धीरे प्रति दिन 30 मिनट का लक्ष्य रखें।",
-      "Warm-Up: Spend 5–10 minutes preparing your body with light activity (e.g., slow walking).":
+      "Warm-Up: Spend 5–10 minutes preparing your body with light activity (e.g., धीमी चाल) के साथ अपने शरीर को तैयार करने के लिए 5-10 मिनट बिताएं।":
         "वार्म-अप: हल्की गतिविधि (जैसे, धीमी चाल) के साथ अपने शरीर को तैयार करने के लिए 5-10 मिनट बिताएं।",
       "Cool-Down: Gradually lower your heart rate with light activity and stretching.":
         "कूल-डाउन: हल्की गतिविधि और स्ट्रेचिंग के साथ धीरे-धीरे अपनी हृदय गति को कम करें।",
@@ -320,6 +333,18 @@ const ExerciseList = () => {
         "यदि आप सीने में दर्द, सांस की तकलीफ, चक्कर आना या अत्यधिक थकान का अनुभव करते हैं तो व्यायाम बंद करें और चिकित्सा सहायता लें।",
       "On days when energy levels are lower, opt for lighter activities like slow walking or stretching.":
         "जिन दिनों ऊर्जा का स्तर कम हो, उन दिनों धीमी चाल या स्ट्रेचिंग जैसी हल्की गतिविधियों का चयन करें।",
+      Credits: "श्रेय",
+      "Media Attribution": "मीडिया एट्रिब्यूशन",
+      "Photos & Videos": "फोटो और वीडियो",
+      "This app uses photos and videos from the following sources:":
+        "यह ऐप निम्नलिखित स्रोतों से फोटो और वीडियो का उपयोग करता है:",
+      "High-quality stock photos and graphics":
+        "उच्च गुणवत्ता वाली स्टॉक फोटो और ग्राफिक्स",
+      "Professional design templates and media":
+        "पेशेवर डिज़ाइन टेम्प्लेट और मीडिया",
+      "We thank these platforms for providing excellent creative resources.":
+        "हम इन प्लेटफॉर्म का धन्यवाद करते हैं जो उत्कृष्ट रचनात्मक संसाधन प्रदान करते हैं।",
+      Close: "बंद करें",
     },
   };
 
@@ -464,14 +489,26 @@ const ExerciseList = () => {
         <View style={styles.header}>
           <View style={styles.headerTop}>
             <Text style={styles.title}>{t("Exercise Library")}</Text>
-            <TouchableOpacity
-              style={styles.languageToggle}
-              onPress={toggleLanguage}
-            >
-              <Text style={styles.languageToggleText}>
-                {language === "en" ? "हिंदी" : "EN"}
-              </Text>
-            </TouchableOpacity>
+            <View style={{ flexDirection: "row", alignItems: "center" }}>
+              <TouchableOpacity
+                style={styles.creditsButton}
+                onPress={() => setCreditsVisible(true)}
+              >
+                <Ionicons
+                  name="information-circle-outline"
+                  size={20}
+                  color="#4A55A2"
+                />
+              </TouchableOpacity>
+              <TouchableOpacity
+                style={styles.languageToggle}
+                onPress={toggleLanguage}
+              >
+                <Text style={styles.languageToggleText}>
+                  {language === "en" ? "हिंदी" : "EN"}
+                </Text>
+              </TouchableOpacity>
+            </View>
           </View>
           <Text style={styles.subtitle}>
             {t("Find the perfect exercise for your routine")}
@@ -748,6 +785,91 @@ const ExerciseList = () => {
                 </>
               )}
             </Animated.View>
+          </View>
+        </Modal>
+        {/* Credits Modal */}
+        <Modal
+          animationType="slide"
+          transparent={true}
+          visible={creditsVisible}
+          onRequestClose={() => setCreditsVisible(false)}
+        >
+          <View style={styles.modalOverlay}>
+            <View style={styles.creditsModalContent}>
+              <View style={styles.creditsHeader}>
+                <Text style={styles.creditsTitle}>{t("Credits")}</Text>
+                <TouchableOpacity
+                  style={styles.closeButton}
+                  onPress={() => setCreditsVisible(false)}
+                >
+                  <Ionicons name="close" size={24} color="#333" />
+                </TouchableOpacity>
+              </View>
+
+              <ScrollView style={styles.creditsContent}>
+                <View style={styles.creditsSection}>
+                  <Text style={styles.creditsSectionTitle}>
+                    {t("Media Attribution")}
+                  </Text>
+                  <Text style={styles.creditsDescription}>
+                    {t(
+                      "This app uses photos and videos from the following sources:"
+                    )}
+                  </Text>
+                </View>
+
+                <View style={styles.creditItem}>
+                  <View style={styles.creditItemHeader}>
+                    <Image
+                      source={{
+                        uri: "https://via.placeholder.com/40x40/00C4CC/FFFFFF?text=F",
+                      }}
+                      style={styles.creditLogo}
+                    />
+                    <View style={styles.creditItemContent}>
+                      <Text style={styles.creditItemTitle}>Freepik</Text>
+                      <Text style={styles.creditItemSubtitle}>freepik.com</Text>
+                    </View>
+                  </View>
+                  <Text style={styles.creditItemDescription}>
+                    {t("High-quality stock photos")}
+                  </Text>
+                </View>
+
+                <View style={styles.creditItem}>
+                  <View style={styles.creditItemHeader}>
+                    <Image
+                      source={{
+                        uri: "https://via.placeholder.com/40x40/7D2AE8/FFFFFF?text=C",
+                      }}
+                      style={styles.creditLogo}
+                    />
+                    <View style={styles.creditItemContent}>
+                      <Text style={styles.creditItemTitle}>Canva</Text>
+                      <Text style={styles.creditItemSubtitle}>canva.com</Text>
+                    </View>
+                  </View>
+                  <Text style={styles.creditItemDescription}>
+                    {t("Professional media")}
+                  </Text>
+                </View>
+
+                <View style={styles.creditsFooter}>
+                  <Text style={styles.creditsFooterText}>
+                    {t(
+                      "We thank these platforms for providing excellent creative resources."
+                    )}
+                  </Text>
+                </View>
+              </ScrollView>
+
+              <TouchableOpacity
+                style={styles.creditsCloseButton}
+                onPress={() => setCreditsVisible(false)}
+              >
+                <Text style={styles.creditsCloseButtonText}>{t("Close")}</Text>
+              </TouchableOpacity>
+            </View>
           </View>
         </Modal>
       </View>
@@ -1176,6 +1298,112 @@ const styles = StyleSheet.create({
     borderRadius: 8,
   },
   stopButtonText: {
+    color: "#fff",
+    fontSize: 16,
+    fontWeight: "600",
+  },
+  creditsButton: {
+    padding: 8,
+    borderRadius: 20,
+    backgroundColor: "rgba(74, 85, 162, 0.1)",
+    marginLeft: 8,
+  },
+  creditsModalContent: {
+    width: "90%",
+    maxHeight: "80%",
+    backgroundColor: "#fff",
+    borderRadius: 16,
+    overflow: "hidden",
+  },
+  creditsHeader: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    paddingHorizontal: 20,
+    paddingVertical: 16,
+    borderBottomWidth: 1,
+    borderBottomColor: "#f0f0f0",
+    backgroundColor: "#f8f9fa",
+  },
+  creditsTitle: {
+    fontSize: 20,
+    fontWeight: "600",
+    color: "#333",
+  },
+  creditsContent: {
+    padding: 20,
+  },
+  creditsSection: {
+    marginBottom: 20,
+  },
+  creditsSectionTitle: {
+    fontSize: 18,
+    fontWeight: "600",
+    color: "#333",
+    marginBottom: 8,
+  },
+  creditsDescription: {
+    fontSize: 14,
+    color: "#666",
+    lineHeight: 20,
+  },
+  creditItem: {
+    backgroundColor: "#f8f9fa",
+    borderRadius: 12,
+    padding: 16,
+    marginBottom: 12,
+    borderWidth: 1,
+    borderColor: "#e9ecef",
+  },
+  creditItemHeader: {
+    flexDirection: "row",
+    alignItems: "center",
+    marginBottom: 8,
+  },
+  creditLogo: {
+    width: 40,
+    height: 40,
+    borderRadius: 8,
+    marginRight: 12,
+  },
+  creditItemContent: {
+    flex: 1,
+  },
+  creditItemTitle: {
+    fontSize: 16,
+    fontWeight: "600",
+    color: "#333",
+  },
+  creditItemSubtitle: {
+    fontSize: 12,
+    color: "#666",
+    marginTop: 2,
+  },
+  creditItemDescription: {
+    fontSize: 14,
+    color: "#666",
+    lineHeight: 18,
+  },
+  creditsFooter: {
+    marginTop: 20,
+    padding: 16,
+    backgroundColor: "#e3f2fd",
+    borderRadius: 8,
+  },
+  creditsFooterText: {
+    fontSize: 14,
+    color: "#1976d2",
+    textAlign: "center",
+    fontStyle: "italic",
+  },
+  creditsCloseButton: {
+    backgroundColor: "#4A55A2",
+    margin: 16,
+    paddingVertical: 12,
+    borderRadius: 8,
+    alignItems: "center",
+  },
+  creditsCloseButtonText: {
     color: "#fff",
     fontSize: 16,
     fontWeight: "600",

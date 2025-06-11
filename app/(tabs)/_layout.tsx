@@ -14,10 +14,9 @@ export default function TabLayout() {
   // useSegments gives us the route segments as an array
   const segments = useSegments();
   const { user } = useAuth();
-  
+
   if (user === undefined) return null; // loading state
   if (!user) return <Redirect href="/auth/login" />;
-
 
   // Check if we're in the metrics section
   const isMetricsRoute = segments.includes("metrics");
@@ -63,7 +62,7 @@ export default function TabLayout() {
       <Tabs.Screen
         name="medicines/index"
         options={{
-          title: "Medcines",
+          title: "Medicines",
           tabBarIcon: ({ color }) => (
             <IconSymbol size={24} name="medication.fill" color={color} />
           ),
