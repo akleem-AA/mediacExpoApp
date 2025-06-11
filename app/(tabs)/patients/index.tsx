@@ -26,6 +26,7 @@ import { API_URL } from "@/constants/Api";
 import axios from "axios";
 import { Picker } from "@react-native-picker/picker";
 import { getToken } from "@/services/auth";
+import DateTimePicker from "@react-native-community/datetimepicker";
 
 // Define the Patient type for better type safety
 interface Patient {
@@ -37,9 +38,10 @@ interface Patient {
   age: number;
   phoneNumber: string;
   exerciseTime: string;
+  followUpDate?: string;
   password?: string;
   role: number;
-  createdAt?: string; // Add createdAt field for sorting by recent
+  createdAt?: string;
 }
 
 export default function PatientScreen() {
@@ -52,9 +54,13 @@ export default function PatientScreen() {
   const [detailModalVisible, setDetailModalVisible] = useState(false);
   const [editModalVisible, setEditModalVisible] = useState(false);
   const [editedPatient, setEditedPatient] = useState<Partial<Patient>>({});
-  const [sortBy, setSortBy] = useState("recent"); // Default to recent
-  const [sortOrder, setSortOrder] = useState("desc"); // Default to descending for recent
+  const [sortBy, setSortBy] = useState("recent");
+  const [sortOrder, setSortOrder] = useState("desc");
   const [isRefreshing, setIsRefreshing] = useState(false);
+
+  // Date picker states
+  const [showFollowUpDatePicker, setShowFollowUpDatePicker] = useState(false);
+  const [followUpDate, setFollowUpDate] = useState(new Date());
 
   // Fetch patients data
   const fetchPatients = async () => {
@@ -67,12 +73,10 @@ export default function PatientScreen() {
         },
       });
       if (response.data) {
-        // Filter patients and add timestamp if not present
         const patientData = response.data
           .filter((p: any) => p && p.role === 0)
           .map((p: any) => ({
             ...p,
-            // If createdAt doesn't exist, use current time as fallback
             createdAt: p.createdAt || new Date().toISOString(),
           }));
         setPatients(patientData);
@@ -92,7 +96,6 @@ export default function PatientScreen() {
   const applyFilters = (data: Patient[], query: string) => {
     let filtered = [...data];
 
-    // Apply search filter
     if (query) {
       filtered = filtered.filter(
         (p) =>
@@ -102,16 +105,14 @@ export default function PatientScreen() {
       );
     }
 
-    // Apply sorting
     filtered.sort((a, b) => {
       let comparison = 0;
 
       switch (sortBy) {
         case "recent":
-          // Sort by creation date (newest first)
           const dateA = new Date(a.createdAt || 0).getTime();
           const dateB = new Date(b.createdAt || 0).getTime();
-          comparison = dateB - dateA; // Descending by default for recent
+          comparison = dateB - dateA;
           break;
         case "name":
           comparison = (a.name || "").localeCompare(b.name || "");
@@ -124,6 +125,15 @@ export default function PatientScreen() {
           break;
         case "age":
           comparison = (a.age || 0) - (b.age || 0);
+          break;
+        case "followup":
+          const followUpA = a.followUpDate
+            ? new Date(a.followUpDate).getTime()
+            : 0;
+          const followUpB = b.followUpDate
+            ? new Date(b.followUpDate).getTime()
+            : 0;
+          comparison = followUpA - followUpB;
           break;
         default:
           comparison = 0;
@@ -166,7 +176,6 @@ export default function PatientScreen() {
           onPress: async () => {
             try {
               const token = await getToken();
-              // Changed from DELETE to PATCH request
               await axios.patch(
                 `${API_URL}/patients/delete/${id}`,
                 { isActive: false },
@@ -176,7 +185,6 @@ export default function PatientScreen() {
                   },
                 }
               );
-              // Still remove from UI display
               setPatients(patients.filter((p) => p.id !== id));
               applyFilters(
                 patients.filter((p) => p.id !== id),
@@ -197,20 +205,18 @@ export default function PatientScreen() {
   const handleUpdatePatient = async () => {
     if (!selectedPatient) return;
 
-    // Validate required fields
     if (!editedPatient.name || !editedPatient.uhidNumber) {
-      Alert.alert("Error", "Name, Email and UHID are required fields");
+      Alert.alert("Error", "Name and UHID are required fields");
       return;
     }
 
     try {
-      // Create update data without password initially
       const updatedData = {
         ...selectedPatient,
         ...editedPatient,
+        followUpDate: followUpDate.toISOString().split("T")[0], // Format as YYYY-MM-DD
       };
 
-      // Only include password if it's provided and not empty
       if (!editedPatient.password || editedPatient.password.trim() === "") {
         delete updatedData.password;
       }
@@ -228,7 +234,6 @@ export default function PatientScreen() {
       );
 
       if (response.status === 200) {
-        // Update local state only if the response status is 200 (success)
         const updatedPatients = patients.map((p) =>
           p.id === selectedPatient.id ? (updatedData as Patient) : p
         );
@@ -238,7 +243,6 @@ export default function PatientScreen() {
         setEditModalVisible(false);
         Alert.alert("Success", "Patient updated successfully");
       } else {
-        // Handle unexpected status codes
         Alert.alert("Error", "Failed to update patient. Please try again.");
       }
     } catch (error) {
@@ -253,9 +257,23 @@ export default function PatientScreen() {
       setSortOrder(sortOrder === "asc" ? "desc" : "asc");
     } else {
       setSortBy(field);
-      // For "recent" sort, default to descending (newest first)
       setSortOrder(field === "recent" ? "desc" : "asc");
     }
+  };
+
+  // Open edit modal with patient data
+  const openEditModal = (patient: Patient) => {
+    setSelectedPatient(patient);
+    setEditedPatient({ ...patient, password: "" });
+
+    // Set follow-up date for date picker
+    if (patient.followUpDate) {
+      setFollowUpDate(new Date(patient.followUpDate));
+    } else {
+      setFollowUpDate(new Date());
+    }
+
+    setEditModalVisible(true);
   };
 
   useEffect(() => {
@@ -269,7 +287,6 @@ export default function PatientScreen() {
   // Render sort indicator
   const renderSortIndicator = (field: string) => {
     if (sortBy !== field) return null;
-
     return (
       <MaterialIcons
         name={sortOrder === "asc" ? "arrow-upward" : "arrow-downward"}
@@ -282,9 +299,7 @@ export default function PatientScreen() {
   // Format phone number for better readability
   const formatPhoneNumber = (phone: string) => {
     if (!phone) return "";
-    // Remove non-numeric characters
     const cleaned = phone.replace(/\D/g, "");
-    // Format based on length
     if (cleaned.length === 10) {
       return `${cleaned.slice(0, 3)}-${cleaned.slice(3, 6)}-${cleaned.slice(
         6
@@ -312,6 +327,26 @@ export default function PatientScreen() {
       return `${diffDays}d ago`;
     } else {
       return created.toLocaleDateString();
+    }
+  };
+
+  // Get follow-up status with color coding
+  const getFollowUpStatus = (followUpDate: string) => {
+    if (!followUpDate) return { text: "Not scheduled", color: "#999" };
+
+    const followUp = new Date(followUpDate);
+    const today = new Date();
+    const diffTime = followUp.getTime() - today.getTime();
+    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+
+    if (diffDays < 0) {
+      return { text: "Overdue", color: "#E9446A" };
+    } else if (diffDays === 0) {
+      return { text: "Today", color: "#FF9800" };
+    } else if (diffDays <= 7) {
+      return { text: `${diffDays} days`, color: "#FF9800" };
+    } else {
+      return { text: followUp.toLocaleDateString(), color: "#4CAF50" };
     }
   };
 
@@ -423,6 +458,16 @@ export default function PatientScreen() {
           <Text style={styles.sortButtonText}>Age</Text>
           {renderSortIndicator("age")}
         </TouchableOpacity>
+        <TouchableOpacity
+          style={[
+            styles.sortButton,
+            sortBy === "followup" && styles.activeSortButton,
+          ]}
+          onPress={() => toggleSort("followup")}
+        >
+          <Text style={styles.sortButtonText}>Follow-up</Text>
+          {renderSortIndicator("followup")}
+        </TouchableOpacity>
       </ScrollView>
 
       {/* Patient List */}
@@ -458,151 +503,170 @@ export default function PatientScreen() {
               </TouchableOpacity>
             </View>
           }
-          renderItem={({ item }) => (
-            <Pressable
-              style={styles.patientCard}
-              onPress={() => {
-                setSelectedPatient(item);
-                setDetailModalVisible(true);
-              }}
-            >
-              <View style={styles.patientInfo}>
-                <View style={styles.patientHeader}>
-                  <Text style={styles.patientName}>{item.name}</Text>
-                  <View style={styles.headerBadges}>
-                    <View style={styles.genderBadge}>
-                      <FontAwesome5
-                        name={
-                          item.gender?.toLowerCase() === "male"
-                            ? "mars"
-                            : "venus"
-                        }
-                        size={12}
-                        color="white"
-                      />
-                      <Text style={styles.genderText}>{item.gender}</Text>
-                    </View>
+          renderItem={({ item }) => {
+            const followUpStatus = getFollowUpStatus(item.followUpDate || "");
 
-                    {item.createdAt && (
-                      <View style={styles.timeBadge}>
-                        <Feather name="clock" size={10} color="white" />
-                        <Text style={styles.timeText}>
-                          {getTimeElapsed(item.createdAt)}
+            return (
+              <Pressable
+                style={styles.patientCard}
+                onPress={() => {
+                  setSelectedPatient(item);
+                  setDetailModalVisible(true);
+                }}
+              >
+                <View style={styles.patientInfo}>
+                  <View style={styles.patientHeader}>
+                    <Text style={styles.patientName}>{item.name}</Text>
+                    <View style={styles.headerBadges}>
+                      <View style={styles.genderBadge}>
+                        <FontAwesome5
+                          name={
+                            item.gender?.toLowerCase() === "male"
+                              ? "mars"
+                              : "venus"
+                          }
+                          size={12}
+                          color="white"
+                        />
+                        <Text style={styles.genderText}>{item.gender}</Text>
+                      </View>
+
+                      {item.createdAt && (
+                        <View style={styles.timeBadge}>
+                          <Feather name="clock" size={10} color="white" />
+                          <Text style={styles.timeText}>
+                            {getTimeElapsed(item.createdAt)}
+                          </Text>
+                        </View>
+                      )}
+                    </View>
+                  </View>
+
+                  <View style={styles.patientDetails}>
+                    <View style={styles.detailRow}>
+                      <View style={styles.detailItem}>
+                        <FontAwesome5 name="id-card" size={12} color="#bbb" />
+                        <Text style={styles.patientInfoText}>
+                          <Text style={styles.labelText}>UHID:</Text>{" "}
+                          {item.uhidNumber}
                         </Text>
                       </View>
-                    )}
+
+                      <View style={styles.detailItem}>
+                        <FontAwesome5
+                          name="birthday-cake"
+                          size={12}
+                          color="#bbb"
+                        />
+                        <Text style={styles.patientInfoText}>
+                          <Text style={styles.labelText}>Age:</Text> {item.age}
+                        </Text>
+                      </View>
+                    </View>
+
+                    <View style={styles.detailItem}>
+                      <FontAwesome5 name="envelope" size={12} color="#bbb" />
+                      <Text style={styles.patientInfoText} numberOfLines={1}>
+                        <Text style={styles.labelText}>Email:</Text>{" "}
+                        {item.email}
+                      </Text>
+                    </View>
+
+                    <View style={styles.detailRow}>
+                      <View style={styles.detailItem}>
+                        <FontAwesome5 name="phone" size={12} color="#bbb" />
+                        <Text style={styles.patientInfoText}>
+                          <Text style={styles.labelText}>Phone:</Text>{" "}
+                          {formatPhoneNumber(item.phoneNumber)}
+                        </Text>
+                      </View>
+
+                      <View style={styles.detailItem}>
+                        <FontAwesome5 name="running" size={12} color="#bbb" />
+                        <Text style={styles.patientInfoText}>
+                          <Text style={styles.labelText}>Exercise:</Text>{" "}
+                          {item.exerciseTime}
+                        </Text>
+                      </View>
+                    </View>
+
+                    <View style={styles.detailRow}>
+                      <View style={styles.detailItem}>
+                        <FontAwesome5
+                          name="calendar-check"
+                          size={12}
+                          color={followUpStatus.color}
+                        />
+                        <Text
+                          style={[
+                            styles.patientInfoText,
+                            { color: followUpStatus.color },
+                          ]}
+                        >
+                          <Text style={styles.labelText}>Follow-up:</Text>{" "}
+                          {followUpStatus.text}
+                        </Text>
+                      </View>
+                    </View>
                   </View>
                 </View>
 
-                <View style={styles.patientDetails}>
-                  <View style={styles.detailRow}>
-                    <View style={styles.detailItem}>
-                      <FontAwesome5 name="id-card" size={12} color="#bbb" />
-                      <Text style={styles.patientInfoText}>
-                        <Text style={styles.labelText}>UHID:</Text>{" "}
-                        {item.uhidNumber}
-                      </Text>
-                    </View>
+                <View style={styles.actionIcons}>
+                  <TouchableOpacity
+                    style={styles.actionButton}
+                    onPress={async (e) => {
+                      e.stopPropagation();
+                      try {
+                        const token = await getToken();
+                        const response = await axios.get(
+                          `${API_URL}/patients/users/${item.id}`,
+                          {
+                            headers: {
+                              Authorization: `Bearer ${token}`,
+                            },
+                          }
+                        );
 
-                    <View style={styles.detailItem}>
-                      <FontAwesome5
-                        name="birthday-cake"
-                        size={12}
-                        color="#bbb"
-                      />
-                      <Text style={styles.patientInfoText}>
-                        <Text style={styles.labelText}>Age:</Text> {item.age}
-                      </Text>
-                    </View>
-                  </View>
+                        if (response.data) {
+                          const patientData = {
+                            ...item,
+                            name: response.data.name || item.name,
+                            age: response.data.age || item.age,
+                            gender: response.data.gender || item.gender,
+                            uhidNumber:
+                              response.data.uhidNumber || item.uhidNumber,
+                            phoneNumber:
+                              response.data.phoneNumber || item.phoneNumber,
+                            exerciseTime:
+                              response.data.exerciseTime || item.exerciseTime,
+                            followUpDate:
+                              response.data.followUpDate || item.followUpDate,
+                          };
 
-                  <View style={styles.detailItem}>
-                    <FontAwesome5 name="envelope" size={12} color="#bbb" />
-                    <Text style={styles.patientInfoText} numberOfLines={1}>
-                      <Text style={styles.labelText}>Email:</Text> {item.email}
-                    </Text>
-                  </View>
-
-                  <View style={styles.detailRow}>
-                    <View style={styles.detailItem}>
-                      <FontAwesome5 name="phone" size={12} color="#bbb" />
-                      <Text style={styles.patientInfoText}>
-                        <Text style={styles.labelText}>Phone:</Text>{" "}
-                        {formatPhoneNumber(item.phoneNumber)}
-                      </Text>
-                    </View>
-
-                    <View style={styles.detailItem}>
-                      <FontAwesome5 name="running" size={12} color="#bbb" />
-                      <Text style={styles.patientInfoText}>
-                        <Text style={styles.labelText}>Exercise:</Text>{" "}
-                        {item.exerciseTime}
-                      </Text>
-                    </View>
-                  </View>
-                </View>
-              </View>
-
-              <View style={styles.actionIcons}>
-                <TouchableOpacity
-                  style={styles.actionButton}
-                  onPress={async (e) => {
-                    e.stopPropagation();
-                    try {
-                      // Fetch the latest patient data from the API
-                      const token = await getToken();
-                      const response = await axios.get(
-                        `${API_URL}/patients/users/${item.id}`,
-                        {
-                          headers: {
-                            Authorization: `Bearer ${token}`,
-                          },
+                          openEditModal(patientData);
                         }
-                      );
-
-                      if (response.data) {
-                        // Merge the API response with the existing patient data
-                        const patientData = {
-                          ...item,
-                          name: response.data.name || item.name,
-                          age: response.data.age || item.age,
-                          gender: response.data.gender || item.gender,
-                          uhidNumber:
-                            response.data.uhidNumber || item.uhidNumber,
-                          phoneNumber:
-                            response.data.phoneNumber || item.phoneNumber,
-                          exerciseTime:
-                            response.data.exerciseTime || item.exerciseTime,
-                        };
-
-                        setSelectedPatient(patientData);
-                        setEditedPatient({ ...patientData, password: "" });
-                        setEditModalVisible(true);
+                      } catch (error) {
+                        console.error("Error fetching patient details:", error);
+                        openEditModal(item);
                       }
-                    } catch (error) {
-                      console.error("Error fetching patient details:", error);
-                      // Fallback to existing data if API call fails
-                      setSelectedPatient(item);
-                      setEditedPatient({ ...item, password: "" });
-                      setEditModalVisible(true);
-                    }
-                  }}
-                >
-                  <MaterialIcons name="edit" size={22} color="#4CAF50" />
-                </TouchableOpacity>
+                    }}
+                  >
+                    <MaterialIcons name="edit" size={22} color="#4CAF50" />
+                  </TouchableOpacity>
 
-                <TouchableOpacity
-                  style={styles.actionButton}
-                  onPress={(e) => {
-                    e.stopPropagation();
-                    handleDeletePatient(item.id);
-                  }}
-                >
-                  <MaterialIcons name="delete" size={22} color="#E9446A" />
-                </TouchableOpacity>
-              </View>
-            </Pressable>
-          )}
+                  <TouchableOpacity
+                    style={styles.actionButton}
+                    onPress={(e) => {
+                      e.stopPropagation();
+                      handleDeletePatient(item.id);
+                    }}
+                  >
+                    <MaterialIcons name="delete" size={22} color="#E9446A" />
+                  </TouchableOpacity>
+                </View>
+              </Pressable>
+            );
+          }}
         />
       )}
 
@@ -701,6 +765,17 @@ export default function PatientScreen() {
                         {selectedPatient.exerciseTime}
                       </Text>
                     </View>
+
+                    <View style={styles.detailCol}>
+                      <Text style={styles.detailLabel}>Follow-up Date</Text>
+                      <Text style={styles.detailValue}>
+                        {selectedPatient.followUpDate
+                          ? new Date(
+                              selectedPatient.followUpDate
+                            ).toLocaleDateString()
+                          : "Not scheduled"}
+                      </Text>
+                    </View>
                   </View>
                 </View>
 
@@ -709,7 +784,6 @@ export default function PatientScreen() {
                     style={[styles.modalButton, styles.editButton]}
                     onPress={async () => {
                       try {
-                        // Fetch the latest patient data from the API
                         const token = await getToken();
                         const response = await axios.get(
                           `${API_URL}/patients/users/${selectedPatient.id}`,
@@ -721,7 +795,6 @@ export default function PatientScreen() {
                         );
 
                         if (response.data) {
-                          // Merge the API response with the existing patient data
                           const patientData = {
                             ...selectedPatient,
                             name: response.data.name || selectedPatient.name,
@@ -737,18 +810,18 @@ export default function PatientScreen() {
                             exerciseTime:
                               response.data.exerciseTime ||
                               selectedPatient.exerciseTime,
+                            followUpDate:
+                              response.data.followUpDate ||
+                              selectedPatient.followUpDate,
                           };
 
                           setDetailModalVisible(false);
-                          setEditedPatient({ ...patientData, password: "" });
-                          setEditModalVisible(true);
+                          openEditModal(patientData);
                         }
                       } catch (error) {
                         console.error("Error fetching patient details:", error);
-                        // Fallback to existing data if API call fails
                         setDetailModalVisible(false);
-                        setEditedPatient({ ...selectedPatient, password: "" });
-                        setEditModalVisible(true);
+                        openEditModal(selectedPatient);
                       }
                     }}
                   >
@@ -815,7 +888,7 @@ export default function PatientScreen() {
                 placeholderTextColor="#888"
               />
 
-              <Text style={styles.inputLabel}>Email </Text>
+              <Text style={styles.inputLabel}>Email</Text>
               <TextInput
                 style={styles.input}
                 value={editedPatient.email}
@@ -827,7 +900,6 @@ export default function PatientScreen() {
                 keyboardType="email-address"
               />
 
-              {/* Add password field for resetting */}
               <Text style={styles.inputLabel}>Reset Password</Text>
               <TextInput
                 style={styles.input}
@@ -893,6 +965,43 @@ export default function PatientScreen() {
                 placeholder="Enter exercise time (e.g. 30 mins)"
                 placeholderTextColor="#888"
               />
+
+              <Text style={styles.inputLabel}>Follow-up Date</Text>
+              <TouchableOpacity
+                onPress={() => setShowFollowUpDatePicker(true)}
+                style={styles.datePickerButton}
+              >
+                <FontAwesome5
+                  name="calendar-alt"
+                  size={16}
+                  color="#bbb"
+                  style={styles.inputIcon}
+                />
+                <Text style={styles.dateText}>
+                  {followUpDate.toDateString()}
+                </Text>
+                <FontAwesome5
+                  name="calendar"
+                  size={16}
+                  color="#E9446A"
+                  style={styles.dateIcon}
+                />
+              </TouchableOpacity>
+
+              {showFollowUpDatePicker && (
+                <DateTimePicker
+                  value={followUpDate}
+                  mode="date"
+                  display="default"
+                  minimumDate={new Date()}
+                  onChange={(event, selectedDate) => {
+                    setShowFollowUpDatePicker(false);
+                    if (selectedDate) {
+                      setFollowUpDate(selectedDate);
+                    }
+                  }}
+                />
+              )}
 
               <TouchableOpacity
                 style={styles.saveButton}
@@ -1186,6 +1295,24 @@ const styles = StyleSheet.create({
   picker: {
     color: "#fff",
   },
+  datePickerButton: {
+    flexDirection: "row",
+    alignItems: "center",
+    backgroundColor: "#3A3A4C",
+    borderRadius: 8,
+    padding: 12,
+    marginBottom: 16,
+  },
+  inputIcon: {
+    marginRight: 8,
+  },
+  dateText: {
+    flex: 1,
+    color: "#fff",
+  },
+  dateIcon: {
+    marginRight: 12,
+  },
   saveButton: {
     backgroundColor: "#E9446A",
     padding: 14,
@@ -1210,10 +1337,6 @@ const styles = StyleSheet.create({
     fontSize: 18,
     fontWeight: "bold",
     color: "#E9446A",
-    marginBottom: 12,
-  },
-  detailRow: {
-    flexDirection: "row",
     marginBottom: 12,
   },
   detailCol: {

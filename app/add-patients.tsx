@@ -1,3 +1,5 @@
+"use client";
+
 import { useState, useEffect } from "react";
 import {
   View,
@@ -12,7 +14,7 @@ import {
   Platform,
 } from "react-native";
 import DateTimePicker from "@react-native-community/datetimepicker";
-import { useForm, Controller, set } from "react-hook-form";
+import { useForm, Controller } from "react-hook-form";
 import axios from "axios";
 import { API_URL } from "@/constants/Api";
 import { router } from "expo-router";
@@ -38,6 +40,7 @@ interface FormData {
   age: string;
   gender: string;
   exerciseTime: string;
+  followUpDate: string; // Add this line
   medicines: Medicine[];
 }
 
@@ -59,6 +62,7 @@ const AddPatient = () => {
       age: "",
       gender: "Male",
       exerciseTime: "00:00",
+      followUpDate: "", // Add this line
       medicines: [],
     },
   });
@@ -69,6 +73,10 @@ const AddPatient = () => {
   const [showTimePicker, setShowTimePicker] = useState<
     boolean | { medIndex: number; timeIndex: number }
   >(false);
+
+  const [followUpDate, setFollowUpDate] = useState(new Date());
+  const [showFollowUpDatePicker, setShowFollowUpDatePicker] = useState(false);
+
   // const [medicines, setMedicines] = useState<Medicine[]>([]);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -235,6 +243,7 @@ const AddPatient = () => {
         ...data,
         age: Number.parseInt(data.age) as any,
         exerciseTime: formattedExerciseTime,
+        followUpDate: followUpDate.toISOString().split("T")[0], // Format as YYYY-MM-DD
         medicines: formattedMedicines as any,
         role: 0, // Assuming 0 is for patients
       };
@@ -583,6 +592,41 @@ const AddPatient = () => {
                 setShowTimePicker(false);
                 if (selectedTime) {
                   setExerciseTime(selectedTime);
+                }
+              }}
+            />
+          )}
+
+          <Text style={styles.label}>Follow-up Date</Text>
+          <TouchableOpacity
+            onPress={() => setShowFollowUpDatePicker(true)}
+            style={styles.timePickerButton}
+          >
+            <FontAwesome5
+              name="calendar-alt"
+              size={16}
+              color="#bbb"
+              style={styles.inputIcon}
+            />
+            <Text style={styles.timeText}>{followUpDate.toDateString()}</Text>
+            <FontAwesome5
+              name="calendar"
+              size={16}
+              color="#E9446A"
+              style={styles.timeIcon}
+            />
+          </TouchableOpacity>
+
+          {showFollowUpDatePicker && (
+            <DateTimePicker
+              value={followUpDate}
+              mode="date"
+              display="default"
+              minimumDate={new Date()}
+              onChange={(event, selectedDate) => {
+                setShowFollowUpDatePicker(false);
+                if (selectedDate) {
+                  setFollowUpDate(selectedDate);
                 }
               }}
             />
