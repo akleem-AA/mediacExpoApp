@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 import {
   SafeAreaView,
   StyleSheet,
@@ -10,6 +10,8 @@ import {
   ActivityIndicator,
   Text,
   Platform,
+  Linking,
+  TouchableOpacity,
 } from "react-native";
 import { WebView } from "react-native-webview";
 
@@ -18,14 +20,22 @@ export default function PDFViewerApp() {
   const [error, setError] = useState(false);
   const [pdfUri, setPdfUri] = useState<string | null>(null);
 
-  // Use the remote URL for the PDF
-  const pdfUrl = "https://mediac.in/diet.pdf"; // Remote PDF URL
+  // Use Google Docs Viewer as fallback for better compatibility
+  const pdfUrl = "https://mediac.in/diet.pdf";
+  const googleDocsUrl = `https://docs.google.com/gview?embedded=true&url=${encodeURIComponent(
+    pdfUrl
+  )}`;
 
   useEffect(() => {
     const loadPDF = async () => {
       try {
-        // Simply set the PDF URL
-        setPdfUri(pdfUrl);
+        // Test if the PDF URL is accessible
+        const response = await fetch(pdfUrl, { method: "HEAD" });
+        if (response.ok) {
+          setPdfUri(googleDocsUrl); // Use Google Docs viewer for better compatibility
+        } else {
+          throw new Error("PDF not accessible");
+        }
       } catch (error) {
         console.error("Error loading PDF:", error);
         setError(true);
@@ -38,6 +48,12 @@ export default function PDFViewerApp() {
     loadPDF();
   }, []);
 
+  const handleOpenInBrowser = () => {
+    Linking.openURL(pdfUrl).catch(() => {
+      Alert.alert("Error", "Could not open PDF in browser");
+    });
+  };
+
   const renderWebView = () => {
     if (pdfUri) {
       return (
@@ -49,6 +65,28 @@ export default function PDFViewerApp() {
           domStorageEnabled={true}
           allowsInlineMediaPlayback={true}
           mixedContentMode="compatibility"
+          // Production-ready configurations
+          allowsFullscreenVideo={true}
+          allowsProtectedMedia={true}
+          allowUniversalAccessFromFileURLs={true}
+          allowFileAccessFromFileURLs={true}
+          originWhitelist={["*"]}
+          userAgent="Mozilla/5.0 (Linux; Android 10) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.120 Mobile Safari/537.36"
+          onError={(syntheticEvent) => {
+            const { nativeEvent } = syntheticEvent;
+            console.error("WebView error: ", nativeEvent);
+            setError(true);
+          }}
+          onHttpError={(syntheticEvent) => {
+            const { nativeEvent } = syntheticEvent;
+            console.error("HTTP error: ", nativeEvent);
+            if (nativeEvent.statusCode >= 400) {
+              setError(true);
+            }
+          }}
+          onShouldStartLoadWithRequest={(request) => {
+            return true;
+          }}
           renderLoading={() => (
             <View style={styles.loadingContainer}>
               <ActivityIndicator size="large" color="#6a11cb" />
@@ -73,6 +111,12 @@ export default function PDFViewerApp() {
       <Text style={styles.errorText}>
         Something went wrong while loading the PDF.
       </Text>
+      <TouchableOpacity
+        style={styles.retryButton}
+        onPress={handleOpenInBrowser}
+      >
+        <Text style={styles.retryButtonText}>Open in Browser</Text>
+      </TouchableOpacity>
     </View>
   );
 
@@ -167,5 +211,16 @@ const styles = StyleSheet.create({
     color: "#666",
     textAlign: "center",
     marginBottom: 20,
+  },
+  retryButton: {
+    backgroundColor: "#6a11cb",
+    paddingHorizontal: 20,
+    paddingVertical: 10,
+    borderRadius: 8,
+  },
+  retryButtonText: {
+    color: "white",
+    fontSize: 16,
+    fontWeight: "600",
   },
 });
