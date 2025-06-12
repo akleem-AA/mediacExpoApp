@@ -1,141 +1,149 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import {
   SafeAreaView,
   StyleSheet,
   View,
-  StatusBar,
-  Alert,
-  ActivityIndicator,
   Text,
-  Platform,
-  Linking,
   TouchableOpacity,
+  Alert,
+  Linking,
+  Platform,
+  StatusBar,
 } from "react-native";
 import { WebView } from "react-native-webview";
 
-export default function PDFViewerApp() {
-  const [loading, setLoading] = useState(true);
+export default function SimplePDFViewer() {
+  const [viewerType, setViewerType] = useState<"webview" | "external">(
+    "webview"
+  );
   const [error, setError] = useState(false);
-  const [pdfUri, setPdfUri] = useState<string | null>(null);
 
-  // Use Google Docs Viewer as fallback for better compatibility
   const pdfUrl = "https://mediac.in/diet.pdf";
-  const googleDocsUrl = `https://docs.google.com/gview?embedded=true&url=${encodeURIComponent(
-    pdfUrl
-  )}`;
 
-  useEffect(() => {
-    const loadPDF = async () => {
-      try {
-        // Test if the PDF URL is accessible
-        const response = await fetch(pdfUrl, { method: "HEAD" });
-        if (response.ok) {
-          setPdfUri(googleDocsUrl); // Use Google Docs viewer for better compatibility
-        } else {
-          throw new Error("PDF not accessible");
-        }
-      } catch (error) {
-        console.error("Error loading PDF:", error);
-        setError(true);
-        Alert.alert("Error", "Failed to load the PDF file.");
-      } finally {
-        setLoading(false);
+  // Simple, reliable PDF viewer URL that works in production
+  const pdfViewerUrl = `data:text/html;charset=utf-8,
+    <!DOCTYPE html>
+    <html>
+    <head>
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <style>
+            body { margin: 0; padding: 0; }
+            iframe { width: 100%; height: 100vh; border: none; }
+            .error { padding: 20px; text-align: center; font-family: Arial; }
+        </style>
+    </head>
+    <body>
+        <iframe src="https://docs.google.com/gview?embedded=true&url=${encodeURIComponent(
+          pdfUrl
+        )}" 
+                onerror="document.body.innerHTML='<div class=error>PDF failed to load. <a href=${pdfUrl}>Open directly</a></div>'">
+        </iframe>
+    </body>
+    </html>`;
+
+  const openInExternalApp = async () => {
+    try {
+      const supported = await Linking.canOpenURL(pdfUrl);
+      if (supported) {
+        await Linking.openURL(pdfUrl);
+      } else {
+        Alert.alert(
+          "No PDF Viewer",
+          "Please install a PDF viewer app to open this document.",
+          [
+            { text: "Cancel", style: "cancel" },
+            {
+              text: "Download PDF App",
+              onPress: () => {
+                const storeUrl =
+                  Platform.OS === "ios"
+                    ? "https://apps.apple.com/app/adobe-acrobat-reader/id469337564"
+                    : "https://play.google.com/store/apps/details?id=com.adobe.reader";
+                Linking.openURL(storeUrl);
+              },
+            },
+          ]
+        );
       }
-    };
-
-    loadPDF();
-  }, []);
-
-  const handleOpenInBrowser = () => {
-    Linking.openURL(pdfUrl).catch(() => {
-      Alert.alert("Error", "Could not open PDF in browser");
-    });
-  };
-
-  const renderWebView = () => {
-    if (pdfUri) {
-      return (
-        <WebView
-          source={{ uri: pdfUri }}
-          style={styles.webview}
-          startInLoadingState={true}
-          javaScriptEnabled={true}
-          domStorageEnabled={true}
-          allowsInlineMediaPlayback={true}
-          mixedContentMode="compatibility"
-          // Production-ready configurations
-          allowsFullscreenVideo={true}
-          allowsProtectedMedia={true}
-          allowUniversalAccessFromFileURLs={true}
-          allowFileAccessFromFileURLs={true}
-          originWhitelist={["*"]}
-          userAgent="Mozilla/5.0 (Linux; Android 10) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.120 Mobile Safari/537.36"
-          onError={(syntheticEvent) => {
-            const { nativeEvent } = syntheticEvent;
-            console.error("WebView error: ", nativeEvent);
-            setError(true);
-          }}
-          onHttpError={(syntheticEvent) => {
-            const { nativeEvent } = syntheticEvent;
-            console.error("HTTP error: ", nativeEvent);
-            if (nativeEvent.statusCode >= 400) {
-              setError(true);
-            }
-          }}
-          onShouldStartLoadWithRequest={(request) => {
-            return true;
-          }}
-          renderLoading={() => (
-            <View style={styles.loadingContainer}>
-              <ActivityIndicator size="large" color="#6a11cb" />
-              <Text style={styles.loadingText}>Loading PDF...</Text>
-            </View>
-          )}
-        />
-      );
-    } else {
-      return (
-        <View style={styles.loadingContainer}>
-          <ActivityIndicator size="large" color="#6a11cb" />
-          <Text style={styles.loadingText}>Loading PDF...</Text>
-        </View>
-      );
+    } catch (error) {
+      Alert.alert("Error", "Could not open PDF");
     }
   };
 
-  const renderErrorState = () => (
+  const renderWebViewPDF = () => (
+    <WebView
+      source={{ uri: pdfViewerUrl }}
+      style={styles.webview}
+      javaScriptEnabled={true}
+      domStorageEnabled={true}
+      startInLoadingState={true}
+      mixedContentMode="compatibility"
+      originWhitelist={["*"]}
+      onError={() => setError(true)}
+      onHttpError={() => setError(true)}
+      userAgent="Mozilla/5.0 (Linux; Android 10) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.120 Mobile Safari/537.36"
+    />
+  );
+
+  const renderErrorFallback = () => (
     <View style={styles.errorContainer}>
-      <Text style={styles.errorTitle}>Failed to Load PDF</Text>
+      <Text style={styles.errorTitle}>PDF Viewer</Text>
       <Text style={styles.errorText}>
-        Something went wrong while loading the PDF.
+        Choose how you'd like to view the PDF document:
       </Text>
+
       <TouchableOpacity
-        style={styles.retryButton}
-        onPress={handleOpenInBrowser}
+        style={[styles.button, styles.primaryButton]}
+        onPress={openInExternalApp}
       >
-        <Text style={styles.retryButtonText}>Open in Browser</Text>
+        <Text style={styles.buttonText}>📱 Open in PDF App</Text>
+      </TouchableOpacity>
+
+      <TouchableOpacity
+        style={[styles.button, styles.secondaryButton]}
+        onPress={() => {
+          setError(false);
+          setViewerType("webview");
+        }}
+      >
+        <Text style={[styles.buttonText, styles.secondaryButtonText]}>
+          🌐 Try Web Viewer
+        </Text>
+      </TouchableOpacity>
+
+      <TouchableOpacity
+        style={[styles.button, styles.linkButton]}
+        onPress={() => Linking.openURL(pdfUrl)}
+      >
+        <Text style={[styles.buttonText, styles.linkButtonText]}>
+          🔗 Open Link Directly
+        </Text>
       </TouchableOpacity>
     </View>
   );
 
   return (
     <SafeAreaView style={styles.container}>
-      <StatusBar barStyle="light-content" backgroundColor="#6a11cb" />
+      <StatusBar barStyle="dark-content" backgroundColor="#ffffff" />
 
-      {/* Header */}
+      {/* Simple Header */}
       <View style={styles.header}>
-        <Text style={styles.headerTitle}>Diet PDF Viewer</Text>
+        <Text style={styles.headerTitle}>Diet PDF</Text>
+        <TouchableOpacity
+          style={styles.headerButton}
+          onPress={() => setError(!error)}
+        >
+          <Text style={styles.headerButtonText}>Options</Text>
+        </TouchableOpacity>
       </View>
 
-      {/* PDF Viewer */}
-      <View style={styles.pdfContainer}>
-        {loading
-          ? renderWebView()
-          : error
-          ? renderErrorState()
-          : renderWebView()}
+      {/* PDF Content */}
+      <View style={styles.content}>
+        {error || viewerType === "external"
+          ? renderErrorFallback()
+          : renderWebViewPDF()}
       </View>
     </SafeAreaView>
   );
@@ -144,83 +152,90 @@ export default function PDFViewerApp() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#f0f2f5",
+    backgroundColor: "#ffffff",
     paddingTop: Platform.OS === "android" ? StatusBar.currentHeight : 0,
   },
   header: {
     flexDirection: "row",
-    justifyContent: "center",
+    justifyContent: "space-between",
     alignItems: "center",
-    backgroundColor: "white",
-    paddingVertical: 20,
+    paddingHorizontal: 20,
+    paddingVertical: 15,
+    backgroundColor: "#ffffff",
     borderBottomWidth: 1,
     borderBottomColor: "#e0e0e0",
-    elevation: 2,
   },
   headerTitle: {
-    fontSize: 18,
+    fontSize: 20,
     fontWeight: "600",
-    color: "#333",
+    color: "#333333",
   },
-  pdfContainer: {
+  headerButton: {
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    backgroundColor: "#f0f0f0",
+    borderRadius: 6,
+  },
+  headerButtonText: {
+    fontSize: 14,
+    color: "#666666",
+  },
+  content: {
     flex: 1,
-    backgroundColor: "white",
-    margin: 10,
-    borderRadius: 10,
-    overflow: "hidden",
-    elevation: 4,
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
   },
   webview: {
     flex: 1,
-  },
-  loadingContainer: {
-    position: "absolute",
-    top: 0,
-    left: 0,
-    right: 0,
-    bottom: 0,
-    justifyContent: "center",
-    alignItems: "center",
-    backgroundColor: "rgba(255, 255, 255, 0.9)",
-  },
-  loadingText: {
-    marginTop: 10,
-    fontSize: 16,
-    color: "#6a11cb",
-    textAlign: "center",
   },
   errorContainer: {
     flex: 1,
     justifyContent: "center",
     alignItems: "center",
-    padding: 20,
+    padding: 30,
+    backgroundColor: "#fafafa",
   },
   errorTitle: {
-    fontSize: 20,
+    fontSize: 24,
     fontWeight: "600",
-    color: "#ff6b6b",
-    marginTop: 15,
+    color: "#333333",
     marginBottom: 10,
   },
   errorText: {
-    fontSize: 14,
-    color: "#666",
+    fontSize: 16,
+    color: "#666666",
     textAlign: "center",
-    marginBottom: 20,
+    marginBottom: 40,
+    lineHeight: 22,
   },
-  retryButton: {
-    backgroundColor: "#6a11cb",
+  button: {
+    width: "100%",
+    paddingVertical: 15,
     paddingHorizontal: 20,
-    paddingVertical: 10,
-    borderRadius: 8,
+    borderRadius: 10,
+    marginBottom: 15,
+    alignItems: "center",
   },
-  retryButtonText: {
-    color: "white",
+  primaryButton: {
+    backgroundColor: "#007AFF",
+  },
+  secondaryButton: {
+    backgroundColor: "#ffffff",
+    borderWidth: 2,
+    borderColor: "#007AFF",
+  },
+  linkButton: {
+    backgroundColor: "#ffffff",
+    borderWidth: 1,
+    borderColor: "#cccccc",
+  },
+  buttonText: {
     fontSize: 16,
     fontWeight: "600",
+    color: "#ffffff",
+  },
+  secondaryButtonText: {
+    color: "#007AFF",
+  },
+  linkButtonText: {
+    color: "#666666",
   },
 });
