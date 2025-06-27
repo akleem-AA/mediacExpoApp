@@ -12,7 +12,7 @@ import {
   Platform,
   StatusBar,
 } from "react-native";
-import { WebView } from "react-native-webview";
+// import { WebView } from "react-native-webview";
 
 export default function SimplePDFViewer() {
   const [viewerType, setViewerType] = useState<"webview" | "external">(
@@ -73,18 +73,19 @@ export default function SimplePDFViewer() {
   };
 
   const renderWebViewPDF = () => (
-    <WebView
-      source={{ uri: pdfViewerUrl }}
-      style={styles.webview}
-      javaScriptEnabled={true}
-      domStorageEnabled={true}
-      startInLoadingState={true}
-      mixedContentMode="compatibility"
-      originWhitelist={["*"]}
-      onError={() => setError(true)}
-      onHttpError={() => setError(true)}
-      userAgent="Mozilla/5.0 (Linux; Android 10) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.120 Mobile Safari/537.36"
-    />
+    <></>
+    // <WebView
+    //   source={{ uri: pdfViewerUrl }}
+    //   style={styles.webview}
+    //   javaScriptEnabled={true}
+    //   domStorageEnabled={true}
+    //   startInLoadingState={true}
+    //   mixedContentMode="compatibility"
+    //   originWhitelist={["*"]}
+    //   onError={() => setError(true)}
+    //   onHttpError={() => setError(true)}
+    //   userAgent="Mozilla/5.0 (Linux; Android 10) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.120 Mobile Safari/537.36"
+    // />
   );
 
   const renderErrorFallback = () => (

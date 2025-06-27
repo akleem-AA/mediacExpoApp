@@ -11,6 +11,8 @@ import {
   Platform,
   ActivityIndicator,
   RefreshControl,
+  Dimensions,
+  Image,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { router } from "expo-router";
@@ -20,7 +22,9 @@ import { useState, useEffect } from "react";
 import axios from "axios";
 import { getToken } from "@/services/auth";
 import { API_URL } from "@/constants/Api";
+import { ChevronDown, ChevronUp, Heart } from "lucide-react-native";
 
+const { width } = Dimensions.get("window");
 export default function Dashboard() {
   const user = useDecodedToken();
   const [selectedDateIndex, setSelectedDateIndex] = useState(0);
@@ -33,6 +37,7 @@ export default function Dashboard() {
   const [height, setHeight] = useState(null);
   const [weight, setWeight] = useState(null);
   const [readingsLoading, setReadingsLoading] = useState(false);
+  const [expandedSection, setExpandedSection] = useState(false);
 
   const statusBarHeight =
     Platform.OS === "android" ? StatusBar.currentHeight || 0 : 0;
@@ -72,6 +77,11 @@ export default function Dashboard() {
       "Multiple Times": "Multiple Times",
       "Once Daily": "Once Daily",
       "No medicines prescribed": "No medicines prescribed",
+      aboutTitle: "ABOUT CORONARY ARTERY DISEASE",
+      aboutContent:
+        "Coronary Artery Disease (CAD) is a heart condition where the blood vessels that supply oxygen to the heart (coronary arteries) become narrow or blocked because of a buildup of fat, cholesterol, and other substances, forming plaques. When the arteries become too narrow, the heart doesn't get enough oxygen-rich blood, leading to chest pain (angina), shortness of breath, or even a heart attack.",
+      bannerTagline:
+        "A healthy lifestyle is the best way to prevent heart disease! 🚴‍♂️🥗🚭",
     },
     hi: {
       "Good morning": "सुप्रभात",
@@ -103,6 +113,11 @@ export default function Dashboard() {
       "Multiple Times": "कई बार",
       "Once Daily": "दिन में एक बार",
       "No medicines prescribed": "कोई दवा निर्धारित नहीं है",
+      aboutTitle: "कोरोनरी आर्टरी डिजीज के बारे में",
+      aboutContent:
+        "कोरोनरी आर्टरी डिजीज (CAD) एक हृदय स्थिति है जहां हृदय को ऑक्सीजन की आपूर्ति करने वाली रक्त वाहिकाएं (कोरोनरी धमनियां) वसा, कोलेस्ट्रॉल और अन्य पदार्थों के जमा होने के कारण संकीर्ण या अवरुद्ध हो जाती हैं, जिससे प्लाक बनता है। जब धमनियां बहुत संकीर्ण हो जाती हैं, तो हृदय को पर्याप्त ऑक्सीजन युक्त रक्त नहीं मिलता, जिससे छाती में दर्द (एंजाइना), सांस की तकलीफ, या यहां तक कि दिल का दौरा भी पड़ सकता है।",
+      bannerTagline:
+        "हृदय रोग को रोकने का सबसे अच्छा तरीका है स्वस्थ जीवनशैली! 🚴‍♂️🥗🚭",
     },
   };
 
@@ -451,6 +466,70 @@ export default function Dashboard() {
                   </TouchableOpacity>
                 ))}
               </ScrollView> */}
+
+              {/* Banner */}
+              <View style={styles.banner}>
+                <Image
+                  source={{ uri: "https://mediac.in/images/mediac.png" }}
+                  style={styles.bannerLogo}
+                />
+                <View style={styles.bannerTextContainer}>
+                  <Text style={styles.bannerTagline}>{t("bannerTagline")}</Text>
+                </View>
+              </View>
+
+              {/* Image Gallery */}
+              <View style={styles.imageGallery}>
+                <Image
+                  source={{ uri: "https://mediac.in/images/health1.jpg" }}
+                  style={styles.galleryImage}
+                />
+                <Image
+                  source={{ uri: "https://mediac.in/images/health2.jpg" }}
+                  style={styles.galleryImage}
+                />
+                <Image
+                  source={{ uri: "https://mediac.in/images/health3.jpg" }}
+                  style={styles.galleryImage}
+                />
+              </View>
+              {/* Accordion Sections */}
+              <View style={styles.accordionContainer}>
+                {/* About CAD Section */}
+                <TouchableOpacity
+                  style={[
+                    styles.accordionHeader,
+                    expandedSection && styles.accordionHeaderActive,
+                  ]}
+                  onPress={() => setExpandedSection(!expandedSection)}
+                >
+                  <View style={styles.accordionTitleContainer}>
+                    <Heart
+                      color={expandedSection ? "#fff" : "#6366f1"}
+                      size={20}
+                    />
+                    <Text
+                      style={[
+                        styles.accordionTitle,
+                        expandedSection && styles.accordionTitleActive,
+                      ]}
+                    >
+                      {t("aboutTitle")}
+                    </Text>
+                  </View>
+                  {expandedSection ? (
+                    <ChevronUp color="#fff" size={20} />
+                  ) : (
+                    <ChevronDown color="#6366f1" size={20} />
+                  )}
+                </TouchableOpacity>
+
+                {expandedSection && (
+                  <View style={styles.accordionContent}>
+                    <Text style={styles.description}>{t("aboutContent")}</Text>
+                  </View>
+                )}
+              </View>
 
               {/* Health Metrics Grid */}
               <View style={styles.dashboardGrid}>
@@ -1217,5 +1296,121 @@ const styles = StyleSheet.create({
     fontSize: 8,
     color: "#666",
     fontWeight: "bold",
+  },
+  banner: {
+    backgroundColor: "#4f46e5",
+    padding: 20,
+    paddingTop: 10,
+    flexDirection: "row",
+    alignItems: "center",
+    // borderWidth: 1,
+    borderRadius: 12,
+  },
+  bannerLogo: {
+    width: 60,
+    height: 60,
+    borderRadius: 30,
+    backgroundColor: "#fff",
+  },
+  bannerTextContainer: {
+    marginLeft: 16,
+    flex: 1,
+  },
+  bannerTitle: {
+    fontSize: 28,
+    fontWeight: "bold",
+    color: "#fff",
+  },
+  bannerTagline: {
+    fontSize: 14,
+    color: "#e0e7ff",
+    marginTop: 4,
+  },
+  imageGallery: {
+    flexDirection: "row",
+    padding: 16,
+    justifyContent: "space-between",
+    backgroundColor: "#fff",
+    marginBottom: 8,
+    borderRadius: 12,
+    marginTop: 10,
+  },
+  galleryImage: {
+    width: width * 0.25,
+    height: width * 0.25,
+    borderRadius: 12,
+  },
+  accordionContainer: {
+    // padding: 16,
+  },
+  accordionHeader: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    backgroundColor: "#fff",
+    padding: 16,
+    borderRadius: 12,
+    marginBottom: 8,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.05,
+    shadowRadius: 2,
+    elevation: 1,
+  },
+  accordionHeaderActive: {
+    backgroundColor: "#6366f1",
+  },
+  accordionTitleContainer: {
+    flexDirection: "row",
+    alignItems: "center",
+  },
+  accordionTitle: {
+    fontSize: 14,
+    fontWeight: "bold",
+    marginLeft: 12,
+    color: "#1f2937",
+  },
+  accordionTitleActive: {
+    color: "#fff",
+  },
+  accordionContent: {
+    backgroundColor: "#fff",
+    padding: 16,
+    borderRadius: 12,
+    marginTop: -4,
+    marginBottom: 16,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.05,
+    shadowRadius: 2,
+    elevation: 1,
+  },
+  description: {
+    fontSize: 16,
+    lineHeight: 24,
+    color: "#4b5563",
+  },
+  causeItem: {
+    flexDirection: "row",
+    alignItems: "center",
+    marginBottom: 12,
+  },
+  causeIcon: {
+    fontSize: 20,
+    width: 24,
+    textAlign: "center",
+  },
+  causeTextContainer: {
+    marginLeft: 12,
+    flex: 1,
+  },
+  causeName: {
+    fontSize: 16,
+    fontWeight: "600",
+    color: "#1f2937",
+  },
+  causeDescription: {
+    fontSize: 14,
+    color: "#6b7280",
   },
 });
