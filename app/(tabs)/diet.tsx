@@ -12,16 +12,49 @@ import {
   Platform,
   StatusBar,
 } from "react-native";
-// import { WebView } from "react-native-webview";
+import { WebView } from "react-native-webview";
 
 export default function SimplePDFViewer() {
   const [viewerType, setViewerType] = useState<"webview" | "external">(
     "webview"
   );
   const [error, setError] = useState(false);
+  const [language, setLanguage] = useState<"en" | "hi">("en");
 
+  const translations = {
+    en: {
+      'Diet PDF': "Diet PDF",
+      option: "Options",
+      openInApp: "Open in PDF App",
+      tryWebViewer: "Try Web Viewer",
+      openLinkDirectly: "Open Link Directly",
+      noPdfViewer: "No PDF Viewer",
+      installPdfApp: "Please install a PDF viewer app to open this document.",
+      instruction:'Choose how you\'d like to view the PDF document:',
+    },
+    hi: {
+      'Diet PDF': "डाइट पीडीएफ़",
+      option: "विकल्प",
+      openInApp: "पीडीएफ़ ऐप में खोलें",
+      tryWebViewer: "वेब व्यूअर आज़माएं",
+      openLinkDirectly: "सीधे लिंक खोलें",
+      noPdfViewer: "कोई पीडीएफ़ व्यूअर नहीं है",
+      installPdfApp:
+        "इस दस्तावेज़ को खोलने के लिए कृपया एक पीडीएफ़ व्यूअर ऐप इंस्टॉल करें।",
+      instruction: 'पीडीएफ़ दस्तावेज़ को देखने के लिए एक विकल्प चुनें:',
+    },
+  };
+
+  const t = (key) => {
+    return translations[language][key] || key;
+  };
   const pdfUrl = "https://mediac.in/diet.pdf";
 
+  // const pdfUrl = language === "en"
+  // ? "https://mediac.in/diet.pdf"
+  // : "https://mediac.in/diet_hi.pdf";
+
+  
   // Simple, reliable PDF viewer URL that works in production
   const pdfViewerUrl = `data:text/html;charset=utf-8,
     <!DOCTYPE html>
@@ -72,34 +105,47 @@ export default function SimplePDFViewer() {
     }
   };
 
+  // const renderWebViewPDF = () => (
+
+  //   <WebView
+  //     source={{ uri: pdfViewerUrl }}
+  //     style={styles.webview}
+  //     javaScriptEnabled={true}
+  //     domStorageEnabled={true}
+  //     startInLoadingState={true}
+  //     mixedContentMode="compatibility"
+  //     originWhitelist={["*"]}
+  //     onError={() => setError(true)}
+  //     onHttpError={() => setError(true)}
+  //     userAgent="Mozilla/5.0 (Linux; Android 10) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.120 Mobile Safari/537.36"
+  //   />
+  // );
   const renderWebViewPDF = () => (
-    <></>
-    // <WebView
-    //   source={{ uri: pdfViewerUrl }}
-    //   style={styles.webview}
-    //   javaScriptEnabled={true}
-    //   domStorageEnabled={true}
-    //   startInLoadingState={true}
-    //   mixedContentMode="compatibility"
-    //   originWhitelist={["*"]}
-    //   onError={() => setError(true)}
-    //   onHttpError={() => setError(true)}
-    //   userAgent="Mozilla/5.0 (Linux; Android 10) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.120 Mobile Safari/537.36"
-    // />
+    <WebView
+      source={{
+        uri: `https://docs.google.com/gview?embedded=true&url=${encodeURIComponent(
+          pdfUrl
+        )}`,
+      }}
+      style={styles.webview}
+      javaScriptEnabled
+      domStorageEnabled
+      startInLoadingState
+    />
   );
 
   const renderErrorFallback = () => (
     <View style={styles.errorContainer}>
       <Text style={styles.errorTitle}>PDF Viewer</Text>
       <Text style={styles.errorText}>
-        Choose how you'd like to view the PDF document:
+        {t('instruction')}
       </Text>
 
       <TouchableOpacity
         style={[styles.button, styles.primaryButton]}
         onPress={openInExternalApp}
       >
-        <Text style={styles.buttonText}>📱 Open in PDF App</Text>
+        <Text style={styles.buttonText}>📱 {t('openInApp')}</Text>
       </TouchableOpacity>
 
       <TouchableOpacity
@@ -110,7 +156,7 @@ export default function SimplePDFViewer() {
         }}
       >
         <Text style={[styles.buttonText, styles.secondaryButtonText]}>
-          🌐 Try Web Viewer
+          🌐 {t('tryWebViewer')}
         </Text>
       </TouchableOpacity>
 
@@ -119,7 +165,7 @@ export default function SimplePDFViewer() {
         onPress={() => Linking.openURL(pdfUrl)}
       >
         <Text style={[styles.buttonText, styles.linkButtonText]}>
-          🔗 Open Link Directly
+          🔗 {t('openLinkDirectly')}
         </Text>
       </TouchableOpacity>
     </View>
@@ -131,14 +177,38 @@ export default function SimplePDFViewer() {
 
       {/* Simple Header */}
       <View style={styles.header}>
-        <Text style={styles.headerTitle}>Diet PDF</Text>
+        <Text style={styles.headerTitle}>{t("Diet PDF")}</Text>
+        <View style={{ flexDirection: "row" }}>
+          <TouchableOpacity
+            style={[styles.headerButton, { marginRight: 10 }]}
+            onPress={() => setLanguage(language === "en" ? "hi" : "en")}
+          >
+            <Text style={styles.headerButtonText}>
+              {language === "en" ? "हिंदी" : "En"}
+            </Text>
+          </TouchableOpacity>
+          <TouchableOpacity
+            style={styles.headerButton}
+            onPress={() => setError(!error)}
+          >
+            <Text style={styles.headerButtonText}>{t("option")}</Text>
+          </TouchableOpacity>
+        </View>
+      </View>
+
+      {/* <View style={styles.header}>
+        <Text style={styles.headerTitle}>
+          Diet PDF ({language === "en" ? "English" : "हिंदी"})
+        </Text>
         <TouchableOpacity
           style={styles.headerButton}
-          onPress={() => setError(!error)}
+          onPress={() => setLanguage(language === "en" ? "hi" : "en")}
         >
-          <Text style={styles.headerButtonText}>Options</Text>
+          <Text style={styles.headerButtonText}>
+            {language === "en" ? "Switch to हिंदी" : "Switch to English"}
+          </Text>
         </TouchableOpacity>
-      </View>
+      </View> */}
 
       {/* PDF Content */}
       <View style={styles.content}>

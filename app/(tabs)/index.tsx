@@ -23,6 +23,7 @@ import axios from "axios";
 import { getToken } from "@/services/auth";
 import { API_URL } from "@/constants/Api";
 import { ChevronDown, ChevronUp, Heart } from "lucide-react-native";
+import { SymptomsModal } from "@/components/symptomList";
 
 const { width } = Dimensions.get("window");
 export default function Dashboard() {
@@ -38,6 +39,7 @@ export default function Dashboard() {
   const [weight, setWeight] = useState(null);
   const [readingsLoading, setReadingsLoading] = useState(false);
   const [expandedSection, setExpandedSection] = useState(false);
+  const [showModal, setShowModal] = useState(false);
 
   const statusBarHeight =
     Platform.OS === "android" ? StatusBar.currentHeight || 0 : 0;
@@ -82,6 +84,7 @@ export default function Dashboard() {
         "Coronary Artery Disease (CAD) is a heart condition where the blood vessels that supply oxygen to the heart (coronary arteries) become narrow or blocked because of a buildup of fat, cholesterol, and other substances, forming plaques. When the arteries become too narrow, the heart doesn't get enough oxygen-rich blood, leading to chest pain (angina), shortness of breath, or even a heart attack.",
       bannerTagline:
         "A healthy lifestyle is the best way to prevent heart disease! 🚴‍♂️🥗🚭",
+      "Symptoms": "List of Symptoms",
     },
     hi: {
       "Good morning": "सुप्रभात",
@@ -118,8 +121,35 @@ export default function Dashboard() {
         "कोरोनरी आर्टरी डिजीज (CAD) एक हृदय स्थिति है जहां हृदय को ऑक्सीजन की आपूर्ति करने वाली रक्त वाहिकाएं (कोरोनरी धमनियां) वसा, कोलेस्ट्रॉल और अन्य पदार्थों के जमा होने के कारण संकीर्ण या अवरुद्ध हो जाती हैं, जिससे प्लाक बनता है। जब धमनियां बहुत संकीर्ण हो जाती हैं, तो हृदय को पर्याप्त ऑक्सीजन युक्त रक्त नहीं मिलता, जिससे छाती में दर्द (एंजाइना), सांस की तकलीफ, या यहां तक कि दिल का दौरा भी पड़ सकता है।",
       bannerTagline:
         "हृदय रोग को रोकने का सबसे अच्छा तरीका है स्वस्थ जीवनशैली! 🚴‍♂️🥗🚭",
+      "Symptoms": "लक्षणों की सूची",
     },
   };
+  const symptomsListEn = [
+    "Chest pain",
+    "Shortness of Breath",
+    "Fatigue or weakness",
+    "Heart Palpitations",
+    "Nausea or Vomiting",
+    "Dizziness or lightheadedness",
+    "Cold sweats",
+    "Indigestion or Heartburn",
+    "Back pain",
+    "Jaw pain",
+    "Others",
+  ];
+  const symptomsListHi = [
+    "छाती में दर्द",
+    "सांस लेने में कठिनाई",
+    "थकान या कमजोरी",
+    "दिल की धड़कन तेज होना",
+    "मतली या उल्टी",
+    "चक्कर आना या हल्का महसूस होना",
+    "ठंडा पसीना",
+    "अजीर्ण या एसिडिटी",
+    "पीठ में दर्द",
+    "जवड़े में दर्द",
+    "अन्य",
+  ];
 
   // Translation function
   const t = (key) => {
@@ -314,6 +344,12 @@ export default function Dashboard() {
 
     const dayNames = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
     return days.map((day) => dayNames[day]).join(", ");
+  };
+
+  const handleSymptomSave = (data) => {
+    console.log("Symptom data from modal:", data);
+    // Example: call your API here
+    // await api.post("/symptoms", data);
   };
 
   return (
@@ -570,9 +606,10 @@ export default function Dashboard() {
                   label={t("Add Symptoms")}
                   color="#7A39A3"
                   backgroundColor={cardBackgroundColors[3]}
-                  onPress={() => {}} // Disabled functionality
-                  isUpcoming={true}
+                  onPress={() => setShowModal(true)} // Disabled functionality
+                  // isUpcoming={true}
                 />
+
                 <HealthMetricCard
                   icon="cloud-upload-outline"
                   label={t("Upload Files")}
@@ -582,6 +619,16 @@ export default function Dashboard() {
                   isUpcoming={true}
                 />
               </View>
+              <SymptomsModal
+                visible={showModal}
+                onClose={() => setShowModal(false)}
+                onSave={handleSymptomSave}
+                symptomsList={
+                  language === "en" ? symptomsListEn : symptomsListHi
+                }
+                heading={t("Symptoms")}
+                language={language}
+              />
 
               {/* Prescribed Medicines Section */}
               <Text style={styles.sectionTitle}>
@@ -596,8 +643,8 @@ export default function Dashboard() {
                 ) : medicines.length > 0 ? (
                   medicines.map((medicine, index) => (
                     <MedicineItem
-                      key={medicine.id}
-                      name={medicine.medicineName}
+                      key={medicine?.id}
+                      name={medicine?.medicineName}
                       frequency={
                         medicine.medicineTime.length > 1
                           ? t("Multiple Times")
@@ -625,72 +672,177 @@ export default function Dashboard() {
                     <Text style={styles.loadingText}>Loading readings...</Text>
                   </View>
                 ) : (
-                  <>
-                    <LatestReading
-                      icon="fitness-outline"
-                      title={t("Blood Pressure")}
-                      value={
-                        bloodPressure
-                          ? `${bloodPressure.systolic}/${bloodPressure.diastolic}`
-                          : "--/--"
+                  // <TouchableOpacity  onPress={() => router.push("/graph")}>
+                  //   <LatestReading
+                  //     icon="fitness-outline"
+                  //     title={t("Blood Pressure")}
+                  //     value={
+                  //       bloodPressure
+                  //         ? `${bloodPressure.systolic}/${bloodPressure.diastolic}`
+                  //         : "--/--"
+                  //     }
+                  //     unit="mmHg"
+                  //     time={
+                  //       bloodPressure
+                  //         ? new Date(bloodPressure.createdAt).toLocaleString()
+                  //         : "--"
+                  //     }
+                  //     color="#4A55A2"
+                  //   />
+                  //   <LatestReading
+                  //     icon="water-outline"
+                  //     title={t("Blood Sugar")}
+                  //     value={bloodSugar ? bloodSugar.sugarLevel : "--"}
+                  //     unit={
+                  //       bloodSugar
+                  //         ? `mg/dL${
+                  //             bloodSugar.measurementType === 1
+                  //               ? " (Fasting)"
+                  //               : bloodSugar.measurementType === 2
+                  //               ? " (Before meal)"
+                  //               : bloodSugar.measurementType === 3
+                  //               ? " (2hrs after meal)"
+                  //               : ""
+                  //           }`
+                  //         : "mg/dL"
+                  //     }
+                  //     time={
+                  //       bloodSugar
+                  //         ? new Date(bloodSugar.createdAt).toLocaleString()
+                  //         : "--"
+                  //     }
+                  //     color="#FF5A5F"
+                  //   />
+                  //   <LatestReading
+                  //     icon="resize-outline"
+                  //     title={t("Height")}
+                  //     value={height ? height.height : "--"}
+                  //     unit="cm"
+                  //     time={
+                  //       height
+                  //         ? new Date(height.createdAt).toLocaleString()
+                  //         : "--"
+                  //     }
+                  //     color="#00A86B"
+                  //   />
+                  //   <LatestReading
+                  //     icon="scale-outline"
+                  //     title={t("Weight")}
+                  //     value={weight ? weight.weight : "--"}
+                  //     unit="kg"
+                  //     time={
+                  //       weight
+                  //         ? new Date(weight.createdAt).toLocaleString()
+                  //         : "--"
+                  //     }
+                  //     color="#FFC107"
+                  //   />
+                  // </TouchableOpacity>
+                  <View>
+                    <TouchableOpacity
+                      onPress={() =>
+                        router.push({
+                          pathname: "/graph",
+                          params: { title: "Blood Pressure" },
+                        })
                       }
-                      unit="mmHg"
-                      time={
-                        bloodPressure
-                          ? new Date(bloodPressure.createdAt).toLocaleString()
-                          : "--"
+                    >
+                      <LatestReading
+                        icon="fitness-outline"
+                        title={t("Blood Pressure")}
+                        value={
+                          bloodPressure
+                            ? `${bloodPressure.systolic}/${bloodPressure.diastolic}`
+                            : "--/--"
+                        }
+                        unit="mmHg"
+                        time={
+                          bloodPressure
+                            ? new Date(bloodPressure.createdAt).toLocaleString()
+                            : "--"
+                        }
+                        color="#4A55A2"
+                      />
+                    </TouchableOpacity>
+
+                    <TouchableOpacity
+                      onPress={() =>
+                        router.push({
+                          pathname: "/graph",
+                          params: { title: "Blood Sugar" },
+                        })
                       }
-                      color="#4A55A2"
-                    />
-                    <LatestReading
-                      icon="water-outline"
-                      title={t("Blood Sugar")}
-                      value={bloodSugar ? bloodSugar.sugarLevel : "--"}
-                      unit={
-                        bloodSugar
-                          ? `mg/dL${
-                              bloodSugar.measurementType === 1
-                                ? " (Fasting)"
-                                : bloodSugar.measurementType === 2
-                                ? " (Before meal)"
-                                : bloodSugar.measurementType === 3
-                                ? " (2hrs after meal)"
-                                : ""
-                            }`
-                          : "mg/dL"
+                    >
+                      <LatestReading
+                        icon="water-outline"
+                        title={t("Blood Sugar")}
+                        value={bloodSugar ? bloodSugar.sugarLevel : "--"}
+                        unit={
+                          bloodSugar
+                            ? `mg/dL${
+                                bloodSugar.measurementType === 1
+                                  ? " (Fasting)"
+                                  : bloodSugar.measurementType === 2
+                                  ? " (Before meal)"
+                                  : bloodSugar.measurementType === 3
+                                  ? " (2hrs after meal)"
+                                  : ""
+                              }`
+                            : "mg/dL"
+                        }
+                        time={
+                          bloodSugar
+                            ? new Date(bloodSugar.createdAt).toLocaleString()
+                            : "--"
+                        }
+                        color="#FF5A5F"
+                      />
+                    </TouchableOpacity>
+
+                    <TouchableOpacity
+                      onPress={() =>
+                        router.push({
+                          pathname: "/graph",
+                          params: { title: "Height" },
+                        })
                       }
-                      time={
-                        bloodSugar
-                          ? new Date(bloodSugar.createdAt).toLocaleString()
-                          : "--"
+                    >
+                      <LatestReading
+                        icon="resize-outline"
+                        title={t("Height")}
+                        value={height ? height.height : "--"}
+                        unit="cm"
+                        time={
+                          height
+                            ? new Date(height.createdAt).toLocaleString()
+                            : "--"
+                        }
+                        color="#00A86B"
+                      />
+                    </TouchableOpacity>
+
+                    <TouchableOpacity
+                      onPress={() =>
+                        router.push({
+                          pathname: "/graph",
+                          params: { title: "Weight" },
+                        })
                       }
-                      color="#FF5A5F"
-                    />
-                    <LatestReading
-                      icon="resize-outline"
-                      title={t("Height")}
-                      value={height ? height.height : "--"}
-                      unit="cm"
-                      time={
-                        height
-                          ? new Date(height.createdAt).toLocaleString()
-                          : "--"
-                      }
-                      color="#00A86B"
-                    />
-                    <LatestReading
-                      icon="scale-outline"
-                      title={t("Weight")}
-                      value={weight ? weight.weight : "--"}
-                      unit="kg"
-                      time={
-                        weight
-                          ? new Date(weight.createdAt).toLocaleString()
-                          : "--"
-                      }
-                      color="#FFC107"
-                    />
-                  </>
+                    >
+                      <LatestReading
+                        icon="scale-outline"
+                        title={t("Weight")}
+                        value={weight ? weight.weight : "--"}
+                        unit="kg"
+                        time={
+                          weight
+                            ? new Date(weight.createdAt).toLocaleString()
+                            : "--"
+                        }
+                        color="#FFC107"
+                      />
+                    </TouchableOpacity>
+                  </View>
                 )}
               </View>
             </>

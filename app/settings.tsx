@@ -1,6 +1,6 @@
 "use client";
 
-import React from "react";
+import React, { useLayoutEffect, useState } from "react";
 import {
   View,
   StyleSheet,
@@ -10,18 +10,46 @@ import {
   StatusBar,
   Animated,
   Dimensions,
+  Text,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
-import { router } from "expo-router";
+import { router, useNavigation } from "expo-router";
 import { ThemedText } from "@/components/ThemedText";
 import { useAuth } from "@/context/AuthProvider";
 import { LinearGradient } from "expo-linear-gradient";
+import { Globe } from "lucide-react-native";
 
 const { width } = Dimensions.get("window");
 
 export default function ProfileScreen() {
   const { user, onLogout } = useAuth();
   const scrollY = React.useRef(new Animated.Value(0)).current;
+  const [isHindi, setIsHindi] = useState(false);
+  const navigation = useNavigation();
+
+  // English text content
+  const englishText = {
+    Notification: `Notifications`,
+    NotificationDetail: `Manage your alerts and reminders`,
+    Help: `Help & Support`,
+    HelpDetail: `FAQs and contact information`,
+    About: `About App`,
+    AboutDetail: `App version and legal information`,
+    Setting: `Setting`,
+    Logout: `Logout`,
+  };
+
+  // Hindi text content
+  const hindiText = {
+    Notification: "सूचना",
+    Help: "मदद और समर्थन",
+    About: "ऐप के बारे में",
+    Setting: "सेटिंग",
+    Logout: "लॉग आउट",
+    NotificationDetail: "अपने अलर्ट और अनुस्मारक प्रबंधित करें",
+    HelpDetail: "अक्सर पूछे जाने वाले प्रश्न और संपर्क जानकारी",
+    AboutDetail: "ऐप संस्करण और कानूनी जानकारी",
+  };
 
   const handleLogout = async () => {
     try {
@@ -38,6 +66,37 @@ export default function ProfileScreen() {
     outputRange: [0, 1],
     extrapolate: "clamp",
   });
+
+  const toggleLanguage = () => {
+    setIsHindi((prev) => !prev);
+  };
+
+  useLayoutEffect(() => {
+    navigation.setOptions({
+      headerRight: () => (
+        <TouchableOpacity
+          onPress={toggleLanguage}
+          style={{
+            marginRight: 15,
+            flexDirection: "row",
+            alignItems: "center",
+          }}
+        >
+          <Text style={{ paddingRight: 10 }}>{isHindi ? "En" : "हिंदी"}</Text>
+          <Globe size={24} color="#000" />
+        </TouchableOpacity>
+      ),
+      title: isHindi ? "सेटिंग" : "Setting",
+      headerStyle: {
+        backgroundColor: "#ffffff",
+      },
+      headerTitleStyle: {
+        color: "#000000",
+      },
+    });
+  }, [navigation, isHindi]);
+
+  const text = isHindi ? hindiText : englishText;
 
   return (
     <SafeAreaView style={styles.safeArea}>
@@ -99,21 +158,23 @@ export default function ProfileScreen() {
           /> */}
           <MenuItem
             icon="notifications-outline"
-            title="Notifications"
-            description="Manage your alerts and reminders"
+            title={(text.Notification)}
+            description={(text.NotificationDetail)}
             onPress={() => router.push("/notification")}
           />
           <MenuItem
             icon="help-circle-outline"
-            title="Help & Support"
-            description="FAQs and contact information"
+            title={(text.Help)}
+            description={(text.HelpDetail)}
+            // description="FAQs and contact information"
             onPress={() => router.push("/help")}
           />
           <MenuItem
             icon="information-circle-outline"
-            title="About"
-            description="App version and legal information"
-            onPress={() => router.push("/about")}
+            title={(text.About)}
+            description={(text.AboutDetail)}
+            // onPress={() => router.push("/about")}
+            onPress={() => router.push("/aboutUs")}
           />
         </View>
 
@@ -126,7 +187,7 @@ export default function ProfileScreen() {
             style={styles.logoutGradient}
           >
             <Ionicons name="log-out-outline" size={22} color="#fff" />
-            <ThemedText style={styles.logoutText}>Logout</ThemedText>
+            <ThemedText style={styles.logoutText}>{text.Logout}</ThemedText>
           </LinearGradient>
         </TouchableOpacity>
       </Animated.ScrollView>

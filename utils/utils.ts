@@ -143,3 +143,5 @@ export const  cardBackgroundColors = [
       thumbnail: "https://via.placeholder.com/150?text=Relaxation",
     },
   ];
+
+  
