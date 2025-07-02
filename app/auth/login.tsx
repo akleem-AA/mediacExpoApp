@@ -30,6 +30,7 @@ export default function LoginScreen() {
 
     try {
       setIsLoading(true);
+      console.log("Logging in with:", { email, password });
       await onLogin(email, password);
       setIsLoading(false);
       setMessage(`Login successful!`);
