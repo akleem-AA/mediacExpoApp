@@ -13,6 +13,7 @@ import {
   RefreshControl,
   Dimensions,
   Image,
+  Alert,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { router } from "expo-router";
@@ -84,7 +85,7 @@ export default function Dashboard() {
         "Coronary Artery Disease (CAD) is a heart condition where the blood vessels that supply oxygen to the heart (coronary arteries) become narrow or blocked because of a buildup of fat, cholesterol, and other substances, forming plaques. When the arteries become too narrow, the heart doesn't get enough oxygen-rich blood, leading to chest pain (angina), shortness of breath, or even a heart attack.",
       bannerTagline:
         "A healthy lifestyle is the best way to prevent heart disease! 🚴‍♂️🥗🚭",
-      "Symptoms": "List of Symptoms",
+      Symptoms: "List of Symptoms",
     },
     hi: {
       "Good morning": "सुप्रभात",
@@ -121,7 +122,7 @@ export default function Dashboard() {
         "कोरोनरी आर्टरी डिजीज (CAD) एक हृदय स्थिति है जहां हृदय को ऑक्सीजन की आपूर्ति करने वाली रक्त वाहिकाएं (कोरोनरी धमनियां) वसा, कोलेस्ट्रॉल और अन्य पदार्थों के जमा होने के कारण संकीर्ण या अवरुद्ध हो जाती हैं, जिससे प्लाक बनता है। जब धमनियां बहुत संकीर्ण हो जाती हैं, तो हृदय को पर्याप्त ऑक्सीजन युक्त रक्त नहीं मिलता, जिससे छाती में दर्द (एंजाइना), सांस की तकलीफ, या यहां तक कि दिल का दौरा भी पड़ सकता है।",
       bannerTagline:
         "हृदय रोग को रोकने का सबसे अच्छा तरीका है स्वस्थ जीवनशैली! 🚴‍♂️🥗🚭",
-      "Symptoms": "लक्षणों की सूची",
+      Symptoms: "लक्षणों की सूची",
     },
   };
   const symptomsListEn = [
@@ -152,7 +153,7 @@ export default function Dashboard() {
   ];
 
   // Translation function
-  const t = (key) => {
+  const t = (key: string) => {
     return translations[language][key] || key;
   };
 
@@ -338,20 +339,57 @@ export default function Dashboard() {
     "#F0E6FF", // Light lavender
   ];
 
-  const formatDays = (days) => {
+  const formatDays = (days: any[]) => {
     if (!days || days.length === 0) return t("All Days");
     if (days.length === 7) return t("All Days");
 
     const dayNames = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
-    return days.map((day) => dayNames[day]).join(", ");
+    return days.map((day: string | number) => dayNames[day]).join(", ");
   };
 
-  const handleSymptomSave = (data) => {
-    console.log("Symptom data from modal:", data);
-    // Example: call your API here
-    // await api.post("/symptoms", data);
-  };
+  const handleSymptomSave = async (data: {
+    otherText?: any;
+    symptoms?: any;
+    intensities?: any;
+  }) => {
+    const { symptoms, intensities, otherText } = data;
 
+    // ✅ Validation: at least one symptom must be selected
+    if (!symptoms || symptoms.length === 0) {
+      Alert.alert("Validation Error", "Please select at least one symptom.");
+      return;
+    }
+
+    const symptomData = symptoms.map((symptom: string) => ({
+      symptom: symptom === "Others" ? otherText : symptom,
+      intensity: intensities[symptom] || 5,
+    }));
+
+    const params = {
+      userid: user?.userId,
+      symptoms: symptomData,
+    };
+
+    console.log("Final API payload:", params);
+
+    try {
+      const token = await getToken();
+      const response = await axios.post(`${API_URL}/patients/symptom`, params, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      if (response.data) {
+        console.log("Symptoms saved successfully:", response.data);
+        // Optionally show success alert
+        Alert.alert("Success", "Symptoms saved successfully!");
+      }
+    } catch (error) {
+      console.error("Error saving symptoms:", error);
+      Alert.alert("Error", "Failed to save symptoms. Please try again.");
+    }
+  };
   return (
     <SafeAreaView style={styles.safeArea}>
       <StatusBar barStyle="dark-content" backgroundColor="#f0f2f8" />
