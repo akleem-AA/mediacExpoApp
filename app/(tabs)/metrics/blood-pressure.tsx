@@ -117,6 +117,8 @@ export default function BloodPressureInput() {
         );
 
         // Handle success
+        console.log("Blood pressure saved successfully:", response.data);
+        
         if (response.status === 201 || response.status === 200) {
           alert("Blood pressure reading saved successfully!");
           router.back();

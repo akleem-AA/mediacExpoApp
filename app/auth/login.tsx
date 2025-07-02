@@ -30,6 +30,7 @@ export default function LoginScreen() {
 
     try {
       setIsLoading(true);
+      console.log("Logging in with:", { email, password });
       await onLogin(email, password);
       setIsLoading(false);
       setMessage(`Login successful!`);
@@ -82,7 +83,7 @@ export default function LoginScreen() {
               <Text style={styles.inputLabel}>Password</Text>
               <TextInput
                 placeholder="Enter your password"
-                secureTextEntry
+                // secureTextEntry
                 value={password}
                 onChangeText={setPassword}
                 style={styles.input}

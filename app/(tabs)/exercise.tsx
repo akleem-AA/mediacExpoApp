@@ -17,6 +17,7 @@ import {
 } from "react-native";
 import { Video } from "expo-av";
 import { Ionicons } from "@expo/vector-icons";
+import { cardBackgroundColors } from "@/utils/utils";
 
 // Exercise data
 const exercises = [
@@ -25,8 +26,10 @@ const exercises = [
     name: "Walking",
     category: "Cardio",
     difficulty: "Beginner",
-    description:
-      "1. Benefits: Improves circulation, strengthens the heart, and boosts stamina. 2. Tips: Start with short, flat walks (10-15 minutes) and slowly increase the time and pace over weeks. You can progress to brisk walking as tolerated",
+    description_en:
+      "1. Benefits: Improves circulation, strengthens the heart, and boosts stamina. 2. Tips: Start with short, flat walks (10–15 minutes) and slowly increase the time and pace over weeks. You can progress to brisk walking as tolerated.",
+    description_hi:
+      "1. लाभ: परिसंचरण में सुधार करता है, हृदय को मजबूत करता है, और सहनशक्ति को बढ़ाता है। 2. सुझाव: 10–15 मिनट की छोटी, समतल सैर से शुरू करें और धीरे-धीरे समय और गति बढ़ाएँ। जब सहन हो तो तेज़ चलना शुरू करें।",
     videoUrl: "https://mediac.in/video/Walking%20Video%20(Freepik).mp4",
     thumbnail: "https://via.placeholder.com/150?text=Walking",
   },
@@ -35,8 +38,10 @@ const exercises = [
     name: "Neck Stretch",
     category: "Stretching",
     difficulty: "Beginner",
-    description:
+    description_en:
       "Description: Sit or stand upright. Gently tilt your head to one side, bringing your ear toward your shoulder. Hold for 10–15 seconds on each side.",
+    description_hi:
+      "विवरण: सीधे बैठें या खड़े हों। धीरे-धीरे सिर को एक ओर झुकाएं, जिससे कान कंधे की ओर जाए। प्रत्येक ओर 10–15 सेकंड के लिए पकड़ें।",
     videoUrl: "https://mediac.in/video/Neck%20Stretch%20(Pexels)(1).mp4",
     thumbnail: "https://via.placeholder.com/150?text=Neck+Stretch",
   },
@@ -45,8 +50,10 @@ const exercises = [
     name: "Shoulder Rotation",
     category: "Stretching",
     difficulty: "Beginner",
-    description:
+    description_en:
       "Description: Sit or stand with your back straight. Rotate your shoulders forward in a circular motion 5-10 times. Repeat rolling backward.",
+    description_hi:
+      "विवरण: सीधे बैठें या खड़े हों। अपने कंधों को आगे की ओर गोल घुमाएं, 5–10 बार। फिर पीछे की ओर घुमाएं।",
     videoUrl: "https://mediac.in/video/Shoulder%20Rotation%20(Freepik).mp4",
     thumbnail: "https://via.placeholder.com/150?text=Shoulder+Rotation",
   },
@@ -55,8 +62,10 @@ const exercises = [
     name: "Arm Stretches",
     category: "Stretching",
     difficulty: "Beginner",
-    description:
+    description_en:
       "Description: Extend one arm across your chest. Use your opposite hand to gently press the arm closer to your chest. Hold for 10-15 seconds per arm.",
+    description_hi:
+      "विवरण: एक हाथ को अपने सीने के पार फैलाएं। विपरीत हाथ से धीरे से उस हाथ को अपने सीने की ओर दबाएं। प्रत्येक हाथ के लिए 10–15 सेकंड के लिए पकड़ें।",
     videoUrl: "https://mediac.in/video/Arm%20Stretch%2001%20(Freepik).mp4",
     thumbnail: "https://via.placeholder.com/150?text=Arm+Stretches",
   },
@@ -65,8 +74,10 @@ const exercises = [
     name: "Forward Bend",
     category: "Stretching",
     difficulty: "Intermediate",
-    description:
+    description_en:
       "Description: Slowly bend forward from the hips, keeping your back straight, and reach toward your knees or shins. Hold for 10-15 seconds.",
+    description_hi:
+      "विवरण: कूल्हों से धीरे-धीरे आगे झुकें, पीठ को सीधा रखें, और घुटनों या पिंडलियों की ओर हाथ बढ़ाएं। 10–15 सेकंड के लिए रखें।",
     videoUrl: "https://mediac.in/video/Forward%20Bend%20(Freepik).mp4",
     thumbnail: "https://via.placeholder.com/150?text=Forward+Bend",
   },
@@ -75,8 +86,10 @@ const exercises = [
     name: "Ankle Rotations",
     category: "Stretching",
     difficulty: "Beginner",
-    description:
+    description_en:
       "Description: Rotate your ankles in a circular motion 10 times in each direction.",
+    description_hi:
+      "विवरण: अपने टखनों को गोल घुमाएं, प्रत्येक दिशा में 10 बार।",
     videoUrl: "https://mediac.in/video/Ankle%20Rotation%20(Freepik).mp4",
     thumbnail: "https://via.placeholder.com/150?text=Ankle+Rotations",
   },
@@ -85,8 +98,10 @@ const exercises = [
     name: "Calf Stretch",
     category: "Stretching",
     difficulty: "Beginner",
-    description:
+    description_en:
       "Description: Stand facing a wall. Place your hands on the wall at shoulder height. Step one foot back, keeping it straight with the heel on the floor. Lean forward gently until you feel a stretch in the back leg. Hold for 10-15 seconds per leg.",
+    description_hi:
+      "विवरण: दीवार की ओर मुंह करके खड़े हों। अपने हाथों को कंधे की ऊंचाई पर दीवार पर रखें। एक पैर को पीछे रखें और एड़ी को ज़मीन पर टिकाएं। धीरे से आगे झुकें जब तक पिछली टांग में खिंचाव महसूस न हो। प्रत्येक पैर के लिए 10–15 सेकंड रखें।",
     videoUrl: "https://mediac.in/video/Calf%20Stretch%20(Pexels).mp4",
     thumbnail: "https://via.placeholder.com/150?text=Calf+Stretch",
   },
@@ -95,8 +110,10 @@ const exercises = [
     name: "Stationary Cycling",
     category: "Cardio",
     difficulty: "Intermediate",
-    description:
+    description_en:
       "1. Benefits: Low-impact exercise that boosts cardiovascular fitness. 2. Tips: Begin with a low resistance and cycle for short intervals, around 10-15 minutes. Increase the time gradually as your endurance improves.",
+    description_hi:
+      "1. लाभ: यह एक हल्का व्यायाम है जो हृदय स्वास्थ्य को बेहतर बनाता है। 2. सुझाव: कम प्रतिरोध के साथ शुरू करें और 10–15 मिनट के लिए साइकिल चलाएं। धीरे-धीरे समय बढ़ाएं जैसे-जैसे सहनशक्ति बढ़े।",
     videoUrl: "https://mediac.in/video/Cycling%20(Freepik).mp4",
     thumbnail: "https://via.placeholder.com/150?text=Cycling",
   },
@@ -105,8 +122,10 @@ const exercises = [
     name: "Swimming",
     category: "Cardio",
     difficulty: "Intermediate",
-    description:
+    description_en:
       "1. Benefits: Provides gentle resistance and minimizes joint strain, especially beneficial for those with arthritis or joint issues. 2. Tips: Start with slow-paced swimming or basic water aerobics movements. Perform only if you know swimming or perform under supervision.",
+    description_hi:
+      "1. लाभ: यह कोमल प्रतिरोध प्रदान करता है और जोड़ों पर दबाव कम करता है, विशेष रूप से गठिया या जोड़ों की समस्याओं के लिए लाभकारी। 2. सुझाव: धीमी गति से तैराकी या बेसिक वॉटर एरोबिक्स से शुरू करें। केवल तभी करें जब आपको तैरना आता हो या निगरानी में करें।",
     videoUrl: "https://mediac.in/video/Swimming%20(Freepik).mp4",
     thumbnail: "https://via.placeholder.com/150?text=Swimming",
   },
@@ -115,8 +134,10 @@ const exercises = [
     name: "Slow Dancing",
     category: "Cardio",
     difficulty: "Beginner",
-    description:
+    description_en:
       "1. Benefits: Fun and rhythmic, this activity improves coordination and cardiovascular health. 2. Tips: Start with slow movements, and ensure you don't exert yourself too much.",
+    description_hi:
+      "1. लाभ: यह एक मजेदार और लयबद्ध गतिविधि है जो समन्वय और हृदय स्वास्थ्य में सुधार करती है। 2. सुझाव: धीमी गति से शुरू करें और खुद को अधिक थकाएं नहीं।",
     videoUrl: "https://mediac.in/video/Slow%20Dancing%20(Freepik).mp4",
     thumbnail: "https://via.placeholder.com/150?text=Dancing",
   },
@@ -125,8 +146,10 @@ const exercises = [
     name: "Running/Jogging",
     category: "Cardio",
     difficulty: "Advanced",
-    description:
+    description_en:
       "1. Benefits: Running/jogging boosts cardiovascular health, improves endurance, and elevates mood through endorphin release. 2. Tips: Start at a comfortable pace, wear proper footwear, and stay hydrated to prevent fatigue and injury.",
+    description_hi:
+      "1. लाभ: दौड़ना या जॉगिंग हृदय स्वास्थ्य को बेहतर बनाता है, सहनशक्ति बढ़ाता है, और एंडोर्फिन रिलीज के माध्यम से मूड सुधारता है। 2. सुझाव: आरामदायक गति से शुरू करें, सही जूते पहनें, और थकान व चोट से बचने के लिए हाइड्रेटेड रहें।",
     videoUrl: "https://mediac.in/video/Running%20Jogging%20(Freepik).mp4",
     thumbnail: "https://via.placeholder.com/150?text=Running",
   },
@@ -135,8 +158,10 @@ const exercises = [
     name: "Yoga",
     category: "Flexibility",
     difficulty: "Intermediate",
-    description:
+    description_en:
       "1. Benefits: Enhances flexibility, reduces stress, and increases mobility. 2. Tips: Perform gentle seated movements that engage the upper body, such as arm circles or leg raises, without putting strain on the heart.",
+    description_hi:
+      "1. लाभ: लचीलापन बढ़ाता है, तनाव कम करता है, और गतिशीलता में सुधार करता है। 2. सुझाव: ऐसे कोमल बैठे हुए व्यायाम करें जो ऊपरी शरीर को सक्रिय करें, जैसे आर्म सर्कल या लेग रेज़, बिना दिल पर ज़ोर डाले।",
     videoUrl: "https://mediac.in/video/Pranayama%20(Pexels).mp4",
     thumbnail: "https://via.placeholder.com/150?text=Yoga",
   },
@@ -145,8 +170,10 @@ const exercises = [
     name: "Head to Toe Relaxation",
     category: "Relaxation",
     difficulty: "Beginner",
-    description:
+    description_en:
       "1. Benefits: Helps reduce stress, lower blood pressure, and enhance oxygen flow. 2. Tips: Practice slow, deep breathing techniques like diaphragmatic breathing. Pair this with relaxation techniques such as meditation.",
+    description_hi:
+      "1. लाभ: तनाव को कम करता है, रक्तचाप को घटाता है, और ऑक्सीजन प्रवाह को बढ़ाता है। 2. सुझाव: धीमी और गहरी सांस लेने की तकनीक जैसे डायाफ्रामिक ब्रीदिंग का अभ्यास करें। इसे ध्यान जैसी विश्राम तकनीकों के साथ करें।",
     videoUrl: "https://mediac.in/video/New%20Project.mp4",
     thumbnail: "https://via.placeholder.com/150?text=Relaxation",
   },
@@ -353,6 +380,9 @@ const ExerciseList = () => {
     return translations[language][key] || key;
   };
 
+  const getExerciseDescription = (exercise, lang) => {
+    return lang === "hi" ? exercise.description_hi : exercise.description_en;
+  };
   // Toggle language
   const toggleLanguage = () => {
     setLanguage(language === "en" ? "hi" : "en");
@@ -413,11 +443,15 @@ const ExerciseList = () => {
     setDisclaimerVisible(false);
   };
 
-  const renderCategoryPill = (category) => (
+  const renderCategoryPill = (category, index) => (
     <TouchableOpacity
       key={category}
       style={[
         styles.categoryPill,
+        {
+          backgroundColor:
+            cardBackgroundColors[index % cardBackgroundColors.length],
+        },
         selectedCategory === category && styles.categoryPillActive,
       ]}
       onPress={() => setSelectedCategory(category)}
@@ -467,7 +501,8 @@ const ExerciseList = () => {
         </View>
       </View>
       <Text style={styles.description} numberOfLines={2}>
-        {t(exercise.description)}
+        {/* {t(exercise.description)} */}
+        {getExerciseDescription(exercise, language)}
       </Text>
     </TouchableOpacity>
   );
