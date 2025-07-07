@@ -37,6 +37,7 @@
           "backgroundColor": "#ffffff"
         }
       ],
+      [
       "expo-build-properties",
       {
         "android": {
@@ -45,6 +46,7 @@
           "buildToolsVersion": "35.0.0"
         }
       }
+      ]
     ],
     "experiments": {
       "typedRoutes": true
