@@ -10,14 +10,20 @@ import {
 import { LineChart } from "react-native-chart-kit";
 import axios from "axios";
 import { Stack, useLocalSearchParams } from "expo-router";
+import { getToken } from "@/services/auth";
+import { API_URL } from "@/constants/Api";
+import { useDecodedToken } from "@/hooks/useDecodedToken";
 
 const screenWidth = Dimensions.get("window").width;
 
 const GraphScreen = () => {
-  const [labels, setLabels] = useState<string[]>([]);
-  const [values, setValues] = useState<number[]>([]);
-  const [loading, setLoading] = useState(true);
+  const user = useDecodedToken();
   const { title } = useLocalSearchParams<{ title?: string }>();
+  const [chartData, setChartData] = useState<ChartData | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [noData, setNoData] = useState(false);
+  const [errorMessage, setErrorMessage] = useState("");
+
   type ChartData = {
     labels: string[];
     datasets: {
@@ -29,141 +35,172 @@ const GraphScreen = () => {
     legend: string[];
   };
 
-  const [chartData, setChartData] = useState<ChartData | null>(null);
+  const getUserId = async () => {
+    return user?.userId;
+  };
 
-  // Simulate API call
   const fetchGraphData = async () => {
     setLoading(true);
+    setErrorMessage("");
+    setNoData(false);
+
     try {
-      // Simulated API data (replace with your real API)
-      const response = await new Promise((resolve) =>
-        setTimeout(() => {
-          resolve([
-            { date: "Jun 1", value: 120 },
-            { date: "Jun 5", value: 118 },
-            { date: "Jun 10", value: 115 },
-            { date: "Jun 15", value: 130 },
-            { date: "Jun 20", value: 125 },
-            { date: "Jun 25", value: 122 },
-            { date: "Jun 30", value: 121 },
-            { date: "Jul 5", value: 117 },
-            { date: "Jul 10", value: 119 },
-            { date: "Jul 15", value: 123 },
-            { date: "Jul 20", value: 128 },
-            { date: "Jul 25", value: 126 },
-          ]);
-        }, 1000)
+      const token = await getToken();
+      const userId = await getUserId();
+      console.log("User ID:", user?.userId);
+      console.log("url:", `${API_URL}/patients/previousReading/${userId}`);
+      const response = await axios.get(
+        `${API_URL}/patients/previousReading/${userId}`,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
       );
 
-      const data = response as { date: string; value: number }[];
+      const data = response.data;
+      console.log("Graph data fetched:", data);
+      const graphTitle = title?.toLowerCase();
 
-      setLabels(data.map((item) => item.date));
-      setValues(data.map((item) => item.value));
-    } catch (error) {
+      if (graphTitle === "blood pressure") {
+        const bp = data?.bp || [];
+        if (bp.length === 0) return setNoData(true);
+
+        const labels = bp.map((entry: any) => entry.date);
+        const systolic = bp.map((entry: any) => Number(entry.systolic));
+        const diastolic = bp.map((entry: any) => Number(entry.diastolic));
+        const pulse = bp.map((entry: any) => Number(entry.pulse));
+
+        setChartData({
+          labels,
+          datasets: [
+            {
+              data: systolic,
+              color: () => "#FF6384",
+              strokeWidth: 2,
+              label: "Systolic",
+            },
+            {
+              data: diastolic,
+              color: () => "#36A2EB",
+              strokeWidth: 2,
+              label: "Diastolic",
+            },
+            {
+              data: pulse,
+              color: () => "#4BC0C0",
+              strokeWidth: 2,
+              label: "Pulse",
+            },
+          ],
+          legend: ["Systolic", "Diastolic", "Pulse"],
+        });
+      } else if (graphTitle === "blood sugar") {
+        const bs = data?.bs || [];
+        if (bs.length === 0) return setNoData(true);
+
+        const labels = bs.map((entry: any) => entry.date);
+        const values = bs.map((entry: any) => Number(entry.value));
+
+        setChartData({
+          labels,
+          datasets: [
+            {
+              data: values,
+              color: () => "#7A39A3",
+              strokeWidth: 2,
+              label: "Blood Sugar",
+            },
+          ],
+          legend: ["Blood Sugar"],
+        });
+      } else if (graphTitle === "weight") {
+        const weight = data?.weight || [];
+        if (weight.length === 0) return setNoData(true);
+
+        const labels = weight.map((entry: any) => entry.date);
+        const values = weight.map((entry: any) => Number(entry.value));
+
+        setChartData({
+          labels,
+          datasets: [
+            {
+              data: values,
+              color: () => "#FFA500",
+              strokeWidth: 2,
+              label: "Weight",
+            },
+          ],
+          legend: ["Weight"],
+        });
+      } else if (graphTitle === "height") {
+        const height = data?.height || [];
+        if (height.length === 0) return setNoData(true);
+
+        const labels = height.map((entry: any) => entry.date);
+        const values = height.map((entry: any) => Number(entry.value));
+
+        setChartData({
+          labels,
+          datasets: [
+            {
+              data: values,
+              color: () => "#2E8B57",
+              strokeWidth: 2,
+              label: "Height",
+            },
+          ],
+          legend: ["Height"],
+        });
+      } else {
+        setNoData(true);
+      }
+    } catch (error: any) {
       console.error("Error fetching graph data:", error);
+      setErrorMessage("Something went wrong. Please try again later.");
+      setNoData(true);
     } finally {
       setLoading(false);
     }
   };
 
   useEffect(() => {
-    fetchGraphData();
-  }, []);
-  const apiResponse = {
-    status: "ok",
-    bp: [
-      {
-        date: "25 June, 25",
-        systolic: 101,
-        diastolic: 80,
-        pulse: 72,
-      },
-      {
-        date: "26 June, 25",
-        systolic: 102,
-        diastolic: 82,
-        pulse: 72,
-      },
-      {
-        date: "27 June, 25",
-        systolic: 103,
-        diastolic: 86,
-        pulse: 70,
-      },
-    ],
-  };
+    if (user?.userId) {
+      fetchGraphData();
+    }
+  }, [user?.userId]);
 
-  useEffect(() => {
-    const bp = apiResponse.bp;
-
-    const labels = bp.map((entry) => entry.date);
-    const systolic = bp.map((entry) => entry.systolic);
-    const diastolic = bp.map((entry) => entry.diastolic);
-    const pulse = bp.map((entry) => entry.pulse);
-
-    setChartData({
-      labels: labels,
-      datasets: [
-        {
-          data: systolic,
-          color: () => "#FF6384", // red
-          strokeWidth: 2,
-          label: "Systolic",
-        },
-        {
-          data: diastolic,
-          color: () => "#36A2EB", // blue
-          strokeWidth: 2,
-          label: "Diastolic",
-        },
-        {
-          data: pulse,
-          color: () => "#4BC0C0", // green
-          strokeWidth: 2,
-          label: "Pulse",
-        },
-      ],
-      legend: ["Systolic", "Diastolic", "Pulse"],
-    });
-  }, []);
-
-  const chartWidth = Math.max(screenWidth, labels.length * 60);
+  const chartWidth = Math.max(
+    screenWidth,
+    (chartData?.labels.length || 1) * 60
+  );
 
   return (
     <View style={styles.container}>
       <Stack.Screen
         options={{
-          title: title || "Graph", // Header title
-          headerBackTitle: "Back", // Text shown on back button (iOS only)
+          title: title || "Graph",
+          headerBackTitle: "Back",
         }}
       />
-      <Text style={styles.title}>{title + " " + " Chart"}</Text>
+      <Text style={styles.title}>{title + " Chart"}</Text>
 
       {loading ? (
         <ActivityIndicator size="large" color="#007AFF" />
+      ) : noData ? (
+        <View style={styles.graphBox}>
+          <Text style={styles.noDataText}>
+            {errorMessage || "No data available to display."}
+          </Text>
+        </View>
       ) : (
         <View style={styles.graphBox}>
           <ScrollView horizontal showsHorizontalScrollIndicator={false}>
             <LineChart
-              //   data={{
-              //     labels,
-              //     datasets: [
-              //       {
-              //         data: values,
-              //         color: () => "#007AFF",
-              //         strokeWidth: 2,
-              //       },
-              //     ],
-              //   }}
-              data={
-                chartData || {
-                  labels: [],
-                  datasets: [],
-                }
-              }
+              data={chartData || { labels: [], datasets: [] }}
               width={chartWidth}
               height={350}
-              yAxisSuffix=" v"
+              yAxisSuffix=""
               chartConfig={{
                 backgroundGradientFrom: "#ffffff",
                 backgroundGradientTo: "#ffffff",
@@ -214,8 +251,17 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.1,
     shadowRadius: 6,
     elevation: 3,
+    minHeight: 200,
+    justifyContent: "center",
+    alignItems: "center",
   },
   chart: {
     borderRadius: 12,
+  },
+  noDataText: {
+    textAlign: "center",
+    fontSize: 16,
+    color: "#888",
+    paddingVertical: 30,
   },
 });

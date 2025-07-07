@@ -371,6 +371,7 @@ export default function Dashboard() {
     };
 
     console.log("Final API payload:", params);
+    console.log("API rul", `${API_URL}/patients/symptom`);
 
     try {
       const token = await getToken();

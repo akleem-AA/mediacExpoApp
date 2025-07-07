@@ -42,7 +42,20 @@ interface Patient {
   password?: string;
   role: number;
   createdAt?: string;
+  medicines?: any;
 }
+
+const daysOfWeek = [
+  { code: "Mon", shortName: "M" },
+  { code: "Tue", shortName: "T" },
+  { code: "Wed", shortName: "W" },
+  { code: "Thu", shortName: "T" },
+  { code: "Fri", shortName: "F" },
+  { code: "Sat", shortName: "S" },
+  { code: "Sun", shortName: "S" },
+];
+
+const frequencies = ["Once a Day", "Twice a Day", "Thrice a Day"];
 
 export default function PatientScreen() {
   const [patients, setPatients] = useState<Patient[]>([]);
@@ -57,6 +70,9 @@ export default function PatientScreen() {
   const [sortBy, setSortBy] = useState("recent");
   const [sortOrder, setSortOrder] = useState("desc");
   const [isRefreshing, setIsRefreshing] = useState(false);
+  const [availableMedicines, setAvailableMedicines] = useState([]);
+
+  const [showTimePicker, setShowTimePicker] = useState(false);
 
   // Date picker states
   const [showFollowUpDatePicker, setShowFollowUpDatePicker] = useState(false);
@@ -67,11 +83,13 @@ export default function PatientScreen() {
     setLoading(true);
     try {
       const token = await getToken();
+
       const response = await axios.get(`${API_URL}/users`, {
         headers: {
           Authorization: `Bearer ${token}`,
         },
       });
+      console.log("Fetched patients:", response.data[0]);
       if (response.data) {
         const patientData = response.data
           .filter((p: any) => p && p.role === 0)
@@ -80,6 +98,8 @@ export default function PatientScreen() {
             createdAt: p.createdAt || new Date().toISOString(),
           }));
         setPatients(patientData);
+        console.log("Patients data:", patientData);
+        // initializeMedicines(patientData[0]);
         applyFilters(patientData, searchQuery);
       }
     } catch (error) {
@@ -89,6 +109,23 @@ export default function PatientScreen() {
       setLoading(false);
       setRefreshing(false);
       setIsRefreshing(false);
+    }
+  };
+
+  const fetchPatientList = async () => {
+    try {
+      // https://mediac.in/api/medicines
+
+      const token = await getToken();
+      const response = await axios.get(`${API_URL}/medicines`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+      // console.log("Fetched patient list:", response.data);
+    } catch (error) {
+      console.error("Error fetching patient list:", error);
+      Alert.alert("Error", "Failed to load patient list. Please try again.");
     }
   };
 
@@ -278,6 +315,7 @@ export default function PatientScreen() {
 
   useEffect(() => {
     fetchPatients();
+    fetchPatientList();
   }, []);
 
   useEffect(() => {
@@ -349,6 +387,39 @@ export default function PatientScreen() {
       return { text: followUp.toLocaleDateString(), color: "#4CAF50" };
     }
   };
+
+  useEffect(() => {
+    fetchAvailableMedicines();
+    // initializeMedicines();
+  }, []);
+
+  const fetchAvailableMedicines = async () => {
+    try {
+      const token = await getToken(); // Replace with your token logic
+      const response = await axios.get(`${API_URL}/medicines`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      setAvailableMedicines(response.data);
+    } catch (err) {
+      Alert.alert("Error", "Failed to fetch available medicines");
+    }
+  };
+
+  const addNewMedicine = () => {
+    const newMedicine = {
+      medicineId: "",
+      frequency: "",
+      medicineTimes: [new Date()],
+      medicineDays: [],
+    };
+    setEditedPatient((prev) => ({
+      ...prev,
+      medicines: [...(prev.medicines || []), newMedicine],
+    }));
+  };
+  // console.log("Edited Patient Data:", editedPatient);
+
+  //for medicine
 
   return (
     <View style={styles.container}>
@@ -612,7 +683,7 @@ export default function PatientScreen() {
                 </View>
 
                 <View style={styles.actionIcons}>
-                  <TouchableOpacity
+                  {/* <TouchableOpacity
                     style={styles.actionButton}
                     onPress={async (e) => {
                       e.stopPropagation();
@@ -641,14 +712,51 @@ export default function PatientScreen() {
                               response.data.exerciseTime || item.exerciseTime,
                             followUpDate:
                               response.data.followUpDate || item.followUpDate,
+                            medicines: response.data.patientMedicine || [],
                           };
-
+                          initializeMedicines(response.data);
                           openEditModal(patientData);
                         }
                       } catch (error) {
                         console.error("Error fetching patient details:", error);
                         openEditModal(item);
                       }
+                    }}
+                  >
+                    <MaterialIcons name="edit" size={22} color="#4CAF50" />
+                  </TouchableOpacity> */}
+                  <TouchableOpacity
+                    style={styles.actionButton}
+                    onPress={() => {
+                      const mappedMedicines = (item.patientMedicine || []).map(
+                        (med) => {
+                          const found = availableMedicines.find(
+                            (m) => m.id === med.id
+                          );
+                          return {
+                            medicineId: found?.id || "",
+                            frequency: med.frequency || "",
+                            medicineTimes: (med.medicineTimes || []).map(
+                              (t) => {
+                                const parsed = new Date(t);
+                                return isNaN(parsed.getTime())
+                                  ? new Date()
+                                  : parsed;
+                              }
+                            ),
+                            medicineDays: Array.isArray(med.medicineDays)
+                              ? med.medicineDays
+                              : [],
+                          };
+                        }
+                      );
+
+                      const patientData = {
+                        ...item,
+                        medicines: mappedMedicines,
+                      };
+                      console.log("Opening edit modal with data:", patientData);
+                      openEditModal(patientData);
                     }}
                   >
                     <MaterialIcons name="edit" size={22} color="#4CAF50" />
@@ -1002,7 +1110,224 @@ export default function PatientScreen() {
                   }}
                 />
               )}
+              {(editedPatient.medicines || []).map((medicine, medIndex) => (
+                <View
+                  key={medIndex}
+                  style={{
+                    borderWidth: 1,
+                    borderRadius: 8,
+                    padding: 12,
+                    marginBottom: 16,
+                  }}
+                >
+                  <View
+                    style={{
+                      flexDirection: "row",
+                      justifyContent: "space-between",
+                    }}
+                  >
+                    <Text style={{ fontWeight: "bold", fontSize: 16 }}>
+                      Medicine {medIndex + 1}
+                    </Text>
+                    <TouchableOpacity
+                      onPress={() => {
+                        const updated = [...editedPatient.medicines];
+                        updated.splice(medIndex, 1);
+                        setEditedPatient((prev) => ({
+                          ...prev,
+                          medicines: updated,
+                        }));
+                      }}
+                    >
+                      <MaterialIcons name="delete" size={20} color="red" />
+                    </TouchableOpacity>
+                  </View>
 
+                  {/* Medicine Picker */}
+                  <Text style={{ marginTop: 8 }}>Medicine Name</Text>
+                  <Picker
+                    selectedValue={medicine.medicineId}
+                    onValueChange={(value) => {
+                      const updated = [...editedPatient.medicines];
+                      updated[medIndex].medicineId = value;
+                      setEditedPatient((prev) => ({
+                        ...prev,
+                        medicines: updated,
+                      }));
+                    }}
+                  >
+                    <Picker.Item label="Select Medicine" value="" />
+                    {availableMedicines.map((med) => (
+                      <Picker.Item
+                        key={med.id}
+                        label={`${med.medicineName} (${med.medicineDose} ${med.medicineDoseUnit})`}
+                        value={med.id}
+                      />
+                    ))}
+                  </Picker>
+
+                  {/* Frequency */}
+                  <Text style={{ marginTop: 8 }}>Frequency</Text>
+                  <View style={{ flexDirection: "row", flexWrap: "wrap" }}>
+                    {frequencies.map((freq) => (
+                      <TouchableOpacity
+                        key={freq}
+                        onPress={() => {
+                          const updated = [...editedPatient.medicines];
+                          updated[medIndex].frequency = freq;
+                          setEditedPatient((prev) => ({
+                            ...prev,
+                            medicines: updated,
+                          }));
+                        }}
+                        style={{
+                          padding: 8,
+                          margin: 4,
+                          borderWidth: 1,
+                          borderRadius: 6,
+                          backgroundColor:
+                            medicine.frequency === freq ? "#4CAF50" : "#2C2C2C",
+                          borderColor:
+                            medicine.frequency === freq ? "#4CAF50" : "#666",
+                        }}
+                      >
+                        <Text
+                          style={{
+                            color:
+                              medicine.frequency === freq ? "#fff" : "#ccc",
+                          }}
+                        >
+                          {freq}
+                        </Text>
+                      </TouchableOpacity>
+                    ))}
+                  </View>
+
+                  {/* Dose Timings */}
+                  <Text style={{ marginTop: 8 }}>Dose Timings</Text>
+                  {medicine.medicineTimes.map((time, timeIndex) => (
+                    <View
+                      key={timeIndex}
+                      style={{
+                        flexDirection: "row",
+                        alignItems: "center",
+                        marginVertical: 4,
+                      }}
+                    >
+                      <Text>Dose {timeIndex + 1}: </Text>
+                      <TouchableOpacity
+                        onPress={() =>
+                          setShowTimePicker({ medIndex, timeIndex })
+                        }
+                        style={{
+                          marginLeft: 10,
+                          padding: 6,
+                          borderWidth: 1,
+                          borderRadius: 6,
+                          flexDirection: "row",
+                          alignItems: "center",
+                        }}
+                      >
+                        <Text style={{ marginRight: 8 }}>
+                          {time instanceof Date && !isNaN(time)
+                            ? time.toTimeString().slice(0, 5)
+                            : "00:00"}
+                        </Text>
+                        <FontAwesome5 name="clock" size={14} color="#E9446A" />
+                      </TouchableOpacity>
+                      {showTimePicker &&
+                        showTimePicker.medIndex === medIndex &&
+                        showTimePicker.timeIndex === timeIndex && (
+                          <DateTimePicker
+                            value={new Date(time)}
+                            mode="time"
+                            is24Hour
+                            display="default"
+                            onChange={(event, selectedTime) => {
+                              setShowTimePicker(null);
+                              if (selectedTime) {
+                                const updated = [...editedPatient.medicines];
+                                updated[medIndex].medicineTimes[timeIndex] =
+                                  selectedTime;
+                                setEditedPatient((prev) => ({
+                                  ...prev,
+                                  medicines: updated,
+                                }));
+                              }
+                            }}
+                          />
+                        )}
+                    </View>
+                  ))}
+
+                  {/* Days of Week */}
+                  <Text style={{ marginTop: 8 }}>Days</Text>
+                  <View style={{ flexDirection: "row", flexWrap: "wrap" }}>
+                    {daysOfWeek.map((day) => (
+                      <TouchableOpacity
+                        key={day.code}
+                        onPress={() => {
+                          const updated = [...editedPatient.medicines];
+                          const currentDays =
+                            updated[medIndex].medicineDays || [];
+                          updated[medIndex].medicineDays = currentDays.includes(
+                            day.code
+                          )
+                            ? currentDays.filter((d) => d !== day.code)
+                            : [...currentDays, day.code];
+                          setEditedPatient((prev) => ({
+                            ...prev,
+                            medicines: updated,
+                          }));
+                        }}
+                        style={{
+                          margin: 4,
+                          padding: 8,
+                          borderRadius: 16,
+                          borderWidth: 1,
+                          backgroundColor: medicine.medicineDays.includes(
+                            day.code
+                          )
+                            ? "#4CAF50"
+                            : "#2C2C2C",
+                          borderColor: medicine.medicineDays.includes(day.code)
+                            ? "#4CAF50"
+                            : "#666",
+                        }}
+                      >
+                        <Text
+                          style={{
+                            color: medicine.medicineDays.includes(day.code)
+                              ? "#fff"
+                              : "#ccc",
+                          }}
+                        >
+                          {day.shortName}
+                        </Text>
+                      </TouchableOpacity>
+                    ))}
+                  </View>
+                </View>
+              ))}
+
+              {editedPatient.medicines?.length === 0 && (
+                <Text style={{ color: "#888" }}>No medicines added yet.</Text>
+              )}
+
+              <TouchableOpacity
+                onPress={addNewMedicine}
+                style={{
+                  marginTop: 12,
+                  backgroundColor: "#007bff",
+                  padding: 12,
+                  borderRadius: 8,
+                  alignItems: "center",
+                }}
+              >
+                <Text style={{ color: "#fff", fontWeight: "bold" }}>
+                  + Add Medicine
+                </Text>
+              </TouchableOpacity>
               <TouchableOpacity
                 style={styles.saveButton}
                 onPress={handleUpdatePatient}
