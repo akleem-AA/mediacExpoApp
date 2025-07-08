@@ -46,13 +46,13 @@ interface Patient {
 }
 
 const daysOfWeek = [
-  { code: "Mon", shortName: "M" },
-  { code: "Tue", shortName: "T" },
-  { code: "Wed", shortName: "W" },
-  { code: "Thu", shortName: "T" },
-  { code: "Fri", shortName: "F" },
-  { code: "Sat", shortName: "S" },
-  { code: "Sun", shortName: "S" },
+  { code: 1, shortName: "M" },
+  { code: 2, shortName: "T" },
+  { code: 3, shortName: "W" },
+  { code: 4, shortName: "T" },
+  { code: 5, shortName: "F" },
+  { code: 6, shortName: "S" },
+  { code: 0, shortName: "S" },
 ];
 
 const frequencies = ["Once a Day", "Twice a Day", "Thrice a Day"];
@@ -89,7 +89,7 @@ export default function PatientScreen() {
           Authorization: `Bearer ${token}`,
         },
       });
-      console.log("Fetched patients:", response.data[0]);
+      // console.log("Fetched patients:", response.data[0]);
       if (response.data) {
         const patientData = response.data
           .filter((p: any) => p && p.role === 0)
@@ -98,7 +98,7 @@ export default function PatientScreen() {
             createdAt: p.createdAt || new Date().toISOString(),
           }));
         setPatients(patientData);
-        console.log("Patients data:", patientData);
+        // console.log("Patients data:", patientData);
         // initializeMedicines(patientData[0]);
         applyFilters(patientData, searchQuery);
       }
@@ -240,6 +240,8 @@ export default function PatientScreen() {
 
   // Handle update patient
   const handleUpdatePatient = async () => {
+    // console.log("Updating patient:", editedPatient);
+    console.log("Updating patient>>:", editedPatient?.medicines);
     if (!selectedPatient) return;
 
     if (!editedPatient.name || !editedPatient.uhidNumber) {
@@ -258,6 +260,7 @@ export default function PatientScreen() {
         delete updatedData.password;
       }
 
+      console.log("updated data in params??", updatedData);
       const token = await getToken();
 
       const response = await axios.put(
@@ -411,6 +414,7 @@ export default function PatientScreen() {
       frequency: "",
       medicineTimes: [new Date()],
       medicineDays: [],
+      medicineName: "",
     };
     setEditedPatient((prev) => ({
       ...prev,
@@ -731,14 +735,20 @@ export default function PatientScreen() {
                       const mappedMedicines = (item.patientMedicine || []).map(
                         (med) => {
                           const found = availableMedicines.find(
-                            (m) => m.id === med.id
+                            (m) => m.id === med.medicineId || m.id === med.id
                           );
+
+                          console.log("Matching medicine:", found);
+
                           return {
-                            medicineId: found?.id || "",
-                            frequency: med.frequency || "",
+                            medicineId:
+                              found?.id || med.medicineId || med.id || "",
+                            medicineName: found?.medicineName || "",
+                            frequency:
+                              med.frequency || med.medicineFrequency || "",
                             medicineTimes: (med.medicineTimes || []).map(
                               (t) => {
-                                const parsed = new Date(t);
+                                const parsed = new Date(`1970-01-01T${t}:00`);
                                 return isNaN(parsed.getTime())
                                   ? new Date()
                                   : parsed;
@@ -755,7 +765,11 @@ export default function PatientScreen() {
                         ...item,
                         medicines: mappedMedicines,
                       };
-                      console.log("Opening edit modal with data:", patientData);
+
+                      console.log("Opening edit modal with data:", patientData.medicines);
+                      console.log("props medicine:", patientData.patientMedicine);
+
+                      // console.log("ALL medicine", availableMedicines);
                       openEditModal(patientData);
                     }}
                   >
@@ -1126,7 +1140,13 @@ export default function PatientScreen() {
                       justifyContent: "space-between",
                     }}
                   >
-                    <Text style={{ fontWeight: "bold", fontSize: 16 }}>
+                    <Text
+                      style={{
+                        fontWeight: "bold",
+                        fontSize: 16,
+                        color: "white",
+                      }}
+                    >
                       Medicine {medIndex + 1}
                     </Text>
                     <TouchableOpacity
@@ -1144,12 +1164,24 @@ export default function PatientScreen() {
                   </View>
 
                   {/* Medicine Picker */}
-                  <Text style={{ marginTop: 8 }}>Medicine Name</Text>
+                  <Text style={{ marginTop: 8, color: "grey" }}>
+                    {medicine?.medicineName}
+                  </Text>
                   <Picker
                     selectedValue={medicine.medicineId}
                     onValueChange={(value) => {
                       const updated = [...editedPatient.medicines];
+                      // console.log("selected medeicine ",value)
+                      // updated[medIndex].medicineId = value;
+                      const selectedMedicine = availableMedicines.find(
+                        (it) => it.id === value
+                      );
+
+                      // Update ID and name
                       updated[medIndex].medicineId = value;
+                      updated[medIndex].medicineName =
+                        selectedMedicine?.medicineName || "";
+
                       setEditedPatient((prev) => ({
                         ...prev,
                         medicines: updated,
@@ -1167,7 +1199,9 @@ export default function PatientScreen() {
                   </Picker>
 
                   {/* Frequency */}
-                  <Text style={{ marginTop: 8 }}>Frequency</Text>
+                  <Text style={{ marginTop: 8, color: "white", padding: 2 }}>
+                    Frequency
+                  </Text>
                   <View style={{ flexDirection: "row", flexWrap: "wrap" }}>
                     {frequencies.map((freq) => (
                       <TouchableOpacity
@@ -1204,7 +1238,9 @@ export default function PatientScreen() {
                   </View>
 
                   {/* Dose Timings */}
-                  <Text style={{ marginTop: 8 }}>Dose Timings</Text>
+                  <Text style={{ marginTop: 8, color: "#fff" }}>
+                    Dose Timings
+                  </Text>
                   {medicine.medicineTimes.map((time, timeIndex) => (
                     <View
                       key={timeIndex}
@@ -1214,7 +1250,9 @@ export default function PatientScreen() {
                         marginVertical: 4,
                       }}
                     >
-                      <Text>Dose {timeIndex + 1}: </Text>
+                      <Text style={{ color: "white" }}>
+                        Dose {timeIndex + 1}:{" "}
+                      </Text>
                       <TouchableOpacity
                         onPress={() =>
                           setShowTimePicker({ medIndex, timeIndex })
@@ -1228,7 +1266,7 @@ export default function PatientScreen() {
                           alignItems: "center",
                         }}
                       >
-                        <Text style={{ marginRight: 8 }}>
+                        <Text style={{ marginRight: 8, color: "grey" }}>
                           {time instanceof Date && !isNaN(time)
                             ? time.toTimeString().slice(0, 5)
                             : "00:00"}
@@ -1261,7 +1299,7 @@ export default function PatientScreen() {
                   ))}
 
                   {/* Days of Week */}
-                  <Text style={{ marginTop: 8 }}>Days</Text>
+                  <Text style={{ marginTop: 8, color: "white" }}>Days</Text>
                   <View style={{ flexDirection: "row", flexWrap: "wrap" }}>
                     {daysOfWeek.map((day) => (
                       <TouchableOpacity
