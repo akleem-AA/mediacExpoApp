@@ -454,9 +454,9 @@ export default function Dashboard() {
               </View>
 
               {/* Section Title */}
-              <Text style={styles.sectionTitle}>{t("Quick Access")}</Text>
+              {/* <Text style={styles.sectionTitle}>{t("Quick Access")}</Text>
 
-              {/* Dashboard Grid */}
+           
               <View style={styles.dashboardGrid}>
                 <DashboardCard
                   icon="people-outline"
@@ -490,7 +490,7 @@ export default function Dashboard() {
                   backgroundColor={cardBackgroundColors[6]}
                   onPress={() => console.log("Appointments pressed")}
                 />
-              </View>
+              </View> */}
             </>
           )}
 
@@ -654,6 +654,16 @@ export default function Dashboard() {
                   label={t("Upload Files")}
                   color="#4A55A2"
                   backgroundColor={cardBackgroundColors[7]}
+                  onPress={() => {}} // Disabled functionality
+                  isUpcoming={true}
+                />
+              </View>
+              <View style={styles.dashboardGrid}>
+                <HealthMetricCard
+                  icon="cloud-upload-outline"
+                  label={t("BMI")}
+                  color="#4A55A2"
+                  backgroundColor={cardBackgroundColors[2]}
                   onPress={() => {}} // Disabled functionality
                   isUpcoming={true}
                 />

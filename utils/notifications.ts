@@ -5,11 +5,12 @@ import { IUser } from './jwtHelper';
 import axios from 'axios';
 import { API_URL } from '@/constants/Api';
 import { getToken } from '@/services/auth';
+import { Alert } from 'react-native';
 
 export async function registerForPushNotificationsAsync(user: IUser): Promise<string | undefined> {
     try {
         if (!Device.isDevice) {
-            alert('Must use physical device for Push Notifications');
+            Alert.alert('Must use physical device for Push Notifications');
             return;
         }
 
@@ -22,7 +23,7 @@ export async function registerForPushNotificationsAsync(user: IUser): Promise<st
         }
 
         if (finalStatus !== 'granted') {
-            alert('Failed to get push token for push notification!');
+            Alert.alert('Failed to get push token for push notification!');
             return;
         }
 

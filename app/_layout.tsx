@@ -14,6 +14,7 @@ import { useColorScheme } from "@/hooks/useColorScheme";
 import { useDecodedToken } from "@/hooks/useDecodedToken";
 import * as Notifications from "expo-notifications";
 import { AuthProvider } from "@/context/AuthProvider";
+import { Platform } from "react-native";
 // Prevent the splash screen from auto-hiding before asset loading is complete.
 SplashScreen.preventAutoHideAsync();
 Notifications.setNotificationHandler({
@@ -43,6 +44,16 @@ export default function RootLayout() {
   }, [loaded]);
 
   useEffect(() => {
+    if (Platform.OS === "android") {
+      Notifications.setNotificationChannelAsync("default", {
+        name: "default",
+        importance: Notifications.AndroidImportance.MAX,
+        sound: "default",
+      });
+    }
+  }, []);
+
+  useEffect(() => {
     (async () => {
       if (user?.fcmToken) {
         notificationListener.current =
@@ -52,7 +63,7 @@ export default function RootLayout() {
 
         responseListener.current =
           Notifications.addNotificationResponseReceivedListener((response) => {
-            console.log(response);
+            console.log('notificatoin message',response);
           });
       }
     })();
@@ -77,7 +88,10 @@ export default function RootLayout() {
       <ThemeProvider value={colorScheme === "dark" ? DarkTheme : DefaultTheme}>
         <Stack>
           <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-          <Stack.Screen name="add-patients" options={{ title: "Add patients" }} />
+          <Stack.Screen
+            name="add-patients"
+            options={{ title: "Add patients" }}
+          />
           <Stack.Screen name="auth/login" options={{ title: "Login" }} />
           <Stack.Screen name="+not-found" />
         </Stack>

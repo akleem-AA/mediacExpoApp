@@ -260,16 +260,21 @@ const ExerciseList = () => {
       Increased: "Increased",
       "Some data is not reaching its destination.":
         "Some data is not reaching its destination.",
-      "Discuss your physical activity plan with a healthcare provider before starting, after a recent cardiac event, surgery, or diagnosis.":
+      guideline1:
         "Discuss your physical activity plan with a healthcare provider before starting, after a recent cardiac event, surgery, or diagnosis.",
-      "Begin with low-intensity exercises and gradually increase duration and intensity. Start with sessions as short as 5–10 minutes if needed, and gradually aim for 30 minutes per day.":
+      guideline2:
         "Begin with low-intensity exercises and gradually increase duration and intensity. Start with sessions as short as 5–10 minutes if needed, and gradually aim for 30 minutes per day.",
+      guideline3:
+        "Warm-Up: Spend 5–10 minutes preparing your body with light activity (e.g., slow walking).",
+      guideline4:
+        "Cool-Down: Gradually lower your heart rate with light activity and stretching.",
       "Warm-Up: Spend 5–10 minutes preparing your body with light activity (e.g., slow walking).":
         "Warm-Up: Spend 5–10 minutes preparing your body with light activity (e.g., slow walking).",
       "Cool-Down: Gradually lower your heart rate with light activity and stretching.":
         "Cool-Down: Gradually lower your heart rate with light activity and stretching.",
       "At least 150 minutes of moderate-intensity or 75 minutes of vigorous-intensity aerobic exercise per week. Alternatively, a combination of both intensities is recommended.":
         "At least 150 minutes of moderate-intensity or 75 minutes of vigorous-intensity aerobic exercise per week. Alternatively, a combination of both intensities is recommended.",
+        guideline5:'Stop exercising and seek medical attention if you experience chest pain, shortness of breath, dizziness, or extreme fatigue.',
       "Stop exercising and seek medical attention if you experience chest pain, shortness of breath, dizziness, or extreme fatigue.":
         "Stop exercising and seek medical attention if you experience chest pain, shortness of breath, dizziness, or extreme fatigue.",
       "On days when energy levels are lower, opt for lighter activities like slow walking or stretching.":
@@ -346,6 +351,13 @@ const ExerciseList = () => {
       Increased: "बढ़ा हुआ",
       "Some data is not reaching its destination.":
         "कुछ डेटा अपने गंतव्य तक नहीं पहुंच रहा है।",
+      guideline1:
+        "हाल ही में हुई हृदय संबंधी घटना, सर्जरी या निदान के बाद, शुरू करने से पहले अपनी शारीरिक गतिविधि योजना पर स्वास्थ्य सेवा प्रदाता से चर्चा करें।",
+      guideline2:
+        "कम तीव्रता वाले व्यायामों से शुरुआत करें और धीरे-धीरे अवधि और तीव्रता बढ़ाएँ। ज़रूरत पड़ने पर 5-10 मिनट जैसे छोटे सत्रों से शुरुआत करें, और धीरे-धीरे प्रतिदिन 30 मिनट तक व्यायाम करने का लक्ष्य रखें।",
+      guideline3:'वार्म-अप: अपने शरीर को हल्की गतिविधि (जैसे, धीमी गति से चलना) के साथ तैयार करने में 5-10 मिनट का समय लगाएं।',
+      guideline4:'कूल-डाउन: हल्की गतिविधि और स्ट्रेचिंग के साथ धीरे-धीरे अपनी हृदय गति को कम करें।',
+      guideline5:'यदि आपको सीने में दर्द, सांस लेने में तकलीफ, चक्कर आना या अत्यधिक थकान महसूस हो तो व्यायाम करना बंद कर दें और चिकित्सीय सहायता लें।',
       "Discuss your physical activity plan with a healthcare provider before starting, हाल ही में हृदय संबंधी घटना, सर्जरी या निदान के बाद":
         "शुरू करने से पहले, हाल ही में हृदय संबंधी घटना, सर्जरी या निदान के बाद अपने शारीरिक गतिविधि योजना के बारे में स्वास्थ्य सेवा प्रदाता से चर्चा करें।",
       "Begin with low-intensity exercises and gradually increase duration and intensity. Start with sessions as short as 5–10 minutes if आवश्यक हो तो 5-10 मिनट के छोटे सत्रों से शुरू करें, और धीरे-धीरे प्रति दिन 30 मिनट का लक्ष्य रखें।":
@@ -585,9 +597,7 @@ const ExerciseList = () => {
                     {t("Consult Your Doctor")}
                   </Text>
                   <Text style={styles.disclaimerItemText}>
-                    {t(
-                      "Discuss your physical activity plan with a healthcare provider before starting, हाल ही में हृदय संबंधी घटना, सर्जरी या निदान के बाद"
-                    )}
+                    {t("guideline1")}
                   </Text>
                 </View>
               </View>
@@ -599,9 +609,7 @@ const ExerciseList = () => {
                     {t("Gradual Progression")}
                   </Text>
                   <Text style={styles.disclaimerItemText}>
-                    {t(
-                      "Begin with low-intensity exercises and gradually increase duration and intensity. Start with sessions as short as 5–10 minutes if needed, and gradually aim for 30 minutes per day."
-                    )}
+                    {t("guideline2")}
                   </Text>
                 </View>
               </View>
@@ -614,11 +622,11 @@ const ExerciseList = () => {
                   </Text>
                   <Text style={styles.disclaimerItemText}>
                     {t(
-                      "Warm-Up: Spend 5–10 minutes preparing your body with light activity (e.g., slow walking)."
+                      "guideline3"
                     )}
                     {"\n"}
                     {t(
-                      "Cool-Down: Gradually lower your heart rate with light activity and stretching."
+                      "guideline4"
                     )}
                   </Text>
                 </View>
@@ -644,7 +652,7 @@ const ExerciseList = () => {
                   </Text>
                   <Text style={styles.disclaimerItemText}>
                     {t(
-                      "Stop exercising and seek medical attention if you experience chest pain, shortness of breath, चक्कर आना या अत्यधिक थकान"
+                      "guideline5"
                     )}
                   </Text>
                 </View>

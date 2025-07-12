@@ -18,7 +18,7 @@ export default function SimplePDFViewer() {
   const [viewerType, setViewerType] = useState<"webview" | "external">(
     "webview"
   );
-  const [error, setError] = useState(false);
+  const [error, setError] = useState(true);
   const [language, setLanguage] = useState<"en" | "hi">("en");
 
   const translations = {

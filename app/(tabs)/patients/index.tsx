@@ -729,6 +729,8 @@ export default function PatientScreen() {
                   >
                     <MaterialIcons name="edit" size={22} color="#4CAF50" />
                   </TouchableOpacity> */}
+
+                  {/* edit medicine icon */}
                   <TouchableOpacity
                     style={styles.actionButton}
                     onPress={() => {
@@ -766,8 +768,14 @@ export default function PatientScreen() {
                         medicines: mappedMedicines,
                       };
 
-                      console.log("Opening edit modal with data:", patientData.medicines);
-                      console.log("props medicine:", patientData.patientMedicine);
+                      console.log(
+                        "Opening edit modal with data:",
+                        patientData.medicines
+                      );
+                      console.log(
+                        "props medicine:",
+                        patientData.patientMedicine
+                      );
 
                       // console.log("ALL medicine", availableMedicines);
                       openEditModal(patientData);
@@ -901,50 +909,99 @@ export default function PatientScreen() {
                   </View>
                 </View>
 
+                {/* edit icon 2 */}
                 <View style={styles.modalActions}>
                   <TouchableOpacity
                     style={[styles.modalButton, styles.editButton]}
-                    onPress={async () => {
-                      try {
-                        const token = await getToken();
-                        const response = await axios.get(
-                          `${API_URL}/patients/users/${selectedPatient.id}`,
-                          {
-                            headers: {
-                              Authorization: `Bearer ${token}`,
-                            },
-                          }
-                        );
+                    // onPress={async () => {
+                    //   try {
+                    //     const token = await getToken();
+                    //     const response = await axios.get(
+                    //       `${API_URL}/patients/users/${selectedPatient.id}`,
+                    //       {
+                    //         headers: {
+                    //           Authorization: `Bearer ${token}`,
+                    //         },
+                    //       }
+                    //     );
 
-                        if (response.data) {
-                          const patientData = {
-                            ...selectedPatient,
-                            name: response.data.name || selectedPatient.name,
-                            age: response.data.age || selectedPatient.age,
-                            gender:
-                              response.data.gender || selectedPatient.gender,
-                            uhidNumber:
-                              response.data.uhidNumber ||
-                              selectedPatient.uhidNumber,
-                            phoneNumber:
-                              response.data.phoneNumber ||
-                              selectedPatient.phoneNumber,
-                            exerciseTime:
-                              response.data.exerciseTime ||
-                              selectedPatient.exerciseTime,
-                            followUpDate:
-                              response.data.followUpDate ||
-                              selectedPatient.followUpDate,
+                    //     if (response.data) {
+                    //       const patientData = {
+                    //         ...selectedPatient,
+                    //         name: response.data.name || selectedPatient.name,
+                    //         age: response.data.age || selectedPatient.age,
+                    //         gender:
+                    //           response.data.gender || selectedPatient.gender,
+                    //         uhidNumber:
+                    //           response.data.uhidNumber ||
+                    //           selectedPatient.uhidNumber,
+                    //         phoneNumber:
+                    //           response.data.phoneNumber ||
+                    //           selectedPatient.phoneNumber,
+                    //         exerciseTime:
+                    //           response.data.exerciseTime ||
+                    //           selectedPatient.exerciseTime,
+                    //         followUpDate:
+                    //           response.data.followUpDate ||
+                    //           selectedPatient.followUpDate,
+                    //       };
+
+                    //       setDetailModalVisible(false);
+                    //       openEditModal(patientData);
+                    //     }
+                    //   } catch (error) {
+                    //     console.error("Error fetching patient details:", error);
+                    //     setDetailModalVisible(false);
+                    //     openEditModal(selectedPatient);
+                    //   }
+                    // }}
+                     onPress={() => {
+                      const mappedMedicines = (selectedPatient?.patientMedicine || []).map(
+                        (med) => {
+                          const found = availableMedicines.find(
+                            (m) => m.id === med.medicineId || m.id === med.id
+                          );
+
+                          console.log("Matching medicine:", found);
+
+                          return {
+                            medicineId:
+                              found?.id || med.medicineId || med.id || "",
+                            medicineName: found?.medicineName || "",
+                            frequency:
+                              med.frequency || med.medicineFrequency || "",
+                            medicineTimes: (med.medicineTimes || []).map(
+                              (t) => {
+                                const parsed = new Date(`1970-01-01T${t}:00`);
+                                return isNaN(parsed.getTime())
+                                  ? new Date()
+                                  : parsed;
+                              }
+                            ),
+                            medicineDays: Array.isArray(med.medicineDays)
+                              ? med.medicineDays
+                              : [],
                           };
-
-                          setDetailModalVisible(false);
-                          openEditModal(patientData);
                         }
-                      } catch (error) {
-                        console.error("Error fetching patient details:", error);
-                        setDetailModalVisible(false);
-                        openEditModal(selectedPatient);
-                      }
+                      );
+
+                      const patientData = {
+                        ...selectedPatient,
+                        medicines: mappedMedicines,
+                      };
+
+                      console.log(
+                        "Opening edit modal with data:",
+                        patientData.medicines
+                      );
+                      console.log(
+                        "props medicine:",
+                        patientData.patientMedicine
+                      );
+
+                      // console.log("ALL medicine", availableMedicines);
+                       setDetailModalVisible(false);
+                      openEditModal(patientData);
                     }}
                   >
                     <MaterialIcons name="edit" size={20} color="#fff" />

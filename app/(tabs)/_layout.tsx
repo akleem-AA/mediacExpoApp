@@ -95,7 +95,7 @@ export default function TabLayout() {
       <Tabs.Screen
         name="about"
         options={{
-          title: "About",
+          title: "About CAD",
           tabBarIcon: ({ color }) => (
             <IconSymbol size={24} name="info-outline.fill" color={color} />
           ),
