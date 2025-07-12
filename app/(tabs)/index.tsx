@@ -25,6 +25,8 @@ import { getToken } from "@/services/auth";
 import { API_URL } from "@/constants/Api";
 import { ChevronDown, ChevronUp, Heart } from "lucide-react-native";
 import { SymptomsModal } from "@/components/symptomList";
+import * as DocumentPicker from "expo-document-picker";
+import handleFileUpload from "@/utils/handleFileUpload";
 
 const { width } = Dimensions.get("window");
 export default function Dashboard() {
@@ -235,6 +237,7 @@ export default function Dashboard() {
         }
       );
       if (response.data) {
+        console.log("height>>", response.data);
         setHeight(response.data);
       }
     } catch (error) {
@@ -254,6 +257,7 @@ export default function Dashboard() {
         }
       );
       if (response.data) {
+        console.log("weight>>", response.data);
         setWeight(response.data);
       }
     } catch (error) {
@@ -391,6 +395,7 @@ export default function Dashboard() {
       Alert.alert("Error", "Failed to save symptoms. Please try again.");
     }
   };
+
   return (
     <SafeAreaView style={styles.safeArea}>
       <StatusBar barStyle="dark-content" backgroundColor="#f0f2f8" />
@@ -654,11 +659,11 @@ export default function Dashboard() {
                   label={t("Upload Files")}
                   color="#4A55A2"
                   backgroundColor={cardBackgroundColors[7]}
-                  onPress={() => {}} // Disabled functionality
-                  isUpcoming={true}
+                  onPress={() => handleFileUpload(user)}
+                  // isUpcoming={true}
                 />
               </View>
-      
+
               <SymptomsModal
                 visible={showModal}
                 onClose={() => setShowModal(false)}
@@ -883,21 +888,7 @@ export default function Dashboard() {
                       />
                     </TouchableOpacity>
 
-                    {/* <TouchableOpacity>
-                      <LatestReading
-                        icon="scale-outline"
-                        title={t("Weight")}
-                        value={weight ? weight.weight : "--"}
-                        unit="kg"
-                        time={
-                          weight
-                            ? new Date(weight.createdAt).toLocaleString()
-                            : "--"
-                        }
-                        color="#FFC107"
-                      />
-                    </TouchableOpacity> */}
-                    {weight && height && (
+                    {/* {weight && height && (
                       <TouchableOpacity>
                         <LatestReading
                           icon="body-outline"
@@ -915,7 +906,44 @@ export default function Dashboard() {
                           color="#4CAF50"
                         />
                       </TouchableOpacity>
-                    )}
+                    )} */}
+                    {weight &&
+                      height &&
+                      (() => {
+                        let weightKg = parseFloat(weight.weight); // already in kg
+                        let heightM = 0;
+
+                        if (height.unit === "2") {
+                          // height.height is in inches
+                          const totalInches = parseFloat(height.height);
+                          heightM = totalInches * 0.0254;
+                        } else if (height.unit === "1") {
+                          heightM = parseFloat(height.height) / 100; // cm → meters
+                        }
+
+                        const bmi =
+                          weightKg && heightM
+                            ? (weightKg / (heightM * heightM)).toFixed(2)
+                            : "--";
+
+                        return (
+                          <TouchableOpacity>
+                            <LatestReading
+                              icon="body-outline"
+                              title={t("BMI")}
+                              value={bmi}
+                              unit=""
+                              time={new Date(
+                                new Date(weight.createdAt) >
+                                new Date(height.createdAt)
+                                  ? weight.createdAt
+                                  : height.createdAt
+                              ).toLocaleString()}
+                              color="#4CAF50"
+                            />
+                          </TouchableOpacity>
+                        );
+                      })()}
                   </View>
                 )}
               </View>

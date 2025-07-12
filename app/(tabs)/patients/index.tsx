@@ -27,6 +27,12 @@ import axios from "axios";
 import { Picker } from "@react-native-picker/picker";
 import { getToken } from "@/services/auth";
 import DateTimePicker from "@react-native-community/datetimepicker";
+// import fetchUploadedDocuments from '../../../utils/help'
+import {
+  downloadDocument,
+  fetchUploadedDocuments,
+  viewDocument,
+} from "../../../utils/help";
 
 // Define the Patient type for better type safety
 interface Patient {
@@ -71,6 +77,7 @@ export default function PatientScreen() {
   const [sortOrder, setSortOrder] = useState("desc");
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [availableMedicines, setAvailableMedicines] = useState([]);
+  const [document, setDocument] = useState([]);
 
   const [showTimePicker, setShowTimePicker] = useState(false);
 
@@ -89,7 +96,7 @@ export default function PatientScreen() {
           Authorization: `Bearer ${token}`,
         },
       });
-      // console.log("Fetched patients:", response.data[0]);
+      console.log("Fetched patients:", response.data[0]);
       if (response.data) {
         const patientData = response.data
           .filter((p: any) => p && p.role === 0)
@@ -424,7 +431,12 @@ export default function PatientScreen() {
   // console.log("Edited Patient Data:", editedPatient);
 
   //for medicine
-
+  const fetchDocumet = async (id: any) => {
+    console.log("id>>>", id);
+    const files = await fetchUploadedDocuments(55);
+    console.log("fetch document data", files);
+    setDocument(files);
+  };
   return (
     <View style={styles.container}>
       {/* Top Bar with Add Patient Button */}
@@ -587,6 +599,7 @@ export default function PatientScreen() {
                 onPress={() => {
                   setSelectedPatient(item);
                   setDetailModalVisible(true);
+                  fetchDocumet(item.id);
                 }}
               >
                 <View style={styles.patientInfo}>
@@ -687,53 +700,11 @@ export default function PatientScreen() {
                 </View>
 
                 <View style={styles.actionIcons}>
-                  {/* <TouchableOpacity
-                    style={styles.actionButton}
-                    onPress={async (e) => {
-                      e.stopPropagation();
-                      try {
-                        const token = await getToken();
-                        const response = await axios.get(
-                          `${API_URL}/patients/users/${item.id}`,
-                          {
-                            headers: {
-                              Authorization: `Bearer ${token}`,
-                            },
-                          }
-                        );
-
-                        if (response.data) {
-                          const patientData = {
-                            ...item,
-                            name: response.data.name || item.name,
-                            age: response.data.age || item.age,
-                            gender: response.data.gender || item.gender,
-                            uhidNumber:
-                              response.data.uhidNumber || item.uhidNumber,
-                            phoneNumber:
-                              response.data.phoneNumber || item.phoneNumber,
-                            exerciseTime:
-                              response.data.exerciseTime || item.exerciseTime,
-                            followUpDate:
-                              response.data.followUpDate || item.followUpDate,
-                            medicines: response.data.patientMedicine || [],
-                          };
-                          initializeMedicines(response.data);
-                          openEditModal(patientData);
-                        }
-                      } catch (error) {
-                        console.error("Error fetching patient details:", error);
-                        openEditModal(item);
-                      }
-                    }}
-                  >
-                    <MaterialIcons name="edit" size={22} color="#4CAF50" />
-                  </TouchableOpacity> */}
-
                   {/* edit medicine icon */}
                   <TouchableOpacity
                     style={styles.actionButton}
                     onPress={() => {
+                      // fetchDocumet(item.id);
                       const mappedMedicines = (item.patientMedicine || []).map(
                         (med) => {
                           const found = availableMedicines.find(
@@ -908,82 +879,126 @@ export default function PatientScreen() {
                     </View>
                   </View>
                 </View>
+                <View style={styles.detailSection}>
+                  <Text style={styles.detailSectionTitle}>
+                    Uploaded Documents
+                  </Text>
+
+                  {document && document.length > 0 ? (
+                    document.map((doc, index) => {
+                      const filename = doc.url.split("/").pop();
+                      return (
+                        <View
+                          key={doc.id || index}
+                          style={[
+                            styles.detailRow,
+                            {
+                              flexDirection: "row",
+                              alignItems: "center",
+                              flexWrap: "wrap",
+                              gap: 8,
+                              marginBottom: 10,
+                            },
+                          ]}
+                        >
+                          <Text
+                            style={[
+                              styles.detailValue,
+                              {
+                                flexShrink: 1,
+                                flexGrow: 1,
+                                minWidth: "50%",
+                                fontSize: 14,
+                              },
+                            ]}
+                            numberOfLines={1}
+                            ellipsizeMode="middle"
+                          >
+                            {filename}
+                          </Text>
+
+                          <TouchableOpacity
+                            onPress={() => viewDocument(doc.url)}
+                            style={{
+                              paddingHorizontal: 8,
+                              paddingVertical: 4,
+                              backgroundColor: "#E8EAF6",
+                              borderRadius: 4,
+                            }}
+                          >
+                            <Text style={{ color: "#4A55A2", fontSize: 14 }}>
+                              View
+                            </Text>
+                          </TouchableOpacity>
+
+                          <TouchableOpacity
+                            onPress={() => {
+                              const secureUrl = doc.url.replace(
+                                "http://",
+                                "https://"
+                              );
+                              downloadDocument(
+                                secureUrl,
+                                filename || `file_${doc.id}`
+                              );
+                            }}
+                            style={{
+                              paddingHorizontal: 8,
+                              paddingVertical: 4,
+                              backgroundColor: "#E8F5E9",
+                              borderRadius: 4,
+                            }}
+                          >
+                            <Text style={{ color: "#4CAF50", fontSize: 14 }}>
+                              Download
+                            </Text>
+                          </TouchableOpacity>
+                        </View>
+                      );
+                    })
+                  ) : (
+                    <Text
+                      style={[
+                        styles.detailValue,
+                        { fontStyle: "italic", fontSize: 14 },
+                      ]}
+                    >
+                      No documents uploaded
+                    </Text>
+                  )}
+                </View>
 
                 {/* edit icon 2 */}
                 <View style={styles.modalActions}>
                   <TouchableOpacity
                     style={[styles.modalButton, styles.editButton]}
-                    // onPress={async () => {
-                    //   try {
-                    //     const token = await getToken();
-                    //     const response = await axios.get(
-                    //       `${API_URL}/patients/users/${selectedPatient.id}`,
-                    //       {
-                    //         headers: {
-                    //           Authorization: `Bearer ${token}`,
-                    //         },
-                    //       }
-                    //     );
+                    onPress={() => {
+                      const mappedMedicines = (
+                        selectedPatient?.patientMedicine || []
+                      ).map((med) => {
+                        const found = availableMedicines.find(
+                          (m) => m.id === med.medicineId || m.id === med.id
+                        );
 
-                    //     if (response.data) {
-                    //       const patientData = {
-                    //         ...selectedPatient,
-                    //         name: response.data.name || selectedPatient.name,
-                    //         age: response.data.age || selectedPatient.age,
-                    //         gender:
-                    //           response.data.gender || selectedPatient.gender,
-                    //         uhidNumber:
-                    //           response.data.uhidNumber ||
-                    //           selectedPatient.uhidNumber,
-                    //         phoneNumber:
-                    //           response.data.phoneNumber ||
-                    //           selectedPatient.phoneNumber,
-                    //         exerciseTime:
-                    //           response.data.exerciseTime ||
-                    //           selectedPatient.exerciseTime,
-                    //         followUpDate:
-                    //           response.data.followUpDate ||
-                    //           selectedPatient.followUpDate,
-                    //       };
+                        console.log("Matching medicine:", found);
 
-                    //       setDetailModalVisible(false);
-                    //       openEditModal(patientData);
-                    //     }
-                    //   } catch (error) {
-                    //     console.error("Error fetching patient details:", error);
-                    //     setDetailModalVisible(false);
-                    //     openEditModal(selectedPatient);
-                    //   }
-                    // }}
-                     onPress={() => {
-                      const mappedMedicines = (selectedPatient?.patientMedicine || []).map(
-                        (med) => {
-                          const found = availableMedicines.find(
-                            (m) => m.id === med.medicineId || m.id === med.id
-                          );
-
-                          console.log("Matching medicine:", found);
-
-                          return {
-                            medicineId:
-                              found?.id || med.medicineId || med.id || "",
-                            medicineName: found?.medicineName || "",
-                            frequency:
-                              med.frequency || med.medicineFrequency || "",
-                            medicineTimes: (med.medicineTimes || []).map(
-                              (t) => {
-                                const parsed = new Date(`1970-01-01T${t}:00`);
-                                return isNaN(parsed.getTime())
-                                  ? new Date()
-                                  : parsed;
-                              }
-                            ),
-                            medicineDays: Array.isArray(med.medicineDays)
-                              ? med.medicineDays
-                              : [],
-                          };
-                        }
-                      );
+                        return {
+                          medicineId:
+                            found?.id || med.medicineId || med.id || "",
+                          medicineName: found?.medicineName || "",
+                          frequency:
+                            med.frequency || med.medicineFrequency || "",
+                          medicineTimes: (med.medicineTimes || []).map((t) => {
+                            const parsed = new Date(`1970-01-01T${t}:00`);
+                            return isNaN(parsed.getTime())
+                              ? new Date()
+                              : parsed;
+                          }),
+                          medicineDays: Array.isArray(med.medicineDays)
+                            ? med.medicineDays
+                            : [],
+                        };
+                      });
 
                       const patientData = {
                         ...selectedPatient,
@@ -1000,7 +1015,7 @@ export default function PatientScreen() {
                       );
 
                       // console.log("ALL medicine", availableMedicines);
-                       setDetailModalVisible(false);
+                      setDetailModalVisible(false);
                       openEditModal(patientData);
                     }}
                   >
