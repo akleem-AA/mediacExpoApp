@@ -433,7 +433,7 @@ export default function PatientScreen() {
   //for medicine
   const fetchDocumet = async (id: any) => {
     console.log("id>>>", id);
-    const files = await fetchUploadedDocuments(55);
+    const files = await fetchUploadedDocuments(id);
     console.log("fetch document data", files);
     setDocument(files);
   };
