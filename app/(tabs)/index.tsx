@@ -658,16 +658,7 @@ export default function Dashboard() {
                   isUpcoming={true}
                 />
               </View>
-              <View style={styles.dashboardGrid}>
-                <HealthMetricCard
-                  icon="cloud-upload-outline"
-                  label={t("BMI")}
-                  color="#4A55A2"
-                  backgroundColor={cardBackgroundColors[2]}
-                  onPress={() => {}} // Disabled functionality
-                  isUpcoming={true}
-                />
-              </View>
+      
               <SymptomsModal
                 visible={showModal}
                 onClose={() => setShowModal(false)}
@@ -891,6 +882,40 @@ export default function Dashboard() {
                         color="#FFC107"
                       />
                     </TouchableOpacity>
+
+                    {/* <TouchableOpacity>
+                      <LatestReading
+                        icon="scale-outline"
+                        title={t("Weight")}
+                        value={weight ? weight.weight : "--"}
+                        unit="kg"
+                        time={
+                          weight
+                            ? new Date(weight.createdAt).toLocaleString()
+                            : "--"
+                        }
+                        color="#FFC107"
+                      />
+                    </TouchableOpacity> */}
+                    {weight && height && (
+                      <TouchableOpacity>
+                        <LatestReading
+                          icon="body-outline"
+                          title={t("BMI")}
+                          value={(
+                            weight.weight / Math.pow(height.height / 100, 2)
+                          ) // convert cm to meters
+                            .toFixed(2)}
+                          unit=""
+                          time={new Date(
+                            weight.createdAt > height.createdAt
+                              ? weight.createdAt
+                              : height.createdAt
+                          ).toLocaleString()}
+                          color="#4CAF50"
+                        />
+                      </TouchableOpacity>
+                    )}
                   </View>
                 )}
               </View>
