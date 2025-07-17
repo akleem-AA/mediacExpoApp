@@ -1,3 +1,4 @@
+// SymptomsModal.tsx
 import React, { useState, useEffect } from "react";
 import {
   View,
@@ -17,6 +18,7 @@ interface SymptomsModalProps {
   symptomsList?: string[];
   language?: string;
   heading?: string;
+  preSelectedSymptoms?: { symptom: string; intensity: number }[];
   onClose: () => void;
   onSave: (data: {
     symptoms: string[];
@@ -34,6 +36,7 @@ export const SymptomsModal: React.FC<SymptomsModalProps> = ({
   symptomsList = [],
   heading = "Select Symptoms",
   language = "en",
+  preSelectedSymptoms = [],
 }) => {
   const [selectedSymptoms, setSelectedSymptoms] = useState<string[]>([]);
   const [intensityValues, setIntensityValues] = useState<{
@@ -42,6 +45,16 @@ export const SymptomsModal: React.FC<SymptomsModalProps> = ({
   const [otherText, setOtherText] = useState("");
 
   useEffect(() => {
+    if (visible && preSelectedSymptoms.length) {
+      const symptoms = preSelectedSymptoms.map((s) => s.symptom);
+      const intensities: { [key: string]: number } = {};
+      preSelectedSymptoms.forEach((s) => {
+        intensities[s.symptom] = s.intensity;
+      });
+      setSelectedSymptoms(symptoms);
+      setIntensityValues(intensities);
+    }
+
     if (!visible) {
       setSelectedSymptoms([]);
       setIntensityValues({});
@@ -95,12 +108,12 @@ export const SymptomsModal: React.FC<SymptomsModalProps> = ({
             contentContainerStyle={{ paddingBottom: 20 }}
             showsVerticalScrollIndicator={false}
           >
-            {/* Symptom List */}
-            {symptomsList.map((symptom) => {
+            {symptomsList.map((symptom, index) => {
+              const key = `${symptom}-${index}`;
               const selected = selectedSymptoms.includes(symptom);
               return (
                 <TouchableOpacity
-                  key={symptom}
+                  key={key}
                   onPress={() => toggleSymptom(symptom)}
                   style={styles.symptomItem}
                 >
@@ -121,7 +134,6 @@ export const SymptomsModal: React.FC<SymptomsModalProps> = ({
               );
             })}
 
-            {/* Others input */}
             {selectedSymptoms.includes(
               language === "en" ? "Others" : "अन्य"
             ) && (
@@ -133,7 +145,6 @@ export const SymptomsModal: React.FC<SymptomsModalProps> = ({
               />
             )}
 
-            {/* Intensity Sliders */}
             {selectedSymptoms.length > 0 && (
               <View style={{ marginTop: 20 }}>
                 <Text style={[styles.title, { marginBottom: 10 }]}>
@@ -142,40 +153,43 @@ export const SymptomsModal: React.FC<SymptomsModalProps> = ({
                     : "लक्षण की गंभीरता बताएं"}{" "}
                   (1 - 10)
                 </Text>
-                {selectedSymptoms.map((symptom) => (
-                  <View key={symptom} style={styles.sliderContainer}>
-                    <Text style={styles.symptomText}>
-                      {symptom === (language === "en" ? "Others" : "अन्य")
-                        ? otherText || "Others"
-                        : symptom}
-                    </Text>
-                    <Slider
-                      style={{ width: "100%" }}
-                      minimumValue={1}
-                      maximumValue={10}
-                      step={1}
-                      value={intensityValues[symptom]}
-                      onValueChange={(val) =>
-                        setIntensityValues((prev) => ({
-                          ...prev,
-                          [symptom]: val,
-                        }))
-                      }
-                      minimumTrackTintColor="#7A39A3"
-                      maximumTrackTintColor="#ddd"
-                      thumbTintColor="#7A39A3"
-                    />
-                    <Text style={{ textAlign: "right", color: "#7A39A3" }}>
-                      {language === "en" ? "Intensity" : "गंभीरता"}:{" "}
-                      {intensityValues[symptom]}
-                    </Text>
-                  </View>
-                ))}
+                {selectedSymptoms.map((symptom, index) => {
+                  const key = `${symptom}-${index}`;
+
+                  return (
+                    <View key={key} style={styles.sliderContainer}>
+                      <Text style={styles.symptomText}>
+                        {symptom === (language === "en" ? "Others" : "अन्य")
+                          ? otherText || "Others"
+                          : symptom}
+                      </Text>
+                      <Slider
+                        style={{ width: "100%" }}
+                        minimumValue={1}
+                        maximumValue={10}
+                        step={1}
+                        value={intensityValues[symptom]}
+                        onValueChange={(val) =>
+                          setIntensityValues((prev) => ({
+                            ...prev,
+                            [symptom]: val,
+                          }))
+                        }
+                        minimumTrackTintColor="#7A39A3"
+                        maximumTrackTintColor="#ddd"
+                        thumbTintColor="#7A39A3"
+                      />
+                      <Text style={{ textAlign: "right", color: "#7A39A3" }}>
+                        {language === "en" ? "Intensity" : "गंभीरता"}:{" "}
+                        {intensityValues[symptom]}
+                      </Text>
+                    </View>
+                  );
+                })}
               </View>
             )}
           </ScrollView>
 
-          {/* Save Button */}
           <TouchableOpacity onPress={handleSave} style={styles.saveBtn}>
             <Text style={{ color: "white" }}>
               {language === "en" ? "Save" : "जमा करें"}
@@ -203,7 +217,6 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 18,
     fontWeight: "600",
-    // marginBottom: 10,
     color: "#7A39A3",
   },
   symptomItem: {

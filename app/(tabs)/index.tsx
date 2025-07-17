@@ -43,6 +43,9 @@ export default function Dashboard() {
   const [readingsLoading, setReadingsLoading] = useState(false);
   const [expandedSection, setExpandedSection] = useState(false);
   const [showModal, setShowModal] = useState(false);
+  const [preSelectedSymptoms, setPreSelectedSymptoms] = useState<
+    { symptom: string; intensity: number }[]
+  >([]);
 
   const statusBarHeight =
     Platform.OS === "android" ? StatusBar.currentHeight || 0 : 0;
@@ -282,9 +285,39 @@ export default function Dashboard() {
     fetchAllReadings();
   };
 
+  const fetchUserSymptoms = async () => {
+    try {
+      const token = await getToken();
+      const url =  `https://mediac.in/api/patients/symptom/${user?.userId}`;
+      console.log('parasms',url)
+      const res = await axios.get(
+        `https://mediac.in/api/patients/symptom/${user?.userId}`,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+      const symptoms: { symptom: string; intensity: number }[] = [];
+
+      if (res.data?.symptoms?.length > 0) {
+        console.log("symptom api resonse", res.data);
+        res.data.symptoms.forEach((entry: { symptom: string }) => {
+          const parsed = JSON.parse(entry.symptom);
+          symptoms.push(...parsed);
+        });
+      }
+
+      setPreSelectedSymptoms(symptoms);
+    } catch (error) {
+      console.error("Failed to fetch symptoms:", error);
+    }
+  };
+
   useEffect(() => {
     if (user?.userId) {
       fetchMedicines();
+      fetchUserSymptoms();
       fetchAllReadings();
     }
   }, [user]);
@@ -659,7 +692,13 @@ export default function Dashboard() {
                   label={t("Upload Files")}
                   color="#4A55A2"
                   backgroundColor={cardBackgroundColors[7]}
-                  onPress={() => handleFileUpload(user)}
+                  // onPress={() => handleFileUpload(user)}
+                  onPress={() =>
+                    router.push({
+                      pathname: "/UploadedDocumentsScreen",
+                      params: { userId: user.userId.toString() },
+                    })
+                  }
                   // isUpcoming={true}
                 />
               </View>
@@ -673,6 +712,7 @@ export default function Dashboard() {
                 }
                 heading={t("Symptoms")}
                 language={language}
+                preSelectedSymptoms={preSelectedSymptoms}
               />
 
               {/* Prescribed Medicines Section */}

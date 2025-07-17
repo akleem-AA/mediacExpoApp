@@ -719,7 +719,7 @@ export default function MedicineScreen() {
               />
 
               <View style={styles.rowContainer}>
-                <View style={styles.halfInput}>
+                {/* <View style={styles.halfInput}>
                   <Text style={styles.inputLabel}>Dose *</Text>
                   <TextInput
                     style={styles.input}
@@ -734,7 +734,7 @@ export default function MedicineScreen() {
                     placeholderTextColor="#888"
                     keyboardType="numeric"
                   />
-                </View>
+                </View> */}
 
                 <View style={styles.halfInput}>
                   <Text style={styles.inputLabel}>Unit</Text>
@@ -758,8 +758,8 @@ export default function MedicineScreen() {
                 </View>
               </View>
 
-              <Text style={styles.inputLabel}>Frequency</Text>
-              <View style={styles.pickerContainer}>
+              {/* <Text style={styles.inputLabel}>Frequency</Text> */}
+              {/* <View style={styles.pickerContainer}>
                 <Picker
                   selectedValue={editedMedicine.medicineFrequency}
                   onValueChange={(value) =>
@@ -787,7 +787,7 @@ export default function MedicineScreen() {
                   <Picker.Item label="Every 12 hours" value="Every 12 hours" />
                   <Picker.Item label="As needed" value="As needed" />
                 </Picker>
-              </View>
+              </View> */}
 
               <Text style={styles.inputLabel}>Notes (Optional)</Text>
               <TextInput
