@@ -23,7 +23,7 @@ const handleFileUpload = async (user: User | null) => {
 
     const asset = result.assets[0];
 
-    if (!asset.uri || !user?.userId) {
+    if (!asset.uri || !user) {
       Alert.alert('Error', 'Missing file or user information.');
       return;
     }
@@ -37,7 +37,7 @@ const handleFileUpload = async (user: User | null) => {
       type: asset.mimeType || 'application/octet-stream', // fallback still added
     } as any);
 
-    formData.append('userid', user.userId.toString());
+    formData.append('userid',user.toString());
 
     const response = await axios.post(`${API_URL}/patients/files`, formData, {
       headers: {
