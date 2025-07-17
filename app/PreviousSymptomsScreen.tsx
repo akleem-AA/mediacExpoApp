@@ -14,6 +14,7 @@ import { useAuth } from "@/context/AuthProvider";
 import { SymptomsModal } from "@/components/symptomList";
 import { useNavigation } from "@react-navigation/native";
 import { Globe } from "lucide-react-native";
+import { format, isToday, isYesterday, isThisWeek } from "date-fns";
 
 const API_URL = "https://mediac.in/api";
 
@@ -62,6 +63,18 @@ export default function PreviousSymptomsScreen() {
     setLanguage((prev) => (prev === "en" ? "hi" : "en"));
   };
 
+  const formatDateTime = (createdAt: Date): string => {
+  if (isToday(createdAt)) {
+    return `Today at ${format(createdAt, "hh:mm a")}`;
+  } else if (isYesterday(createdAt)) {
+    return `Yesterday at ${format(createdAt, "hh:mm a")}`;
+  } else if (isThisWeek(createdAt)) {
+    return `${format(createdAt, "EEEE")} at ${format(createdAt, "hh:mm a")}`;
+  } else {
+    return `${format(createdAt, "dd MMM yyyy")} at ${format(createdAt, "hh:mm a")}`;
+  }
+};
+
   useLayoutEffect(() => {
     navigation.setOptions({
       title: language === "en" ? "Symptoms" : "लक्षण",
@@ -103,10 +116,11 @@ export default function PreviousSymptomsScreen() {
 
       const symptomList = sorted.map((entry: any) => {
         const createdAt = new Date(entry.createdAt);
-        const time = createdAt.toLocaleTimeString("en-US", {
-          hour: "2-digit",
-          minute: "2-digit",
-        });
+        const time = formatDateTime(new Date(createdAt));
+        // const time = createdAt.toLocaleTimeString("en-US", {
+        //   hour: "2-digit",
+        //   minute: "2-digit",
+        // });
 
         const parsedSymptoms = JSON.parse(entry.symptom); // Array
 
