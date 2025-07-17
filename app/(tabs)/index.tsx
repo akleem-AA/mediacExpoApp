@@ -683,7 +683,8 @@ export default function Dashboard() {
                   label={t("Add Symptoms")}
                   color="#7A39A3"
                   backgroundColor={cardBackgroundColors[3]}
-                  onPress={() => setShowModal(true)} // Disabled functionality
+                  // onPress={() => setShowModal(true)} // Disabled functionality
+                   onPress={() => router.push("/PreviousSymptomsScreen")}
                   // isUpcoming={true}
                 />
 
