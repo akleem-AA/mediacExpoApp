@@ -1,13 +1,13 @@
 {
   "project_info": {
-    "project_number": "70563602836",
-    "project_id": "mediac-f0134",
-    "storage_bucket": "mediac-f0134.firebasestorage.app"
+    "project_number": "484498831171",
+    "project_id": "mediac-857cb",
+    "storage_bucket": "mediac-857cb.firebasestorage.app"
   },
   "client": [
     {
       "client_info": {
-        "mobilesdk_app_id": "1:70563602836:android:c3d30aa258642ff9076f81",
+        "mobilesdk_app_id": "1:484498831171:android:a6e27634ab186af2cba1f6",
         "android_client_info": {
           "package_name": "com.anuj321.mediac"
         }
@@ -15,7 +15,7 @@
       "oauth_client": [],
       "api_key": [
         {
-          "current_key": "AIzaSyBn22uTqWQ3lPTU1CzElcZO3Tq5G7LbsDE"
+          "current_key": "AIzaSyDfT3AHY7N0uD0Nv550P4TN6XP5wUxyDoI"
         }
       ],
       "services": {

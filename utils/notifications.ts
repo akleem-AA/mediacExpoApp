@@ -27,7 +27,8 @@ export async function registerForPushNotificationsAsync(user: IUser): Promise<st
             return;
         }
 
-        const fcmToken = (await Notifications.getExpoPushTokenAsync()).data;
+        //const fcmToken = (await Notifications.getExpoPushTokenAsync()).data;
+        const fcmToken = (await Notifications.getDevicePushTokenAsync()).data;
         console.log('Expo Push Token:', fcmToken);
         if (user?.fcmToken === null || fcmToken !== user?.fcmToken) {
             const token = await getToken();
