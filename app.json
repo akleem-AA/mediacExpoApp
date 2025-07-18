@@ -2,7 +2,7 @@
   "expo": {
     "name": "Mediac",
     "slug": "mediac",
-    "version": "1.0.0",
+    "version": "1.0.21",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
     "scheme": "myapp",
@@ -19,7 +19,7 @@
       },
       "package": "com.anuj321.mediac",
       "googleServicesFile": "./google-services.json",
-      "versionCode": 3
+      "versionCode": 21
     },
     "web": {
       "bundler": "metro",
@@ -37,15 +37,16 @@
           "backgroundColor": "#ffffff"
         }
       ],
-        [
-        "expo-media-library",
+      [
+        "expo-build-properties",
         {
-          "photosPermission": "Allow $(PRODUCT_NAME) to access your photos.",
-          "savePhotosPermission": "Allow $(PRODUCT_NAME) to save photos.",
-          "isAccessMediaLocationEnabled": true
+          "android": {
+            "compileSdkVersion": 35,
+            "targetSdkVersion": 35,
+            "buildToolsVersion": "35.0.0"
+          }
         }
       ]
-
     ],
     "experiments": {
       "typedRoutes": true
@@ -55,7 +56,7 @@
         "origin": false
       },
       "eas": {
-        "projectId": "372b9c73-afc3-4fb6-93cb-365d1415fd23"
+        "projectId": "6d008447-a20a-43de-b9cb-3b523c6f0d3d"
       }
     }
   }
