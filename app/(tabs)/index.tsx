@@ -19,7 +19,7 @@ import { Ionicons } from "@expo/vector-icons";
 import { router } from "expo-router";
 import packageJson from "../../package.json";
 import { useDecodedToken } from "@/hooks/useDecodedToken";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import axios from "axios";
 import { getToken } from "@/services/auth";
 import { API_URL } from "@/constants/Api";
@@ -29,6 +29,7 @@ import * as DocumentPicker from "expo-document-picker";
 import handleFileUpload from "@/utils/handleFileUpload";
 
 const { width } = Dimensions.get("window");
+const screenHeight = Dimensions.get("window").height;
 export default function Dashboard() {
   const user = useDecodedToken();
   const [selectedDateIndex, setSelectedDateIndex] = useState(0);
@@ -288,8 +289,8 @@ export default function Dashboard() {
   const fetchUserSymptoms = async () => {
     try {
       const token = await getToken();
-      const url =  `https://mediac.in/api/patients/symptom/${user?.userId}`;
-      console.log('parasms',url)
+      const url = `https://mediac.in/api/patients/symptom/${user?.userId}`;
+      console.log("parasms", url);
       const res = await axios.get(
         `https://mediac.in/api/patients/symptom/${user?.userId}`,
         {
@@ -428,6 +429,15 @@ export default function Dashboard() {
       Alert.alert("Error", "Failed to save symptoms. Please try again.");
     }
   };
+  const scrollViewRef = useRef<ScrollView>(null);
+
+  const handleIconPress = () => {
+    // Scrolls half the screen height
+    scrollViewRef.current?.scrollTo({
+      y: screenHeight / 2,
+      animated: true,
+    });
+  };
 
   return (
     <SafeAreaView style={styles.safeArea}>
@@ -464,6 +474,7 @@ export default function Dashboard() {
         </View>
 
         <ScrollView
+          ref={scrollViewRef}
           showsVerticalScrollIndicator={false}
           contentContainerStyle={styles.scrollContent}
           refreshControl={
@@ -593,18 +604,24 @@ export default function Dashboard() {
 
               {/* Image Gallery */}
               <View style={styles.imageGallery}>
-                <Image
-                  source={{ uri: "https://mediac.in/images/health1.jpg" }}
-                  style={styles.galleryImage}
-                />
-                <Image
-                  source={{ uri: "https://mediac.in/images/health2.jpg" }}
-                  style={styles.galleryImage}
-                />
-                <Image
-                  source={{ uri: "https://mediac.in/images/health3.jpg" }}
-                  style={styles.galleryImage}
-                />
+                <TouchableOpacity onPress={handleIconPress}>
+                  <Image
+                    source={{ uri: "https://mediac.in/images/health1.jpg" }}
+                    style={styles.galleryImage}
+                  />
+                </TouchableOpacity>
+                <TouchableOpacity onPress={() => router.push("/diet")}>
+                  <Image
+                    source={{ uri: "https://mediac.in/images/health2.jpg" }}
+                    style={styles.galleryImage}
+                  />
+                </TouchableOpacity>
+                <TouchableOpacity onPress={() => router.push("/exercise")}>
+                  <Image
+                    source={{ uri: "https://mediac.in/images/health3.jpg" }}
+                    style={styles.galleryImage}
+                  />
+                </TouchableOpacity>
               </View>
               {/* Accordion Sections */}
               <View style={styles.accordionContainer}>
@@ -684,7 +701,7 @@ export default function Dashboard() {
                   color="#7A39A3"
                   backgroundColor={cardBackgroundColors[3]}
                   // onPress={() => setShowModal(true)} // Disabled functionality
-                   onPress={() => router.push("/PreviousSymptomsScreen")}
+                  onPress={() => router.push("/PreviousSymptomsScreen")}
                   // isUpcoming={true}
                 />
 
