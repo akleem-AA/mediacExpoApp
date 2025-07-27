@@ -1,6 +1,6 @@
 import { Redirect, Tabs, useSegments } from "expo-router";
 import React from "react";
-import { Platform, View } from "react-native";
+import { Image, Platform, View } from "react-native";
 
 import { HapticTab } from "@/components/HapticTab";
 import { IconSymbol } from "@/components/ui/IconSymbol";
@@ -8,6 +8,8 @@ import TabBarBackground from "@/components/ui/TabBarBackground";
 import { Colors } from "@/constants/Colors";
 import { useColorScheme } from "react-native"; // updated
 import { useAuth } from "@/context/AuthProvider";
+import { IMAGE_URL } from "@/constants/Api";
+import { Ionicons } from "@expo/vector-icons";
 
 export default function TabLayout() {
   const colorScheme = useColorScheme(); // system theme
@@ -20,23 +22,24 @@ export default function TabLayout() {
   const isMetricsRoute = segments.includes("metrics");
 
   // Theme-aware background colors
-  const cardBackgroundColors = colorScheme === "dark"
-    ? [
-        "#1E1E1E", // Home
-        "#292929", // Patients
-        "#333333", // Medicines
-        "#3A3A3A", // Diet
-        "#444",     // Exercise
-        "#4D4D4D",  // About
-      ]
-    : [
-        "#E6F7FF", // Home
-        "#FFF2E6", // Patients
-        "#E6FFFA", // Medicines
-        "#F2E6FF", // Diet
-        "#E6FFE6", // Exercise
-        "#FFE6E6", // About
-      ];
+  const cardBackgroundColors =
+    colorScheme === "dark"
+      ? [
+          "#1E1E1E", // Home
+          "#292929", // Patients
+          "#333333", // Medicines
+          "#3A3A3A", // Diet
+          "#444", // Exercise
+          "#4D4D4D", // About
+        ]
+      : [
+          "#E6F7FF", // Home
+          "#FFF2E6", // Patients
+          "#E6FFFA", // Medicines
+          "#F2E6FF", // Diet
+          "#E6FFE6", // Exercise
+          "#FFE6E6", // About
+        ];
 
   const TabIcon = ({
     iconName,
@@ -64,6 +67,8 @@ export default function TabLayout() {
       <IconSymbol size={22} name={iconName} color={color} />
     </View>
   );
+
+ 
 
   return (
     <Tabs
@@ -130,6 +135,7 @@ export default function TabLayout() {
               color={color}
               bgColor={cardBackgroundColors[3]}
             />
+            
           ),
         }}
       />
@@ -143,6 +149,7 @@ export default function TabLayout() {
               color={color}
               bgColor={cardBackgroundColors[4]}
             />
+          
           ),
         }}
       />

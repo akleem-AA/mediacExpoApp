@@ -48,11 +48,11 @@ export default function SimplePDFViewer() {
   const t = (key) => {
     return translations[language][key] || key;
   };
-  const pdfUrl = "https://mediac.in/diet.pdf";
+  // const pdfUrl = "https://mediac.in/diet.pdf";
 
-  // const pdfUrl = language === "en"
-  // ? "https://mediac.in/diet.pdf"
-  // : "https://mediac.in/diet_hi.pdf";
+  const pdfUrl = language === "en"
+  ? "https://mediac.in/diet.pdf"
+  : "https://mediac.in/diet_hindi.pdf";
 
   
   // Simple, reliable PDF viewer URL that works in production

@@ -6,10 +6,25 @@ import React from "react";
 import { OpaqueColorValue, StyleProp, ViewStyle } from "react-native";
 
 // Add your SFSymbol to MaterialIcons mappings here.
+// const MAPPING = {
+//   // See MaterialIcons here: https://icons.expo.fyi
+//   // See SF Symbols in the SF Symbols app on Mac.
+//   "house.fill": "home",
+//   "group.fill": "group",
+//   "fastfood.fill": "fastfood",
+//   "moniter-heart.fill": "monitor-heart",
+//   "info-outline.fill": "info-outline",
+//   "medication.fill": "medication",
+//   "chevron.left.forwardslash.chevron.right": "code",
+//   "chevron.right": "chevron-right",
+// }
 const MAPPING = {
-  // See MaterialIcons here: https://icons.expo.fyi
-  // See SF Symbols in the SF Symbols app on Mac.
-  "house.fill": "home",
+  "house.fill": "home", // Home tab
+  "drop.fill": "opacity", // Patients tab
+  "location.fill": "location-on", // Medicines tab
+  "fork.knife": "restaurant", // Diet tab
+  "heart.fill": "favorite", // Exercise tab
+  "info.circle.fill": "info", // About tab
   "group.fill": "group",
   "fastfood.fill": "fastfood",
   "moniter-heart.fill": "monitor-heart",
@@ -31,11 +46,33 @@ export type IconSymbolName = keyof typeof MAPPING;
  *
  * Icon `name`s are based on SFSymbols and require manual mapping to MaterialIcons.
  */
+// export function IconSymbol({
+//   name,
+//   size = 24,
+//   color,
+//   style,
+// }: {
+//   name: IconSymbolName;
+//   size?: number;
+//   color: string | OpaqueColorValue;
+//   style?: StyleProp<ViewStyle>;
+//   weight?: SymbolWeight;
+// }) {
+//   return (
+//     <MaterialIcons
+//       color={color}
+//       size={size}
+//       name={MAPPING[name]}
+//       style={style}
+//     />
+//   );
+// }
 export function IconSymbol({
   name,
   size = 24,
   color,
   style,
+  weight,
 }: {
   name: IconSymbolName;
   size?: number;
@@ -43,12 +80,14 @@ export function IconSymbol({
   style?: StyleProp<ViewStyle>;
   weight?: SymbolWeight;
 }) {
+  const mapped = MAPPING[name];
+
+  if (!mapped) {
+    console.warn(`⚠️ Icon mapping not found for: ${name}`);
+    return null; // or return a default icon if you prefer
+  }
+
   return (
-    <MaterialIcons
-      color={color}
-      size={size}
-      name={MAPPING[name]}
-      style={style}
-    />
+    <MaterialIcons color={color} size={size} name={mapped} style={style} />
   );
 }

@@ -61,7 +61,12 @@ const daysOfWeek = [
   { code: 0, shortName: "S" },
 ];
 
-const frequencies = ["Once a Day", "Twice a Day", "Thrice a Day"];
+// const frequencies = ["Once a Day", "Twice a Day", "Thrice a Day"];
+const frequencies = [
+  { label: "Once a Day", value: 1 },
+  { label: "Twice a Day", value: 2 },
+  { label: "Thrice a Day", value: 3 },
+];
 
 export default function PatientScreen() {
   const [patients, setPatients] = useState<Patient[]>([]);
@@ -96,7 +101,9 @@ export default function PatientScreen() {
           Authorization: `Bearer ${token}`,
         },
       });
-      console.log("Fetched patients:", response.data[0]);
+      console.log("Fetched all patients:", response.data[0]);
+      console.log("patients data:", response.data[0]?.patientMedicine);
+
       if (response.data) {
         const patientData = response.data
           .filter((p: any) => p && p.role === 0)
@@ -267,7 +274,12 @@ export default function PatientScreen() {
         delete updatedData.password;
       }
 
-      console.log("updated data in params??", updatedData);
+      console.log(
+        "updated data in params??",
+        updatedData,
+        "patient id:",
+        selectedPatient.id
+      );
       const token = await getToken();
 
       const response = await axios.put(
@@ -284,7 +296,7 @@ export default function PatientScreen() {
         const updatedPatients = patients.map((p) =>
           p.id === selectedPatient.id ? (updatedData as Patient) : p
         );
-
+        fetchPatients();
         setPatients(updatedPatients);
         applyFilters(updatedPatients, searchQuery);
         setEditModalVisible(false);
@@ -437,6 +449,33 @@ export default function PatientScreen() {
     console.log("fetch document data", files);
     setDocument(files);
   };
+
+  const updateMedicine = (index: number, key: string, value: any) => {
+    setEditedPatient((prev) => {
+      const updated = [...(prev.medicines || [])];
+
+      updated[index] = {
+        ...updated[index],
+        [key]: value,
+      };
+
+      // Automatically update `medicineTimes` based on frequency
+      if (key === "frequency") {
+        const frequency = parseInt(value, 10); // value should be 1, 2, or 3
+        if (!isNaN(frequency)) {
+          updated[index].medicineTimes = Array(frequency).fill(new Date());
+        }
+      }
+
+      return {
+        ...prev,
+        medicines: updated,
+      };
+    });
+  };
+
+  const allDaysCodes = daysOfWeek.map((d) => d.code);
+
   return (
     <View style={styles.container}>
       {/* Top Bar with Add Patient Button */}
@@ -700,33 +739,35 @@ export default function PatientScreen() {
                 </View>
 
                 <View style={styles.actionIcons}>
-                  {/* edit medicine icon */}
                   <TouchableOpacity
                     style={styles.actionButton}
                     onPress={() => {
-                      // fetchDocumet(item.id);
                       const mappedMedicines = (item.patientMedicine || []).map(
                         (med) => {
                           const found = availableMedicines.find(
-                            (m) => m.id === med.medicineId || m.id === med.id
+                            (m) => m.id === med.medicine.id || m.id === med.id
                           );
+                          console.log("Matching medicine:", found,'med:', med, 'availableMedicines:', availableMedicines);
 
-                          console.log("Matching medicine:", found);
+                          // Convert medicineTimes to valid Date objects
+                          const timesArray = (med.medicineTimes || []).map(
+                            (t) => {
+                              const parsed = new Date(t); // t is already a full ISO timestamp
+                              return isNaN(parsed.getTime())
+                                ? new Date()
+                                : parsed;
+                            }
+                          );
 
                           return {
                             medicineId:
                               found?.id || med.medicineId || med.id || "",
                             medicineName: found?.medicineName || "",
-                            frequency:
-                              med.frequency || med.medicineFrequency || "",
-                            medicineTimes: (med.medicineTimes || []).map(
-                              (t) => {
-                                const parsed = new Date(`1970-01-01T${t}:00`);
-                                return isNaN(parsed.getTime())
-                                  ? new Date()
-                                  : parsed;
-                              }
-                            ),
+
+                            // ✅ Frequency derived from number of times
+                            frequency: timesArray.length || 1,
+
+                            medicineTimes: timesArray,
                             medicineDays: Array.isArray(med.medicineDays)
                               ? med.medicineDays
                               : [],
@@ -748,7 +789,6 @@ export default function PatientScreen() {
                         patientData.patientMedicine
                       );
 
-                      // console.log("ALL medicine", availableMedicines);
                       openEditModal(patientData);
                     }}
                   >
@@ -986,8 +1026,10 @@ export default function PatientScreen() {
                           medicineId:
                             found?.id || med.medicineId || med.id || "",
                           medicineName: found?.medicineName || "",
-                          frequency:
-                            med.frequency || med.medicineFrequency || "",
+                          frequency: (
+                            med.medicineTimes || []
+                          ).length.toString(),
+
                           medicineTimes: (med.medicineTimes || []).map((t) => {
                             const parsed = new Date(`1970-01-01T${t}:00`);
                             return isNaN(parsed.getTime())
@@ -1271,42 +1313,56 @@ export default function PatientScreen() {
                   </Picker>
 
                   {/* Frequency */}
-                  <Text style={{ marginTop: 8, color: "white", padding: 2 }}>
+                  <Text
+                    style={{
+                      marginTop: 8,
+                      color: "white",
+                      padding: 2,
+                      fontSize: 16,
+                    }}
+                  >
                     Frequency
                   </Text>
-                  <View style={{ flexDirection: "row", flexWrap: "wrap" }}>
-                    {frequencies.map((freq) => (
-                      <TouchableOpacity
-                        key={freq}
-                        onPress={() => {
-                          const updated = [...editedPatient.medicines];
-                          updated[medIndex].frequency = freq;
-                          setEditedPatient((prev) => ({
-                            ...prev,
-                            medicines: updated,
-                          }));
-                        }}
-                        style={{
-                          padding: 8,
-                          margin: 4,
-                          borderWidth: 1,
-                          borderRadius: 6,
-                          backgroundColor:
-                            medicine.frequency === freq ? "#4CAF50" : "#2C2C2C",
-                          borderColor:
-                            medicine.frequency === freq ? "#4CAF50" : "#666",
-                        }}
-                      >
-                        <Text
+
+                  <View
+                    style={{
+                      flexDirection: "row",
+                      flexWrap: "wrap",
+                      gap: 10,
+                      marginTop: 8,
+                    }}
+                  >
+                    {frequencies.map(({ label, value }) => {
+                      const isSelected = medicine.frequency === value;
+
+                      return (
+                        <TouchableOpacity
+                          key={label}
+                          onPress={() =>
+                            updateMedicine(medIndex, "frequency", value)
+                          }
                           style={{
-                            color:
-                              medicine.frequency === freq ? "#fff" : "#ccc",
+                            backgroundColor: isSelected ? "#4CAF50" : "#1e1e1e",
+                            borderColor: isSelected ? "#4CAF50" : "#555",
+                            borderWidth: 1,
+                            borderRadius: 8,
+                            paddingVertical: 8,
+                            paddingHorizontal: 12,
+                            marginBottom: 8,
                           }}
                         >
-                          {freq}
-                        </Text>
-                      </TouchableOpacity>
-                    ))}
+                          <Text
+                            style={{
+                              color: isSelected ? "#fff" : "#ccc",
+                              fontWeight: "500",
+                              fontSize: 14,
+                            }}
+                          >
+                            {label}
+                          </Text>
+                        </TouchableOpacity>
+                      );
+                    })}
                   </View>
 
                   {/* Dose Timings */}
@@ -1370,8 +1426,7 @@ export default function PatientScreen() {
                     </View>
                   ))}
 
-                  {/* Days of Week */}
-                  <Text style={{ marginTop: 8, color: "white" }}>Days</Text>
+                  {/* <Text style={{ marginTop: 8, color: "white" }}>Days</Text>
                   <View style={{ flexDirection: "row", flexWrap: "wrap" }}>
                     {daysOfWeek.map((day) => (
                       <TouchableOpacity
@@ -1393,6 +1448,107 @@ export default function PatientScreen() {
                         style={{
                           margin: 4,
                           padding: 8,
+                          borderRadius: 16,
+                          borderWidth: 1,
+                          backgroundColor: medicine.medicineDays.includes(
+                            day.code
+                          )
+                            ? "#4CAF50"
+                            : "#2C2C2C",
+                          borderColor: medicine.medicineDays.includes(day.code)
+                            ? "#4CAF50"
+                            : "#666",
+                        }}
+                      >
+                        <Text
+                          style={{
+                            color: medicine.medicineDays.includes(day.code)
+                              ? "#fff"
+                              : "#ccc",
+                          }}
+                        >
+                          {day.shortName}
+                        </Text>
+                      </TouchableOpacity>
+                    ))}
+                  </View> */}
+                  <Text style={{ marginTop: 8, color: "white" }}>Days</Text>
+                  <View style={{ flexDirection: "row", flexWrap: "wrap" }}>
+                    {/* All Days Option */}
+                    <TouchableOpacity
+                      onPress={() => {
+                        const updated = [...editedPatient.medicines];
+                        const currentDays =
+                          updated[medIndex].medicineDays || [];
+
+                        const isAllSelected = allDaysCodes.every((code) =>
+                          currentDays.includes(code)
+                        );
+
+                        updated[medIndex].medicineDays = isAllSelected
+                          ? []
+                          : allDaysCodes;
+
+                        setEditedPatient((prev) => ({
+                          ...prev,
+                          medicines: updated,
+                        }));
+                      }}
+                      style={{
+                        margin: 4,
+                        paddingHorizontal: 12,
+                        paddingVertical: 8,
+                        borderRadius: 16,
+                        borderWidth: 1,
+                        backgroundColor: allDaysCodes.every((code) =>
+                          medicine.medicineDays.includes(code)
+                        )
+                          ? "#4CAF50"
+                          : "#2C2C2C",
+                        borderColor: allDaysCodes.every((code) =>
+                          medicine.medicineDays.includes(code)
+                        )
+                          ? "#4CAF50"
+                          : "#666",
+                      }}
+                    >
+                      <Text
+                        style={{
+                          color: allDaysCodes.every((code) =>
+                            medicine.medicineDays.includes(code)
+                          )
+                            ? "#fff"
+                            : "#ccc",
+                        }}
+                      >
+                        All
+                      </Text>
+                    </TouchableOpacity>
+
+                    {/* Individual Day Options */}
+                    {daysOfWeek.map((day) => (
+                      <TouchableOpacity
+                        key={day.code}
+                        onPress={() => {
+                          const updated = [...editedPatient.medicines];
+                          const currentDays =
+                            updated[medIndex].medicineDays || [];
+
+                          updated[medIndex].medicineDays = currentDays.includes(
+                            day.code
+                          )
+                            ? currentDays.filter((d) => d !== day.code)
+                            : [...currentDays, day.code];
+
+                          setEditedPatient((prev) => ({
+                            ...prev,
+                            medicines: updated,
+                          }));
+                        }}
+                        style={{
+                          margin: 4,
+                          paddingHorizontal: 12,
+                          paddingVertical: 8,
                           borderRadius: 16,
                           borderWidth: 1,
                           backgroundColor: medicine.medicineDays.includes(

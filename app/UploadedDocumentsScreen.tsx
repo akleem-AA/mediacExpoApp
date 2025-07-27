@@ -62,7 +62,7 @@ const UploadedDocumentsScreen = ({ user }: Props) => {
   }, []);
 
   const uploadAndRefresh = async () => {
-    await handleFileUpload(userId);
+    await handleFileUpload(user);
     fetchDocuments(); // Refresh after upload
   };
 
