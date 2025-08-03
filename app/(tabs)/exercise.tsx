@@ -173,7 +173,7 @@ const exercises = [
     description_en:
       "1. Benefits: Helps reduce stress, lower blood pressure, and enhance oxygen flow. 2. Tips: Practice slow, deep breathing techniques like diaphragmatic breathing. Pair this with relaxation techniques such as meditation.",
     description_hi:
-      "1. लाभ: तनाव को कम करता है, रक्तचाप को घटाता है, और ऑक्सीजन प्रवाह को बढ़ाता है। 2. सुझाव: धीमी और गहरी सांस लेने की तकनीक जैसे डायाफ्रामिक ब्रीदिंग का अभ्यास करें। इसे ध्यान जैसी विश्राम तकनीकों के साथ करें।",
+      "1. लाभ: तनाव को कम करता है, ब्लड प्रेशर को घटाता है, और ऑक्सीजन प्रवाह को बढ़ाता है। 2. सुझाव: धीमी और गहरी सांस लेने की तकनीक जैसे डायाफ्रामिक ब्रीदिंग का अभ्यास करें। इसे ध्यान जैसी विश्राम तकनीकों के साथ करें।",
     videoUrl: "https://mediac.in/video/New%20Project.mp4",
     thumbnail: "https://via.placeholder.com/150?text=Relaxation",
   },

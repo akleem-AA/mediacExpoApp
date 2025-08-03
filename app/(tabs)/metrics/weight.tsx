@@ -134,6 +134,37 @@ export default function WeightInput() {
       }
     }
   };
+  const englishText = {
+    weight: "Weight",
+    date: "Date",
+    unit: "Unit",
+    kg: "Kilograms (kg)",
+    lbs: "Pounds (lbs)",
+    notes: "Notes",
+    infoText:
+      "Regular weight tracking helps monitor your health progress. Try to measure at the same time of day for consistency.",
+    saveMeasurement: "Save Measurement",
+  };
+
+  // Hindi text content
+  const hindiText = {
+    weight: "वजन",
+    date: "तारीख",
+    unit: "इकाई",
+    kg: "किलोग्राम (kg)",
+    lbs: "पाउंड (lbs)",
+    notes: "नोट्स",
+    infoText:
+      "नियमित वजन ट्रैकिंग आपके स्वास्थ्य प्रगति की निगरानी में मदद करती है। सुसंगतता के लिए दिन के एक ही समय पर मापने का प्रयास करें।",
+    saveMeasurement: "मापन सहेजें",
+  };
+
+  const toggleLanguage = () => {
+    setIsHindi((prev) => !prev);
+  };
+  const [isHindi, setIsHindi] = useState(false);
+
+  const text = isHindi ? hindiText : englishText;
 
   return (
     <SafeAreaView style={styles.safeArea}>
@@ -142,7 +173,7 @@ export default function WeightInput() {
         behavior={Platform.OS === "ios" ? "padding" : "height"}
         style={styles.container}
       >
-        <View style={styles.header}>
+        {/* <View style={styles.header}>
           <TouchableOpacity
             onPress={() => router.back()}
             style={styles.backButton}
@@ -151,6 +182,30 @@ export default function WeightInput() {
           </TouchableOpacity>
           <Text style={styles.headerTitle}>Weight</Text>
           <View style={styles.placeholder} />
+        </View> */}
+        <View style={styles.header}>
+          <View style={{ flexDirection: "row", alignItems: "center" }}>
+            <TouchableOpacity
+              onPress={() => router.back()}
+              style={styles.backButton}
+            >
+              <Ionicons name="arrow-back" size={24} color="#FFC107" />
+            </TouchableOpacity>
+
+            <Text style={styles.headerTitle}>{text.weight}</Text>
+          </View>
+
+          <TouchableOpacity
+            onPress={toggleLanguage}
+            style={{
+              marginRight: 10,
+              flexDirection: "row",
+              alignItems: "center",
+            }}
+          >
+            <Text style={{ paddingRight: 6 }}>{isHindi ? "En" : "हिंदी"}</Text>
+            <Ionicons name="globe-outline" size={20} color="#000" />
+          </TouchableOpacity>
         </View>
 
         <ScrollView
@@ -164,13 +219,14 @@ export default function WeightInput() {
               color="#FFC107"
             />
             <Text style={styles.infoText}>
-              Regular weight tracking helps monitor your health progress. Try to
-              measure at the same time of day for consistency.
+              {/* Regular weight tracking helps monitor your health progress. Try to
+              measure at the same time of day for consistency. */}
+              {text.infoText}
             </Text>
           </View>
 
           <View style={styles.inputGroup}>
-            <Text style={styles.inputLabel}>Date</Text>
+            <Text style={styles.inputLabel}>{text.date}</Text>
             <TouchableOpacity
               style={styles.dateInput}
               onPress={() => setShowDatePicker(true)}
@@ -189,7 +245,7 @@ export default function WeightInput() {
           </View>
 
           <View style={styles.inputGroup}>
-            <Text style={styles.inputLabel}>Unit</Text>
+            <Text style={styles.inputLabel}>{text.unit}</Text>
             <View style={styles.unitSelectorContainer}>
               <TouchableOpacity
                 style={[
@@ -204,7 +260,7 @@ export default function WeightInput() {
                     unit === "kg" && styles.unitButtonTextActive,
                   ]}
                 >
-                  Kilograms (kg)
+                  {text.kg}
                 </Text>
               </TouchableOpacity>
 
@@ -221,14 +277,14 @@ export default function WeightInput() {
                     unit === "lbs" && styles.unitButtonTextActive,
                   ]}
                 >
-                  Pounds (lbs)
+                  {text.lbs}
                 </Text>
               </TouchableOpacity>
             </View>
           </View>
 
           <View style={styles.inputGroup}>
-            <Text style={styles.inputLabel}>Weight ({unit})</Text>
+            <Text style={styles.inputLabel}>{text.weight} ({unit})</Text>
             <TextInput
               style={[styles.input, errors.weight && styles.inputError]}
               value={weight}
@@ -243,7 +299,7 @@ export default function WeightInput() {
           </View>
 
           <View style={styles.inputGroup}>
-            <Text style={styles.inputLabel}>Notes</Text>
+            <Text style={styles.inputLabel}>{text.notes}</Text>
             <TextInput
               style={styles.textArea}
               value={notes}
@@ -262,7 +318,7 @@ export default function WeightInput() {
             {loading ? (
               <ActivityIndicator size="small" color="#ffffff" />
             ) : (
-              <Text style={styles.submitButtonText}>Save Measurement</Text>
+              <Text style={styles.submitButtonText}>{text.saveMeasurement}</Text>
             )}
           </TouchableOpacity>
         </ScrollView>

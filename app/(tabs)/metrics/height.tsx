@@ -142,7 +142,39 @@ export default function HeightInput() {
       }
     }
   };
+  const englishText = {
+    height: "Height",
+    date: "Date",
+    unit: "Unit",
+    cm: "Centimeters (cm)",
+    ft: "Feet & Inches",
+    weight: "Height (ft/in)",
+    notes: "Notes",
+    saveMeasurement: "Save Measurement",
+    infoText:
+      "Tracking your height over time is important for monitoring growth in children and adolescents.",
+  };
 
+  // Hindi text content
+  const hindiText = {
+    height: "ऊंचाई",
+    date: "तारीख",
+    unit: "इकाई",
+    cm: "सेंटीमीटर (सेमी)",
+    ft: "फीट और इंच",
+    weight: "ऊंचाई (फीट/इंच)",
+    notes: "नोट्स",
+    saveMeasurement: "माप सहेजें",
+    infoText:
+      "समय के साथ अपनी ऊंचाई को ट्रैक करना बच्चों और किशोरों में विकास की निगरानी के लिए महत्वपूर्ण है।",
+  };
+
+  const toggleLanguage = () => {
+    setIsHindi((prev) => !prev);
+  };
+  const [isHindi, setIsHindi] = useState(false);
+
+  const text = isHindi ? hindiText : englishText;
   return (
     <SafeAreaView style={styles.safeArea}>
       <StatusBar barStyle="dark-content" backgroundColor="#f8f9fa" />
@@ -150,15 +182,30 @@ export default function HeightInput() {
         behavior={Platform.OS === "ios" ? "padding" : "height"}
         style={styles.container}
       >
+     
         <View style={styles.header}>
+          <View style={{ flexDirection: "row", alignItems: "center" }}>
+            <TouchableOpacity
+              onPress={() => router.back()}
+              style={styles.backButton}
+            >
+              <Ionicons name="arrow-back" size={24} color="#00A86B" />
+            </TouchableOpacity>
+
+            <Text style={styles.headerTitle}>{text.height}</Text>
+          </View>
+
           <TouchableOpacity
-            onPress={() => router.back()}
-            style={styles.backButton}
+            onPress={toggleLanguage}
+            style={{
+              marginRight: 10,
+              flexDirection: "row",
+              alignItems: "center",
+            }}
           >
-            <Ionicons name="arrow-back" size={24} color="#00A86B" />
+            <Text style={{ paddingRight: 6 }}>{isHindi ? "En" : "हिंदी"}</Text>
+            <Ionicons name="globe-outline" size={20} color="#000" />
           </TouchableOpacity>
-          <Text style={styles.headerTitle}>Height</Text>
-          <View style={styles.placeholder} />
         </View>
 
         <ScrollView
@@ -172,13 +219,14 @@ export default function HeightInput() {
               color="#00A86B"
             />
             <Text style={styles.infoText}>
-              Tracking your height over time is important for monitoring growth
-              in children and adolescents.
+              {/* Tracking your height over time is important for monitoring growth
+              in children and adolescents. */}
+              {text.infoText}
             </Text>
           </View>
 
           <View style={styles.inputGroup}>
-            <Text style={styles.inputLabel}>Date</Text>
+            <Text style={styles.inputLabel}>{text.date}</Text>
             <TouchableOpacity
               style={styles.dateInput}
               onPress={() => setShowDatePicker(true)}
@@ -197,7 +245,7 @@ export default function HeightInput() {
           </View>
 
           <View style={styles.inputGroup}>
-            <Text style={styles.inputLabel}>Unit</Text>
+            <Text style={styles.inputLabel}>{text.unit}</Text>
             <View style={styles.unitSelectorContainer}>
               <TouchableOpacity
                 style={[
@@ -212,7 +260,7 @@ export default function HeightInput() {
                     unit === "cm" && styles.unitButtonTextActive,
                   ]}
                 >
-                  Centimeters (cm)
+                  {text.cm}
                 </Text>
               </TouchableOpacity>
 
@@ -229,7 +277,8 @@ export default function HeightInput() {
                     unit === "ft" && styles.unitButtonTextActive,
                   ]}
                 >
-                  Feet & Inches
+                  {/* Feet & Inches */}
+                  {text.ft}
                 </Text>
               </TouchableOpacity>
             </View>
@@ -237,7 +286,7 @@ export default function HeightInput() {
 
           {unit === "cm" ? (
             <View style={styles.inputGroup}>
-              <Text style={styles.inputLabel}>Height (cm)</Text>
+              <Text style={styles.inputLabel}>{text.height} (cm)</Text>
               <TextInput
                 style={[styles.input, errors.heightCm && styles.inputError]}
                 value={heightCm}
@@ -285,7 +334,7 @@ export default function HeightInput() {
           )}
 
           <View style={styles.inputGroup}>
-            <Text style={styles.inputLabel}>Notes</Text>
+            <Text style={styles.inputLabel}>{text.notes}</Text>
             <TextInput
               style={styles.textArea}
               value={notes}
@@ -304,7 +353,7 @@ export default function HeightInput() {
             {loading ? (
               <ActivityIndicator size="small" color="#ffffff" />
             ) : (
-              <Text style={styles.submitButtonText}>Save Measurement</Text>
+              <Text style={styles.submitButtonText}>{text.saveMeasurement}</Text>
             )}
           </TouchableOpacity>
         </ScrollView>

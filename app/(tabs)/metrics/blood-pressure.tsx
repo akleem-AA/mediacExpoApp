@@ -118,7 +118,7 @@ export default function BloodPressureInput() {
 
         // Handle success
         console.log("Blood pressure saved successfully:", response.data);
-        
+
         if (response.status === 201 || response.status === 200) {
           alert("Blood pressure reading saved successfully!");
           router.back();
@@ -142,6 +142,40 @@ export default function BloodPressureInput() {
     }
   };
 
+  const englishText = {
+    bloodPresure: "Blood Pressure",
+    date: "Date & Time",
+    systolic: "Systolic",
+    diastolic: "Diastolic ",
+    pulse: "Pulse (bpm)",
+    notes: "Notes",
+    height: "Height",
+    unit: "Unit",
+    info: "Normal blood pressure is less than 120/80 mmHg. Record your readings regularly to track your health.",
+    saveMeasurement: "Save Measurement",
+  };
+
+  // Hindi text content
+  const hindiText = {
+    bloodPresure: "ब्लड प्रेशर",
+    date: "तारीख और समय",
+    systolic: "सिस्टोलिक ",
+    diastolic: "डायस्टोलिक ",
+    pulse: "नाड़ी (बीपीएम)",
+    notes: "नोट्स",
+    height: "ऊंचाई",
+    unit: "इकाई",
+    info: "सामान्य रक्तचाप 120/80 मिमी एचजी से कम होता है। अपने स्वास्थ्य को ट्रैक करने के लिए नियमित रूप से अपने रीडिंग दर्ज करें।",
+    saveMeasurement: "मापन सहेजें",
+  };
+
+  const toggleLanguage = () => {
+    setIsHindi((prev) => !prev);
+  };
+  const [isHindi, setIsHindi] = useState(false);
+
+  const text = isHindi ? hindiText : englishText;
+
   return (
     <SafeAreaView style={styles.safeArea}>
       <StatusBar barStyle="dark-content" backgroundColor="#f8f9fa" />
@@ -149,7 +183,7 @@ export default function BloodPressureInput() {
         behavior={Platform.OS === "ios" ? "padding" : "height"}
         style={styles.container}
       >
-        <View style={styles.header}>
+        {/* <View style={styles.header}>
           <TouchableOpacity
             onPress={() => router.back()}
             style={styles.backButton}
@@ -158,6 +192,31 @@ export default function BloodPressureInput() {
           </TouchableOpacity>
           <Text style={styles.headerTitle}>Blood Pressure</Text>
           <View style={styles.placeholder} />
+        </View> */}
+
+        <View style={styles.header}>
+          <View style={{ flexDirection: "row", alignItems: "center" }}>
+            <TouchableOpacity
+              onPress={() => router.back()}
+              style={styles.backButton}
+            >
+              <Ionicons name="arrow-back" size={24} color="#4A55A2" />
+            </TouchableOpacity>
+
+            <Text style={styles.headerTitle}>{text.height}</Text>
+          </View>
+
+          <TouchableOpacity
+            onPress={toggleLanguage}
+            style={{
+              marginRight: 10,
+              flexDirection: "row",
+              alignItems: "center",
+            }}
+          >
+            <Text style={{ paddingRight: 6 }}>{isHindi ? "En" : "हिंदी"}</Text>
+            <Ionicons name="globe-outline" size={20} color="#000" />
+          </TouchableOpacity>
         </View>
 
         <ScrollView
@@ -171,13 +230,14 @@ export default function BloodPressureInput() {
               color="#4A55A2"
             />
             <Text style={styles.infoText}>
-              Normal blood pressure is less than 120/80 mmHg. Record your
-              readings regularly to track your health.
+              {/* Normal blood pressure is less than 120/80 mmHg. Record your
+              readings regularly to track your health. */}
+              {text.info}
             </Text>
           </View>
 
           <View style={styles.inputGroup}>
-            <Text style={styles.inputLabel}>Date & Time</Text>
+            <Text style={styles.inputLabel}>{text.date}</Text>
             <TouchableOpacity
               style={styles.dateInput}
               onPress={() => setShowDatePicker(true)}
@@ -197,7 +257,7 @@ export default function BloodPressureInput() {
 
           <View style={styles.bpContainer}>
             <View style={styles.bpInputGroup}>
-              <Text style={styles.inputLabel}>Systolic (mmHg)</Text>
+              <Text style={styles.inputLabel}>{text.systolic} (mmHg)</Text>
               <TextInput
                 style={[styles.input, errors.systolic && styles.inputError]}
                 value={systolic}
@@ -216,7 +276,7 @@ export default function BloodPressureInput() {
             </View>
 
             <View style={styles.bpInputGroup}>
-              <Text style={styles.inputLabel}>Diastolic (mmHg)</Text>
+              <Text style={styles.inputLabel}>{text.diastolic} (mmHg)</Text>
               <TextInput
                 style={[styles.input, errors.diastolic && styles.inputError]}
                 value={diastolic}
@@ -232,7 +292,7 @@ export default function BloodPressureInput() {
           </View>
 
           <View style={styles.inputGroup}>
-            <Text style={styles.inputLabel}>Pulse (bpm)</Text>
+            <Text style={styles.inputLabel}>{text.pulse} (bpm)</Text>
             <TextInput
               style={[styles.input, errors.pulse && styles.inputError]}
               value={pulse}
@@ -247,7 +307,7 @@ export default function BloodPressureInput() {
           </View>
 
           <View style={styles.inputGroup}>
-            <Text style={styles.inputLabel}>Notes</Text>
+            <Text style={styles.inputLabel}>{text.notes}</Text>
             <TextInput
               style={styles.textArea}
               value={notes}
@@ -266,7 +326,7 @@ export default function BloodPressureInput() {
             {loading ? (
               <ActivityIndicator size="small" color="#ffffff" />
             ) : (
-              <Text style={styles.submitButtonText}>Save Reading</Text>
+              <Text style={styles.submitButtonText}>{text.saveMeasurement}</Text>
             )}
           </TouchableOpacity>
         </ScrollView>

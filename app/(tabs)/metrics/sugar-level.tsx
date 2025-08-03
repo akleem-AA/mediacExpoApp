@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useLayoutEffect, useState } from "react";
 import {
   View,
   Text,
@@ -15,12 +15,13 @@ import {
   ActivityIndicator,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
-import { router } from "expo-router";
+import { router, useNavigation } from "expo-router";
 import DateTimePicker from "@react-native-community/datetimepicker";
 import axios from "axios";
 import { API_URL } from "@/constants/Api";
 import { getToken } from "@/services/auth";
 import { useDecodedToken } from "@/hooks/useDecodedToken";
+import { Globe } from "lucide-react-native";
 
 export default function SugarLevelInput() {
   const user = useDecodedToken();
@@ -31,6 +32,8 @@ export default function SugarLevelInput() {
   const [showDatePicker, setShowDatePicker] = useState(false);
   const [errors, setErrors] = useState({});
   const [loading, setLoading] = useState(false);
+  const [isHindi, setIsHindi] = useState(false);
+  const navigation = useNavigation();
 
   const onDateChange = (event, selectedDate) => {
     const currentDate = selectedDate || date;
@@ -38,6 +41,34 @@ export default function SugarLevelInput() {
     setDate(currentDate);
   };
 
+  const englishText = {
+    bloodSugar: "Blood Sugar",
+    dateTime: "Date & Time",
+    level: "Blood Sugar Level (mg/dL)",
+    measurementType: "Measurement Type",
+    notes: "Notes",
+    fasting: "Fasting",
+    beforeMeal: "Before Meal",
+    afterMeal: "2hrs After Meal",
+    saveReading: "Save Reading",
+    infoText:
+      "Normal fasting blood sugar is 70-99 mg/dL. After meals, levels below 140 mg/dL are typically normal.",
+  };
+
+  // Hindi text content
+  const hindiText = {
+    bloodSugar: "ब्लड शुगर",
+    dateTime: "दिनांक और समय",
+    level: "ब्लड शुगर लेवल (मिग्रा/डीएल)",
+    measurementType: "माप प्रकार",
+    notes: "नोट्स",
+    fasting: "खाली पेट",
+    beforeMeal: "खाने से पहले",
+    afterMeal: "खाने के 2 घंटे बाद",
+    saveReading: "रीडिंग सेव करें",
+    infoText:
+      "सामान्य खाली पेट ब्लड शुगर 70-99 मिग्रा/डीएल होती है। खाने के बाद 140 मिग्रा/डीएल से नीचे सामान्य मानी जाती है।",
+  };
   const formatDate = (date) => {
     return date.toLocaleDateString("en-US", {
       year: "numeric",
@@ -130,6 +161,14 @@ export default function SugarLevelInput() {
     }
   };
 
+  const toggleLanguage = () => {
+    setIsHindi((prev) => !prev);
+  };
+
+  const text = isHindi ? hindiText : englishText;
+
+  
+
   return (
     <SafeAreaView style={styles.safeArea}>
       <StatusBar barStyle="dark-content" backgroundColor="#f8f9fa" />
@@ -137,15 +176,39 @@ export default function SugarLevelInput() {
         behavior={Platform.OS === "ios" ? "padding" : "height"}
         style={styles.container}
       >
-        <View style={styles.header}>
+        {/* <View style={styles.header}>
           <TouchableOpacity
             onPress={() => router.back()}
             style={styles.backButton}
           >
             <Ionicons name="arrow-back" size={24} color="#FF5A5F" />
           </TouchableOpacity>
-          <Text style={styles.headerTitle}>Blood Sugar</Text>
+          <Text style={styles.headerTitle}>{text.bloodSugar}</Text>
           <View style={styles.placeholder} />
+        </View> */}
+        <View style={styles.header}>
+          <View style={{ flexDirection: "row", alignItems: "center" }}>
+            <TouchableOpacity
+              onPress={() => router.back()}
+              style={styles.backButton}
+            >
+              <Ionicons name="arrow-back" size={24} color="#FF5A5F" />
+            </TouchableOpacity>
+
+            <Text style={styles.headerTitle}>{text.bloodSugar}</Text>
+          </View>
+
+          <TouchableOpacity
+            onPress={toggleLanguage}
+            style={{
+              marginRight: 10,
+              flexDirection: "row",
+              alignItems: "center",
+            }}
+          >
+            <Text style={{ paddingRight: 6 }}>{isHindi ? "En" : "हिंदी"}</Text>
+            <Ionicons name="globe-outline" size={20} color="#000" />
+          </TouchableOpacity>
         </View>
 
         <ScrollView
@@ -159,13 +222,14 @@ export default function SugarLevelInput() {
               color="#FF5A5F"
             />
             <Text style={styles.infoText}>
-              Normal fasting blood sugar is 70-99 mg/dL. After meals, levels
-              below 140 mg/dL are typically normal.
+              {/* Normal fasting blood sugar is 70-99 mg/dL. After meals, levels
+              below 140 mg/dL are typically normal. */}
+              {text.infoText}
             </Text>
           </View>
 
           <View style={styles.inputGroup}>
-            <Text style={styles.inputLabel}>Date & Time</Text>
+            <Text style={styles.inputLabel}>{text.dateTime}</Text>
             <TouchableOpacity
               style={styles.dateInput}
               onPress={() => setShowDatePicker(true)}
@@ -184,7 +248,7 @@ export default function SugarLevelInput() {
           </View>
 
           <View style={styles.inputGroup}>
-            <Text style={styles.inputLabel}>Blood Sugar Level (mg/dL)</Text>
+            <Text style={styles.inputLabel}>{text.level} (mg/dL)</Text>
             <TextInput
               style={[styles.input, errors.glucoseLevel && styles.inputError]}
               value={glucoseLevel}
@@ -199,7 +263,7 @@ export default function SugarLevelInput() {
           </View>
 
           <View style={styles.inputGroup}>
-            <Text style={styles.inputLabel}>Measurement Type</Text>
+            <Text style={styles.inputLabel}>{text.measurementType}</Text>
             <View style={styles.measurementTypeContainer}>
               <TouchableOpacity
                 style={[
@@ -216,7 +280,7 @@ export default function SugarLevelInput() {
                       styles.measurementTypeTextActive,
                   ]}
                 >
-                  Fasting
+                  {text.fasting}
                 </Text>
               </TouchableOpacity>
 
@@ -235,7 +299,7 @@ export default function SugarLevelInput() {
                       styles.measurementTypeTextActive,
                   ]}
                 >
-                  Before Meal
+                  {text.beforeMeal}
                 </Text>
               </TouchableOpacity>
 
@@ -254,14 +318,14 @@ export default function SugarLevelInput() {
                       styles.measurementTypeTextActive,
                   ]}
                 >
-                  2hrs After Meal
+                  {text.afterMeal}
                 </Text>
               </TouchableOpacity>
             </View>
           </View>
 
           <View style={styles.inputGroup}>
-            <Text style={styles.inputLabel}>Notes</Text>
+            <Text style={styles.inputLabel}>{text.notes}</Text>
             <TextInput
               style={styles.textArea}
               value={notes}
@@ -280,7 +344,7 @@ export default function SugarLevelInput() {
             {loading ? (
               <ActivityIndicator size="small" color="#ffffff" />
             ) : (
-              <Text style={styles.submitButtonText}>Save Reading</Text>
+              <Text style={styles.submitButtonText}>{text.saveReading}</Text>
             )}
           </TouchableOpacity>
         </ScrollView>
