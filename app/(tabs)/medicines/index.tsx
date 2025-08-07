@@ -208,10 +208,10 @@ export default function MedicineScreen() {
     if (!selectedMedicine) return;
 
     // Validate required fields
-    if (!editedMedicine.medicineName || !editedMedicine.medicineDose) {
-      Alert.alert("Error", "Name and Dose are required fields");
-      return;
-    }
+    // if (!editedMedicine.medicineName || !editedMedicine.medicineDose) {
+    //   Alert.alert("Error", "Name and Dose are required fields");
+    //   return;
+    // }
 
     try {
       setLoading(true);
@@ -282,17 +282,13 @@ export default function MedicineScreen() {
 
   // Handle add medicine
   const handleAddMedicine = async () => {
-    // Validate required fields
-    if (!newMedicine.medicineName || !newMedicine.medicineDose) {
-      Alert.alert("Error", "Name and Dose are required fields");
-      return;
-    }
+
 
     const medicineData = {
-      medicineName: newMedicine.medicineName,
-      medicineDose: newMedicine.medicineDose,
+      medicineName: newMedicine.medicineName || "",
+      // medicineDose: newMedicine.medicineDose || "",
       medicineDoseUnit: newMedicine.medicineDoseUnit || "mg",
-      medicineFrequency: newMedicine.medicineFrequency || "Once daily",
+      // medicineFrequency: newMedicine.medicineFrequency || "Once daily",
       medicineNotes: newMedicine.notes || "",
     };
 
@@ -300,7 +296,7 @@ export default function MedicineScreen() {
       setLoading(true);
       // Get the authentication token
       const token = await getToken();
-
+      console.log("Adding medicine with data:", medicineData,'url', `${API_URL}/medicines`);
       // Send a POST request to add the medicine to the backend with the Authorization header
       const response = await axios.post(`${API_URL}/medicines`, medicineData, {
         headers: {
@@ -316,9 +312,9 @@ export default function MedicineScreen() {
       const completeNewMedicine = {
         id: newMedicineFromAPI.id || Math.random(), // Fallback to random ID if none provided
         medicineName:
-          newMedicineFromAPI.medicineName || medicineData.medicineName,
+          newMedicineFromAPI.medicineName || medicineData.medicineName ,
         medicineDose:
-          newMedicineFromAPI.medicineDose || medicineData.medicineDose,
+          newMedicineFromAPI.medicineDose || medicineData.medicineDose ,
         medicineDoseUnit:
           newMedicineFromAPI.medicineDoseUnit || medicineData.medicineDoseUnit,
         medicineFrequency:
@@ -454,7 +450,7 @@ export default function MedicineScreen() {
           <Text style={styles.sortButtonText}>Name</Text>
           {renderSortIndicator("name")}
         </TouchableOpacity>
-        <TouchableOpacity
+        {/* <TouchableOpacity
           style={[
             styles.sortButton,
             sortBy === "dose" && styles.activeSortButton,
@@ -463,8 +459,8 @@ export default function MedicineScreen() {
         >
           <Text style={styles.sortButtonText}>Dose</Text>
           {renderSortIndicator("dose")}
-        </TouchableOpacity>
-        <TouchableOpacity
+        </TouchableOpacity> */}
+        {/* <TouchableOpacity
           style={[
             styles.sortButton,
             sortBy === "frequency" && styles.activeSortButton,
@@ -473,7 +469,7 @@ export default function MedicineScreen() {
         >
           <Text style={styles.sortButtonText}>Frequency</Text>
           {renderSortIndicator("frequency")}
-        </TouchableOpacity>
+        </TouchableOpacity> */}
       </ScrollView>
 
       {/* Medicine List */}
@@ -618,7 +614,7 @@ export default function MedicineScreen() {
                     </View>
                   </View>
 
-                  <View style={styles.detailRow}>
+                  {/* <View style={styles.detailRow}>
                     <View style={styles.detailCol}>
                       <Text style={styles.detailLabel}>Dose</Text>
                       <Text style={styles.detailValue}>
@@ -633,7 +629,7 @@ export default function MedicineScreen() {
                         {selectedMedicine.medicineFrequency}
                       </Text>
                     </View>
-                  </View>
+                  </View> */}
                 </View>
 
                 {(selectedMedicine.medicine_notes ||
