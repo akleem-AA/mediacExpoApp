@@ -287,7 +287,7 @@ export default function MedicineScreen() {
     const medicineData = {
       medicineName: newMedicine.medicineName || "",
       // medicineDose: newMedicine.medicineDose || "",
-      medicineDoseUnit: newMedicine.medicineDoseUnit || "mg",
+      medicineDoseUnit: newMedicine.medicineDoseUnit || "",
       // medicineFrequency: newMedicine.medicineFrequency || "Once daily",
       medicineNotes: newMedicine.notes || "",
     };
@@ -732,7 +732,7 @@ export default function MedicineScreen() {
                   />
                 </View> */}
 
-                <View style={styles.halfInput}>
+                {/* <View style={styles.halfInput}>
                   <Text style={styles.inputLabel}>Unit</Text>
                   <View style={styles.pickerContainer}>
                     <Picker
@@ -751,7 +751,7 @@ export default function MedicineScreen() {
                       ))}
                     </Picker>
                   </View>
-                </View>
+                </View> */}
               </View>
 
               {/* <Text style={styles.inputLabel}>Frequency</Text> */}
@@ -859,7 +859,7 @@ export default function MedicineScreen() {
                   />
                 </View> */}
 
-                <View style={styles.halfInput}>
+                {/* <View style={styles.halfInput}>
                   <Text style={styles.inputLabel}>Unit</Text>
                   <View style={styles.pickerContainer}>
                     <Picker
@@ -878,7 +878,7 @@ export default function MedicineScreen() {
                       ))}
                     </Picker>
                   </View>
-                </View>
+                </View> */}
               </View>
 
               {/* <Text style={styles.inputLabel}>Frequency</Text> */}
