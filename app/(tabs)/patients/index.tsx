@@ -1306,7 +1306,8 @@ export default function PatientScreen() {
                     {availableMedicines.map((med) => (
                       <Picker.Item
                         key={med.id}
-                        label={`${med.medicineName} (${med.medicineDose} ${med.medicineDoseUnit})`}
+                        // label={`${med.medicineName} (${med.medicineDose} ${med.medicineDoseUnit})`}
+                        label={`${med.medicineName}`}
                         value={med.id}
                       />
                     ))}

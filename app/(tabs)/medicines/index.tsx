@@ -338,7 +338,7 @@ export default function MedicineScreen() {
       setNewMedicine({
         medicineName: "",
         medicineDose: "",
-        medicineDoseUnit: "mg",
+        medicineDoseUnit: "",
         medicineFrequency: "Once daily",
       });
 

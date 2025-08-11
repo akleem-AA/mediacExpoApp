@@ -685,7 +685,8 @@ const AddPatient = () => {
                     {availableMedicines.map((med) => (
                       <Picker.Item
                         key={med.medicineName}
-                        label={`${med.medicineName} (${med.medicineDose} ${med.medicineDoseUnit})`}
+                        // label={`${med.medicineName} (${med.medicineDose} ${med.medicineDoseUnit})`}
+                        label={`${med.medicineName}`}
                         value={med.id}
                         color="#000"
                       />
