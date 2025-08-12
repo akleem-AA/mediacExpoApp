@@ -136,6 +136,7 @@ export default function PatientScreen() {
           Authorization: `Bearer ${token}`,
         },
       });
+
       // console.log("Fetched patient list:", response.data);
     } catch (error) {
       console.error("Error fetching patient list:", error);
@@ -340,6 +341,7 @@ export default function PatientScreen() {
     fetchPatientList();
   }, []);
 
+ 
   useEffect(() => {
     applyFilters(patients, searchQuery);
   }, [sortBy, sortOrder]);
@@ -413,7 +415,7 @@ export default function PatientScreen() {
   useEffect(() => {
     fetchAvailableMedicines();
     // initializeMedicines();
-  }, []);
+  }, [isRefreshing, editModalVisible]);
 
   const fetchAvailableMedicines = async () => {
     try {
@@ -421,6 +423,7 @@ export default function PatientScreen() {
       const response = await axios.get(`${API_URL}/medicines`, {
         headers: { Authorization: `Bearer ${token}` },
       });
+      console.log("Available medicines:", response.data);
       setAvailableMedicines(response.data);
     } catch (err) {
       Alert.alert("Error", "Failed to fetch available medicines");
@@ -747,7 +750,14 @@ export default function PatientScreen() {
                           const found = availableMedicines.find(
                             (m) => m.id === med.medicine.id || m.id === med.id
                           );
-                          console.log("Matching medicine:", found,'med:', med, 'availableMedicines:', availableMedicines);
+                          console.log(
+                            "Matching medicine:",
+                            found,
+                            "med:",
+                            med,
+                            "availableMedicines:",
+                            availableMedicines
+                          );
 
                           // Convert medicineTimes to valid Date objects
                           const timesArray = (med.medicineTimes || []).map(
