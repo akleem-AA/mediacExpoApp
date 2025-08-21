@@ -985,7 +985,14 @@ export default function Dashboard() {
                             : "--";
 
                         return (
-                          <TouchableOpacity>
+                          <TouchableOpacity
+                            onPress={() =>
+                              router.push({
+                                pathname: "/graph",
+                                params: { title: "BMI" },
+                              })
+                            }
+                          >
                             <LatestReading
                               icon="body-outline"
                               title={t("BMI")}
